@@ -31,7 +31,7 @@ adata_mouse.obs['cluster'].value_counts()
 
 # Process the human data using ingest
 # load the human data
-adata_human = sc.read_h5ad('outs_human/h5ads/erg_fibroblasts_scvi_v6_regulons.h5ad', chunk_size=100000)
+adata_human = sc.read_h5ad('human/h5ads/erg_fibroblasts_scvi_v6_regulons.h5ad', chunk_size=100000)
 
 adata_human.obs.erg.value_counts()
 
@@ -136,7 +136,7 @@ tempAdata.var_names = [gene.upper() for gene in tempAdata.var_names]
 adata_human_new.raw = tempAdata
 
 
-sc.pl.umap(adata_mouse, color='cluster', save = '_mouse.png')
+sc.pl.umap(adata_mouse, color='cluster', save= '_mouse.png')
 
 
 sc.pl.umap(adata_human_new, color='cluster', save = '_human.png')
@@ -145,10 +145,12 @@ sc.pl.umap(adata_mouse, color=['cluster', 'Acta2'], save = '_mouse_ACTA2.png')
 
 sc.pl.umap(adata_human_new, color=['cluster', 'ACTA2'], save = '_human_ACTA2.png')
 
-sc.tl.rank_genes_groups(adata_mouse, 'cluster', method='t-test')
-sc.pl.rank_genes_groups(adata_mouse, n_genes=25, sharey=False, save = '_mouseMarkers.png')
+sc.tl.rank_genes_groups(adata_mouse, 'cluster', pts=True, use_raw = False)
+sc.pl.rank_genes_groups(adata_mouse, n_genes = 25, sharey=False, save = '_mouseMarkers.png')
+markers_mouse_c3 = sc.get.rank_genes_groups_df(adata_mouse, group = '3')
 
-sc.tl.rank_genes_groups(adata_human_new, 'cluster', method='t-test')
+
+sc.tl.rank_genes_groups(adata_human_new, 'cluster', pts=True, use_raw = False)
 sc.pl.rank_genes_groups(adata_human_new, n_genes=25, sharey=False, save = '_humanMarkers.png')
 
 sc.pl.violin(adata_mouse, ['Ar'], groupby = 'cluster', save = '_AR_mouse.png')
@@ -334,10 +336,10 @@ sc.pl.umap(
 adata_mouse_myo = sc.read_h5ad('outs/h5ads/fapcm_myo.h5ad', chunk_size=100000)
 
 mapdict = {
-    "0": "myofibroblast",
-    "1": "pericyte",
-    "2": "myofibroblast",
-    "3": "pericyte",
+    "0": "c0.1",
+    "1": "c0.2",
+    "2": "c0.1",
+    "3": "c0.2",
 }
 adata_mouse_myo.obs["cluster"] = adata_mouse_myo.obs["leiden"].map(mapdict)
 adata_mouse_myo.obs["cluster"] = adata_mouse_myo.obs["cluster"].astype("category")
@@ -400,4 +402,27 @@ sc.pl.umap(
     vmax=5,
     save="_myo_markers.png",
 )
+
+markers_human_c3['names'] = markers_human_c3['names'].str.title()
+
+markers_mouse_c0 = sc.get.rank_genes_groups_df(adata_mouse, group = '0')
+markers_mouse_c1 = sc.get.rank_genes_groups_df(adata_mouse, group = '1')
+markers_mouse_c2 = sc.get.rank_genes_groups_df(adata_mouse, group = '2')
+markers_mouse_c3 = sc.get.rank_genes_groups_df(adata_mouse, group = '3')
+markers_mouse_c4 = sc.get.rank_genes_groups_df(adata_mouse, group = '4')
+markers_mouse_c5 = sc.get.rank_genes_groups_df(adata_mouse, group = '5')
+markers_mouse_c6 = sc.get.rank_genes_groups_df(adata_mouse, group = '6')
+markers_mouse_c7 = sc.get.rank_genes_groups_df(adata_mouse, group = '7')
+
+markers_human_c3['names'] = markers_human_c3['names'].str.title()
+
+top50_mouse = markers_mouse_c3[0:100]
+top50_human = markers_human_c3[0:100]
+
+s1 = pd.merge(top50_mouse, top50_human, how='inner', on=['names'])
+s1
+
+markers_mouse_c5 = sc.get.rank_genes_groups_df(adata_mouse, group = '5')
+
+
 

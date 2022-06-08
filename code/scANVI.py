@@ -70,20 +70,22 @@ adata_human_raw = adata_human_raw[:, var_names]
 adata_mouse_raw = remove_sparsity(adata_mouse_raw)
 adata_mouse_raw2 = adata_mouse_raw.copy()
 
-scvi.model.SCVI.setup_anndata(adata_mouse_raw2, batch_key="model", layer="counts")
+#scvi.model.SCVI.setup_anndata(adata_mouse_raw2, batch_key="model", layer="counts")
+
 
 arches_params = dict(
     use_layer_norm="both",
     use_batch_norm="none",
     encode_covariates=True,
     dropout_rate=0.2,
-    n_layers=1,
+    n_layers=2,
     log_variational = 'False'
 )
 
 vae_ref = scvi.model.SCVI(
     adata_mouse_raw2,
-    **arches_params
+    n_layers=2,
+    n_latent=30
 )
 vae_ref.train()
 
@@ -128,4 +130,20 @@ vae_q = scvi.model.SCVI.load_query_data(
 vae_q = scvi.model.SCVI.load_query_data(
     adata_query,
     vae_ref,
+)
+
+##########################################################
+# ## Create SCANVI model and train it on fully labelled reference dataset
+adata_mouse_raw = remove_sparsity(adata_mouse_raw)
+adata_mouse_raw2 = adata_mouse_raw.copy()
+
+sca.models.SCANVI.setup_anndata(adata_mouse_raw2, batch_key='model', labels_key='cluster', unlabeled_category="Unknown")
+
+vae = sca.models.SCVI(
+    adata_mouse_raw2,
+    n_layers=2,
+    encode_covariates=True,
+    deeply_inject_covariates=False,
+    use_layer_norm="both",
+    use_batch_norm="none",
 )

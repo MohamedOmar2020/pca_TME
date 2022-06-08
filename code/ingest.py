@@ -146,12 +146,12 @@ sc.pl.umap(adata_mouse, color=['cluster', 'Acta2'], save = '_mouse_ACTA2.png')
 sc.pl.umap(adata_human_new, color=['cluster', 'ACTA2'], save = '_human_ACTA2.png')
 
 sc.tl.rank_genes_groups(adata_mouse, 'cluster', pts=True, use_raw = False)
-sc.pl.rank_genes_groups(adata_mouse, n_genes = 25, sharey=False, save = '_mouseMarkers.png')
+sc.pl.rank_genes_groups(adata_mouse, n_genes = 25, sharey=False, save = '_mouseMarkers_notRaw.png')
 markers_mouse_c3 = sc.get.rank_genes_groups_df(adata_mouse, group = '3')
 
 
 sc.tl.rank_genes_groups(adata_human_new, 'cluster', pts=True, use_raw = False)
-sc.pl.rank_genes_groups(adata_human_new, n_genes=25, sharey=False, save = '_humanMarkers.png')
+sc.pl.rank_genes_groups(adata_human_new, n_genes=25, sharey=False, save = '_humanMarkers_notRaw.png')
 
 sc.pl.violin(adata_mouse, ['Ar'], groupby = 'cluster', save = '_AR_mouse.png')
 
@@ -255,7 +255,7 @@ adata_human_raw.X = sp.csr_matrix.todense(adata_human_raw.X)
 adata_human_raw.X = adata_human_raw.to_df()
 adata_human_raw.write('outs/forCellChat/adata_human_norm.h5ad')
 
-sc.tl.rank_genes_groups(adata_human_new, 'cluster', method='t-test')
+#sc.tl.rank_genes_groups(adata_human_new, 'cluster', method='t-test')
 markers_human_c0 = sc.get.rank_genes_groups_df(adata_human_new, group = '0')
 markers_human_c1 = sc.get.rank_genes_groups_df(adata_human_new, group = '1')
 markers_human_c2 = sc.get.rank_genes_groups_df(adata_human_new, group = '2')
@@ -403,7 +403,14 @@ sc.pl.umap(
     save="_myo_markers.png",
 )
 
+markers_human_c0['names'] = markers_human_c0['names'].str.title()
+markers_human_c1['names'] = markers_human_c1['names'].str.title()
+markers_human_c2['names'] = markers_human_c2['names'].str.title()
 markers_human_c3['names'] = markers_human_c3['names'].str.title()
+markers_human_c4['names'] = markers_human_c4['names'].str.title()
+markers_human_c5['names'] = markers_human_c5['names'].str.title()
+markers_human_c6['names'] = markers_human_c6['names'].str.title()
+markers_human_c7['names'] = markers_human_c7['names'].str.title()
 
 markers_mouse_c0 = sc.get.rank_genes_groups_df(adata_mouse, group = '0')
 markers_mouse_c1 = sc.get.rank_genes_groups_df(adata_mouse, group = '1')
@@ -414,15 +421,36 @@ markers_mouse_c5 = sc.get.rank_genes_groups_df(adata_mouse, group = '5')
 markers_mouse_c6 = sc.get.rank_genes_groups_df(adata_mouse, group = '6')
 markers_mouse_c7 = sc.get.rank_genes_groups_df(adata_mouse, group = '7')
 
-markers_human_c3['names'] = markers_human_c3['names'].str.title()
 
-top50_mouse = markers_mouse_c3[0:100]
-top50_human = markers_human_c3[0:100]
+top100_mouse_c0 = markers_mouse_c0[0:100]
+top100_mouse_c1 = markers_mouse_c1[0:100]
+top100_mouse_c2 = markers_mouse_c2[0:100]
+top100_mouse_c3 = markers_mouse_c3[0:100]
+top100_mouse_c4 = markers_mouse_c4[0:100]
+top100_mouse_c5 = markers_mouse_c5[0:100]
+top100_mouse_c6 = markers_mouse_c6[0:100]
+top100_mouse_c7 = markers_mouse_c7[0:100]
 
-s1 = pd.merge(top50_mouse, top50_human, how='inner', on=['names'])
-s1
+top100_human_c0 = markers_human_c0[0:100]
+top100_human_c1 = markers_human_c1[0:100]
+top100_human_c2 = markers_human_c2[0:100]
+top100_human_c3 = markers_human_c3[0:100]
+top100_human_c4 = markers_human_c4[0:100]
+top100_human_c5 = markers_human_c5[0:100]
+top100_human_c6 = markers_human_c6[0:100]
+top100_human_c7 = markers_human_c7[0:100]
+
+intersection_c0 = pd.merge(top100_mouse_c0, top100_human_c0, how='inner', on=['names'])
+intersection_c1 = pd.merge(top100_mouse_c1, top100_human_c1, how='inner', on=['names'])
+intersection_c2 = pd.merge(top100_mouse_c2, top100_human_c2, how='inner', on=['names'])
+intersection_c3 = pd.merge(top100_mouse_c3, top100_human_c3, how='inner', on=['names'])
+intersection_c4 = pd.merge(top100_mouse_c4, top100_human_c4, how='inner', on=['names'])
+intersection_c5 = pd.merge(top100_mouse_c5, top100_human_c5, how='inner', on=['names'])
+intersection_c6 = pd.merge(top100_mouse_c6, top100_human_c6, how='inner', on=['names'])
+intersection_c7 = pd.merge(top100_mouse_c7, top100_human_c7, how='inner', on=['names'])
 
 markers_mouse_c5 = sc.get.rank_genes_groups_df(adata_mouse, group = '5')
 
 
 
+x = pd.merge(top100_mouse_c0, top100_human_c3, how='inner', on=['names'])

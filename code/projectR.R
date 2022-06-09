@@ -1,5 +1,3 @@
-
-
 rm(list = ls())
 
 Sys.setenv(RETICULATE_PYTHON = "/Users/mohamedomar/opt/anaconda3/envs/scutils/bin/python3.10")

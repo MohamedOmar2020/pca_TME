@@ -33,7 +33,8 @@ adata_mouse.obs['cluster'].value_counts()
 ###########################################################################
 # load the annot human data
 #%%
-adata_human_singleR = sc.read_h5ad('human/human_pred.h5ad')
+adata_human_singleR = sc.read_h5ad('human/singleR/human_pred2.h5ad')
+adata_human_singleR.obs.labels.value_counts()
 
 # fix the var_names
 adata_human_singleR.var_names = adata_human_singleR.var['features']
@@ -42,12 +43,14 @@ adata_human_singleR_raw = adata_human_singleR.raw.to_adata()
 adata_human_singleR_raw.X = sp.csr_matrix.todense(adata_human_singleR_raw.X)
 adata_human_singleR_raw.X = adata_human_singleR_raw.to_df()
 del adata_human_singleR_raw.obs['leiden']
-#adata_human_raw.write('outs/forCellChat/adata_human_norm.h5ad')
+adata_human_singleR_raw.var_names = adata_human_singleR_raw.var['_index']
+#adata_human_singleR_raw.write('outs/forCellChat/adata_human_norm.h5ad')
 
 #sc.pp.filter_cells(adata, min_genes=200)
-sc.pp.filter_genes(adata_human_singleR_raw, min_cells=3)
+#sc.pp.filter_genes(adata_human_singleR, min_cells=3)
 sc.pp.normalize_total(adata_human_singleR_raw, target_sum=1e4)
 sc.pp.log1p(adata_human_singleR_raw)
+adata_human_singleR_raw.raw = adata_human_singleR_raw
 sc.pp.highly_variable_genes(adata_human_singleR_raw, min_mean=0.0125, max_mean=3, min_disp=0.5)
 #adata_human_singleR_raw = adata_human_singleR_raw[:, adata_human_singleR_raw.var.highly_variable]
 sc.pp.scale(adata_human_singleR_raw, max_value=10)
@@ -57,33 +60,33 @@ sc.pp.scale(adata_human_singleR_raw, max_value=10)
 
 # PCA and umap
 sc.tl.pca(adata_human_singleR_raw, svd_solver='arpack')
-sc.pl.pca_variance_ratio(adata_human_singleR_raw, log=True)
-sc.pp.neighbors(adata_human_singleR_raw, n_neighbors=10, n_pcs=40)
-sc.tl.paga(adata_human_singleR_raw, groups='labels')
-sc.pl.paga(adata_human_singleR_raw, plot=False)  # remove `plot=False` if you want to see the coarse-grained graph
-sc.tl.umap(adata_human_singleR_raw, init_pos='paga')
+#sc.pl.pca_variance_ratio(adata_human_singleR, log=True)
+sc.pp.neighbors(adata_human_singleR_raw, n_neighbors=40, n_pcs=10)
+#sc.tl.paga(adata_human_singleR, groups='labels')
+#sc.pl.paga(adata_human_singleR, plot=False)  # remove `plot=False` if you want to see the coarse-grained graph
+sc.tl.umap(adata_human_singleR_raw)
 
 sc.pl.umap(adata_human_singleR_raw, color='labels', save = '_human.png')
 
 
 sc.pl.umap(adata_mouse, color=['cluster', 'Acta2'], save = '_mouse_ACTA2.png')
 
-sc.pl.umap(adata_human_singleR, color=['cluster', 'ACTA2'], save = '_human_ACTA2.png')
+sc.pl.umap(adata_human_singleR_raw, color=['labels', 'Acta2'], save = '_human_ACTA2.png')
 
-sc.tl.rank_genes_groups(adata_mouse, 'cluster', pts=True, use_raw = False)
+sc.tl.rank_genes_groups(adata_mouse, 'cluster', pts=True, use_raw = True)
 sc.pl.rank_genes_groups(adata_mouse, n_genes = 25, sharey=False, save = '_mouseMarkers_notRaw.png')
 markers_mouse_c3 = sc.get.rank_genes_groups_df(adata_mouse, group = '3')
 
 
-sc.tl.rank_genes_groups(adata_human_singleR, 'cluster', pts=True, use_raw = False)
-sc.pl.rank_genes_groups(adata_human_singleR, n_genes=25, sharey=False, save = '_humanMarkers_notRaw.png')
+sc.tl.rank_genes_groups(adata_human_singleR_raw, 'labels', pts=True, use_raw = True)
+sc.pl.rank_genes_groups(adata_human_singleR_raw, n_genes=25, sharey=False, save = '_humanMarkers_notRaw.png')
 
 sc.pl.violin(adata_mouse, ['Ar'], groupby = 'cluster', save = '_AR_mouse.png')
 
 sc.pl.umap(adata_mouse, color='Ar', color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Ar_mouse_all.png')
 
 
-sc.pl.violin(adata_human_singleR, ['AR'], groupby = 'cluster', save = '_AR_human.png')
+sc.pl.violin(adata_human_singleR_raw, ['Ar'], groupby = 'labels', save = '_AR_human.png')
 
 sc.pl.umap(adata_human_singleR, color=['AR'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Ar_human_all.png')
 
@@ -102,14 +105,14 @@ dp = sc.pl.DotPlot(adata_mouse, var_names = 'Ar', groupby = 'key', cmap = 'Reds'
 dp.legend(width=2.5).savefig('figures/dotplot_Ar_mouse.png')
 
 # violin for Periostin human
-sc.pl.violin(adata_human_singleR, ['POSTN'], groupby = 'cluster', save = '_Postn_human.png')
+sc.pl.violin(adata_human_singleR_raw, ['Postn'], groupby = 'labels', save = '_Postn_human.png')
 
 # umap for Periostin human
-sc.pl.umap(adata_human_singleR, color='POSTN', color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_human_all.png')
+sc.pl.umap(adata_human_singleR_raw, color='Postn', color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_human_all.png')
 
 sc.pl.rank_genes_groups_dotplot(adata_mouse, var_names = ['Acta2', 'Myl9', 'Myh11', 'Tagln', 'Pdgfra', 'Mustn1', 'Angpt2', 'Notch3'], save = '_c0_mouse.png')
 
-sc.pl.rank_genes_groups_dotplot(adata_human_singleR, var_names = ['ACTA2', 'MYL9', 'MYH11', 'TAGLN', 'PDGFRA', 'MUSTN1', 'ANGPT2', 'NOTCH3'], save = '_c0_human.png')
+sc.pl.rank_genes_groups_dotplot(adata_human_singleR_raw, var_names = ['Acta2', 'Myl9', 'Myh11', 'Tagln', 'Pdgfra', 'Mustn1', 'Angpt2', 'Notch3'], save = '_c0_human.png')
 
 dp = sc.pl.DotPlot(adata_mouse, var_names = ['Acta2', 'Myl9', 'Myh11', 'Tagln', 'Pdgfra',
                                              'Mustn1', 'Angpt2', 'Notch3', 'Sfrp1', 'Gpx3',
@@ -143,52 +146,49 @@ dp2 = sc.pl.DotPlot(adata_mouse, var_names = ['Sfrp2', 'Wnt5a', 'Lgr5', 'Apc',
 dp2.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/mouse_dotplot2.png')
 
 
-dp = sc.pl.DotPlot(adata_human_singleR, var_names = ['ACTA2', 'MYL9', 'MYH11', 'TAGLN',
-                                                              'PDGFRA', 'MUSTN1', 'ANGPT2', 'NOTCH3',
-                                                              'SFRP1', 'GPX3', 'C3', 'C7', 'CFH', 'CCL11',
-                                                              'CD55', 'PTX3', 'THBD', 'IFI16', 'JUN', 'JUNB',
-                                                              'JUND', 'FOS', 'FOSB', 'FOSL2', 'ATF3',
-                                                              'MAFB', 'MAFF', 'NEK2', 'ID1', 'ID3', 'BTG2',
-                                                              'GADD45A', 'HES1', 'BCL3', 'SOCS1', 'SOCS3',
-                                                              'IL6', 'IRF1', 'MAP3K8', 'GADD45B', 'GADD45G',
-                                                              'DUSP1', 'DUSP6', 'KLF4'],
+dp = sc.pl.DotPlot(adata_human_singleR_raw, var_names = ['Acta2', 'Myl9', 'Myh11', 'Tagln', 'Pdgfra',
+                                             'Mustn1', 'Angpt2', 'Notch3', 'Sfrp1', 'Gpx3',
+                                             'C3', 'C7', 'Cfh', 'Ccl11', 'Cd55', 'Ptx3',
+                                             'Thbd', 'Ifi204', 'Ifi205', 'Ifi207', 'Jun',
+                                             'Junb', 'Jund', 'Fos', 'Fosb', 'Fosl2', 'Atf3',
+                                             'Mafb', 'Maff', 'Nek2', 'Id1', 'Id3', 'Btg2',
+                                             'Gadd45a', 'Hes1', 'Bcl3', 'Socs1', 'Socs3',
+                                             'Il6', 'Irf1', 'Map3k8', 'Gadd45b', 'Gadd45g',
+                                             'Dusp1', 'Dusp6', 'Klf4'],
                                 categories_order = ['0','1','2','3','4','5','6','7'],
-                                groupby='cluster', cmap = 'Reds'
+                                groupby='labels', cmap = 'Reds'
                                 )
+
 dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/human_dotplot1.png')
 
 
-dp2 = sc.pl.DotPlot(adata_human_singleR,
-                                var_names = ['SFRP2', 'WNT5A', 'LGR5', 'APC', 'WNT4',
-                                             'WNT6', 'NOTUM', 'WIF1', 'NKD1', 'FZD1',
-                                             'WNT2', 'WNT10A', 'DKK2', 'RORB', 'CXXC4',
-                                             'NFAT5', 'APOE', 'DACT1', 'CTNNB1', 'LEF1',
-                                             'TCF4', 'MYC', 'MKI67', 'H2AFX', 'TOP2A',
-                                             'CCNB1', 'CCNB2', 'STMN1', 'PTN', 'MDK',
-                                             'TUBB3', 'MRC2', 'FN1', 'TNC', 'COL12A1',
-                                             'COL14A1', 'COL16A1', 'MMP19', 'CTHRC1',
-                                             'WISP1', 'FZD1', 'FZD2', 'SFRP4', 'BMP1',
-                                             'TLE3', 'TGFB1', 'TGFB1', 'POSTN'],
+dp2 = sc.pl.DotPlot(adata_human_singleR_raw,
+                                var_names = ['Sfrp2', 'Wnt5a', 'Lgr5', 'Apc',
+                                                          'Wnt4', 'Wnt6', 'Notum', 'Wif1',
+                                                          'Nkd1', 'Fzd1', 'Wnt2', 'Wnt10a',
+                                                          'Dkk2', 'Rorb', 'Cxxc4', 'Nfat5',
+                                                          'Apoe', 'Dact1', 'Ctnnb1', 'Lef1',
+                                                          'Tcf4', 'Myc', 'Mki67', 'H2afx',
+                                                          'Top2a', 'Ccnb1', 'Ccnb2', 'Stmn1',
+                                                          'Ptn', 'Mdk', 'Tubb3', 'Mrc2', 'Fn1',
+                                                          'Tnc', 'Col12a1', 'Col14a1', 'Col16a1',
+                                                          'Mmp19', 'Cthrc1', 'Wisp1', 'Fzd1', 'Fzd2',
+                                                          'Sfrp4', 'Bmp1', 'Tle3', 'Tgfb1', 'Tgfb1', 'Postn'],
                                 categories_order = ['0','1','2','3','4','5','6','7'],
-                                groupby='cluster', cmap = 'Reds'
+                                groupby='labels', cmap = 'Reds'
                                 )
 dp2.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/human_dotplot2.png')
 
 
-adata_human_raw = adata_human.raw.to_adata()
-adata_human_raw.X = sp.csr_matrix.todense(adata_human_raw.X)
-adata_human_raw.X = adata_human_raw.to_df()
-adata_human_raw.write('outs/forCellChat/adata_human_norm.h5ad')
-
 #sc.tl.rank_genes_groups(adata_human_singleR, 'cluster', method='t-test')
-markers_human_c0 = sc.get.rank_genes_groups_df(adata_human_singleR, group = '0')
-markers_human_c1 = sc.get.rank_genes_groups_df(adata_human_singleR, group = '1')
-markers_human_c2 = sc.get.rank_genes_groups_df(adata_human_singleR, group = '2')
-markers_human_c3 = sc.get.rank_genes_groups_df(adata_human_singleR, group = '3')
-markers_human_c4 = sc.get.rank_genes_groups_df(adata_human_singleR, group = '4')
-markers_human_c5 = sc.get.rank_genes_groups_df(adata_human_singleR, group = '5')
-markers_human_c6 = sc.get.rank_genes_groups_df(adata_human_singleR, group = '6')
-markers_human_c7 = sc.get.rank_genes_groups_df(adata_human_singleR, group = '7')
+markers_human_c0 = sc.get.rank_genes_groups_df(adata_human_singleR_raw, group = '0')
+markers_human_c1 = sc.get.rank_genes_groups_df(adata_human_singleR_raw, group = '1')
+markers_human_c2 = sc.get.rank_genes_groups_df(adata_human_singleR_raw, group = '2')
+markers_human_c3 = sc.get.rank_genes_groups_df(adata_human_singleR_raw, group = '3')
+markers_human_c4 = sc.get.rank_genes_groups_df(adata_human_singleR_raw, group = '4')
+markers_human_c5 = sc.get.rank_genes_groups_df(adata_human_singleR_raw, group = '5')
+markers_human_c6 = sc.get.rank_genes_groups_df(adata_human_singleR_raw, group = '6')
+markers_human_c7 = sc.get.rank_genes_groups_df(adata_human_singleR_raw, group = '7')
 
 #markers_human_c0.sort_values(by = ['logfoldchanges'], inplace=True, ascending = False)
 #markers_human_c1.sort_values(by = ['logfoldchanges'], inplace=True, ascending = False)

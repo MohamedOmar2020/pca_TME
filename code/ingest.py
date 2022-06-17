@@ -153,14 +153,30 @@ markers_mouse_c3 = sc.get.rank_genes_groups_df(adata_mouse, group = '3')
 sc.tl.rank_genes_groups(adata_human_new, 'cluster', pts=True, use_raw = False)
 sc.pl.rank_genes_groups(adata_human_new, n_genes=25, sharey=False, save = '_humanMarkers_notRaw.png')
 
+# Plot Ar mouse
 sc.pl.violin(adata_mouse, ['Ar'], groupby = 'cluster', save = '_AR_mouse.png')
-
 sc.pl.umap(adata_mouse, color='Ar', color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Ar_mouse_all.png')
 
+# plot Soat1 mouse
+sc.pl.violin(adata_mouse, ['Soat1'], groupby = 'cluster', save = '_Soat1_mouse.png')
+sc.pl.umap(adata_mouse, color='Soat1', color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Soat1_mouse_all.png')
 
+# plot Acat1 mouse
+sc.pl.violin(adata_mouse, ['Acat1'], groupby = 'cluster', save = '_Acat1_mouse.png')
+sc.pl.umap(adata_mouse, color='Acat1', color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Acat1_mouse_all.png')
+
+
+# plot AR human
 sc.pl.violin(adata_human_new, ['AR'], groupby = 'cluster', save = '_AR_human.png')
-
 sc.pl.umap(adata_human_new, color=['AR'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Ar_human_all.png')
+
+# plot SOAT1 human
+sc.pl.violin(adata_human_new, ['SOAT1'], groupby = 'cluster', save = '_SOAT1_human.png')
+sc.pl.umap(adata_human_new, color='SOAT1', color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_SOAT1_human_all.png')
+
+# plot ACAT1 human
+sc.pl.violin(adata_human_new, ['ACAT1'], groupby = 'cluster', save = '_ACAT1_human.png')
+sc.pl.umap(adata_human_new, color='ACAT1', color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_ACAT1_human_all.png')
 
 # violin for Periostin mouse
 sc.pl.violin(adata_mouse, ['Postn'], groupby = 'cluster', save = '_Postn_mouse.png')
@@ -393,15 +409,51 @@ sc.pl.umap(
         "Acta2",
         "Myl9",
         "Myh11",
-        #"TangI",
+        "Tagln",
         "Rgs5",
         "Mef2c",
         "Pdgfrb"
     ],
     cmap="RdBu_r",
     vmax=5,
-    save="_myo_markers.png",
+    save="_myo_markers.png"
 )
+
+## divide by c0.1 and c0.2
+# c0.1
+sc.pl.umap(
+    adata_mouse_myo[adata_mouse_myo.obs['cluster']=='c0.1'],
+    color=[
+        "Acta2",
+        "Myl9",
+        "Myh11",
+        "Tagln",
+        "Rgs5",
+        "Mef2c",
+        "Pdgfrb"
+    ],
+    cmap="RdBu_r",
+    vmax=5,
+    save="_myo_c0.1_markers.png"
+)
+
+# c0.2
+sc.pl.umap(
+    adata_mouse_myo[adata_mouse_myo.obs['cluster']=='c0.2'],
+    color=[
+        "Acta2",
+        "Myl9",
+        "Myh11",
+        "Tagln",
+        "Rgs5",
+        "Mef2c",
+        "Pdgfrb"
+    ],
+    cmap="RdBu_r",
+    vmax=5,
+    save="_myo_c0.2_markers.png"
+)
+##############################
 
 markers_human_c0['names'] = markers_human_c0['names'].str.title()
 markers_human_c1['names'] = markers_human_c1['names'].str.title()
@@ -453,4 +505,3 @@ markers_mouse_c5 = sc.get.rank_genes_groups_df(adata_mouse, group = '5')
 
 
 
-x = pd.merge(top100_mouse_c0, top100_human_c3, how='inner', on=['names'])

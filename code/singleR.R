@@ -194,16 +194,31 @@ human_pred_markers_df2 <- do.call('cbind', human_pred_markers)
 
 ################################
 ## markers human predictions
-pred_markers_all <- findMarkers(human_sce2, groups=human_sce2$labels, test.type = 't', pval.type = 'any')
-pred_markers_all[[3]]
+pred_markers_all <- findMarkers(human_sce2, groups=human_sce2$labels, test.type = 'binom', pval.type = 'any')
+markers_c3 <- pred_markers_all[[4]]
+markers_c3 <- as.data.frame(markers_c3)
+markers_c3['Wnt2', ]
 
-#by.t <- scran::pairwiseTTests(assay(human_sce2, 2), human_sce2$labels, direction="up")
-#pred_markers_all <- scran::getTopMarkers(by.t[[1]], by.t[[2]], n=10, pairwise = TRUE)
+by.t <- scran::pairwiseTTests(assay(human_sce2, 2), human_sce2$labels, direction="up")
+pred_markers_all <- scran::getTopMarkers(by.t[[1]], by.t[[2]], n=100, pairwise = TRUE)
+markers_c3 <- pred_markers_all[[4]]
+markers_c3 <- as.data.frame(markers_c3)
 
 
 png('./singleR/scoreHeatmaps_all.png', width = 2000, height = 2000, res = 200)
 plotScoreHeatmap(pred_human2)
 dev.off()
+
+
+pred_markers <- metadata(pred_human2)$de.genes
+pred_markers_c3 <- pred_markers$`3` 
+pred_markers_c3 <- unique(unlist(pred_markers_c3))
+human_sce2$labels <- pred_human2$labels
+
+# Beta cell-related markers
+library(scater)
+plotHeatmap(human_sce2, order_columns_by="labels",
+            features=c('Wnt2', 'Wnt6')) 
 
 
 ##############################

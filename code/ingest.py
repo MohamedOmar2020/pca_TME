@@ -135,73 +135,87 @@ tempAdata = adata_human_new.raw.to_adata()
 tempAdata.var_names = [gene.upper() for gene in tempAdata.var_names]
 adata_human_new.raw = tempAdata
 
-
+#######################
+## umap clusters
+# mouse
 sc.pl.umap(adata_mouse, color='cluster', save= '_mouse.png')
 
-
+# human
 sc.pl.umap(adata_human_new, color='cluster', save = '_human.png')
 
+##########################
+# Acta2 umap
 sc.pl.umap(adata_mouse, color=['cluster', 'Acta2'], save = '_mouse_ACTA2.png')
 
 sc.pl.umap(adata_human_new, color=['cluster', 'ACTA2'], save = '_human_ACTA2.png')
 
+##########################
+## cluster markers
+
+# mouse
 sc.tl.rank_genes_groups(adata_mouse, 'cluster', pts=True, use_raw = False)
 sc.pl.rank_genes_groups(adata_mouse, n_genes = 25, sharey=False, save = '_mouseMarkers_notRaw.png')
 markers_mouse_c3 = sc.get.rank_genes_groups_df(adata_mouse, group = '3')
 
-
+# human
 sc.tl.rank_genes_groups(adata_human_new, 'cluster', pts=True, use_raw = False)
 sc.pl.rank_genes_groups(adata_human_new, n_genes=25, sharey=False, save = '_humanMarkers_notRaw.png')
 
+###########################
 # Plot Ar mouse
 sc.pl.violin(adata_mouse, ['Ar'], groupby = 'cluster', save = '_AR_mouse.png')
 sc.pl.umap(adata_mouse, color='Ar', color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Ar_mouse_all.png')
-
+############################
 # plot Soat1 mouse
 sc.pl.violin(adata_mouse, ['Soat1'], groupby = 'cluster', save = '_Soat1_mouse.png')
 sc.pl.umap(adata_mouse, color='Soat1', color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Soat1_mouse_all.png')
-
+############################
 # plot Acat1 mouse
 sc.pl.violin(adata_mouse, ['Acat1'], groupby = 'cluster', save = '_Acat1_mouse.png')
 sc.pl.umap(adata_mouse, color='Acat1', color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Acat1_mouse_all.png')
-
-
+############################
 # plot AR human
 sc.pl.violin(adata_human_new, ['AR'], groupby = 'cluster', save = '_AR_human.png')
 sc.pl.umap(adata_human_new, color=['AR'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Ar_human_all.png')
-
+#############################
 # plot SOAT1 human
 sc.pl.violin(adata_human_new, ['SOAT1'], groupby = 'cluster', save = '_SOAT1_human.png')
 sc.pl.umap(adata_human_new, color='SOAT1', color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_SOAT1_human_all.png')
-
+##############################
 # plot ACAT1 human
 sc.pl.violin(adata_human_new, ['ACAT1'], groupby = 'cluster', save = '_ACAT1_human.png')
 sc.pl.umap(adata_human_new, color='ACAT1', color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_ACAT1_human_all.png')
-
+###############################
 # violin for Periostin mouse
 sc.pl.violin(adata_mouse, ['Postn'], groupby = 'cluster', save = '_Postn_mouse.png')
-
 # umap for Periostin mouse
 sc.pl.umap(adata_mouse, color= 'Postn', color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_mouse_all.png')
+###############################
 
 # dotplot for periostin per different mouse models
 dp = sc.pl.DotPlot(adata_mouse, var_names = 'Postn', groupby = 'key', cmap = 'Reds')
 dp.legend(width=2.5).savefig('figures/dotplot_Postn_mouse.png')
 
+################
 # dotplot for Ar per different mouse models
 dp = sc.pl.DotPlot(adata_mouse, var_names = 'Ar', groupby = 'key', cmap = 'Reds')
 dp.legend(width=2.5).savefig('figures/dotplot_Ar_mouse.png')
 
+###############################
 # violin for Periostin human
 sc.pl.violin(adata_human_new, ['POSTN'], groupby = 'cluster', save = '_Postn_human.png')
 
 # umap for Periostin human
 sc.pl.umap(adata_human_new, color='POSTN', color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_human_all.png')
 
+###############################
+# c0 markers
 sc.pl.rank_genes_groups_dotplot(adata_mouse, var_names = ['Acta2', 'Myl9', 'Myh11', 'Tagln', 'Pdgfra', 'Mustn1', 'Angpt2', 'Notch3'], save = '_c0_mouse.png')
 
 sc.pl.rank_genes_groups_dotplot(adata_human_new, var_names = ['ACTA2', 'MYL9', 'MYH11', 'TAGLN', 'PDGFRA', 'MUSTN1', 'ANGPT2', 'NOTCH3'], save = '_c0_human.png')
 
+###############################
+# mouse
 dp = sc.pl.DotPlot(adata_mouse, var_names = ['Acta2', 'Myl9', 'Myh11', 'Tagln', 'Pdgfra',
                                              'Mustn1', 'Angpt2', 'Notch3', 'Sfrp1', 'Gpx3',
                                              'C3', 'C7', 'Cfh', 'Ccl11', 'Cd55', 'Ptx3',
@@ -214,8 +228,8 @@ dp = sc.pl.DotPlot(adata_mouse, var_names = ['Acta2', 'Myl9', 'Myh11', 'Tagln', 
                    groupby='cluster', categories_order = ['0','1','2','3','4','5','6','7'], cmap = 'Reds'
                    )
 dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/mouse_dotplot1.png')
-
-
+################################
+# human
 dp2 = sc.pl.DotPlot(adata_mouse, var_names = ['Sfrp2', 'Wnt5a', 'Lgr5', 'Apc',
                                                           'Wnt4', 'Wnt6', 'Notum', 'Wif1',
                                                           'Nkd1', 'Fzd1', 'Wnt2', 'Wnt10a',
@@ -233,7 +247,7 @@ dp2 = sc.pl.DotPlot(adata_mouse, var_names = ['Sfrp2', 'Wnt5a', 'Lgr5', 'Apc',
 
 dp2.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/mouse_dotplot2.png')
 
-
+###############################
 dp = sc.pl.DotPlot(adata_human_new, var_names = ['ACTA2', 'MYL9', 'MYH11', 'TAGLN',
                                                               'PDGFRA', 'MUSTN1', 'ANGPT2', 'NOTCH3',
                                                               'SFRP1', 'GPX3', 'C3', 'C7', 'CFH', 'CCL11',
@@ -248,7 +262,7 @@ dp = sc.pl.DotPlot(adata_human_new, var_names = ['ACTA2', 'MYL9', 'MYH11', 'TAGL
                                 )
 dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/human_dotplot1.png')
 
-
+###############################
 dp2 = sc.pl.DotPlot(adata_human_new,
                                 var_names = ['SFRP2', 'WNT5A', 'LGR5', 'APC', 'WNT4',
                                              'WNT6', 'NOTUM', 'WIF1', 'NKD1', 'FZD1',
@@ -265,7 +279,67 @@ dp2 = sc.pl.DotPlot(adata_human_new,
                                 )
 dp2.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/human_dotplot2.png')
 
+#################################################################
+## which cells in mouse c5,6,7 co-express Postn plus Mki67, and Ar?
 
+# subset to c5 c6 and c7
+adata_mouse_c5c6c7 = adata_mouse[adata_mouse.obs['cluster'].isin(['5','6','7'])]
+adata_mouse_c5c6c7.obs['cluster'].value_counts()
+
+# plot Postn
+sc.pl.violin(adata_mouse_c5c6c7, ['Postn'], groupby = 'cluster')
+
+## plot Mki67
+# all clusters
+sc.pl.violin(adata_mouse, ['Mki67'], groupby = 'cluster', save='_Mki67_mouse.png')
+sc.pl.umap(adata_mouse, color=['Postn', 'Mki67'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_Mki67_mouse.png')
+
+# just c5, c6, and c7
+sc.pl.violin(adata_mouse_c5c6c7, ['Mki67'], groupby = 'cluster', save='_Postn+Mki67+.png')
+sc.pl.umap(adata_mouse_c5c6c7, color=['Postn', 'Mki67'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_Mki67_mouse_c5c6c7.png')
+
+##########
+## get cells that are Mki67+
+countMat_c5c6c7 = pd.concat([adata_mouse_c5c6c7.to_df(), adata_mouse_c5c6c7.obs], axis=1)
+
+mki67_cond = (countMat_c5c6c7.Mki67 >= countMat_c5c6c7['Mki67'].quantile(0.9))
+
+adata_mouse_c5c6c7.obs['Mki67_status'] = 'negative'
+adata_mouse_c5c6c7.obs.loc[mki67_cond, 'Mki67_status'] = 'positive'
+adata_mouse_c5c6c7.obs['Mki67_status'].value_counts()
+
+############
+## do the same for all adata
+countMat_all = pd.concat([adata_mouse.to_df(), adata_mouse.obs], axis=1)
+
+mki67_cond_all = (countMat_all.Mki67 >= countMat_all['Mki67'].quantile(0.9))
+
+adata_mouse.obs['Mki67_status'] = 'negative'
+adata_mouse.obs.loc[mki67_cond_all, 'Mki67_status'] = 'positive'
+adata_mouse.obs['Mki67_status'].value_counts()
+
+###########
+## plot cells by Mki67 status
+
+# only in c5 c6 and c7
+sc.pl.umap(adata_mouse_c5c6c7, color=['Mki67', 'Mki67_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_c5c6c7_Mki67Expression_Mki67status.png')
+
+# all clusters
+sc.pl.umap(adata_mouse, color=['Mki67', 'Mki67_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_mouseAll_Mki67Expression_Mki67status.png')
+
+####################################################################
+# umaps for Notch1, Notch2, Notch3, Hes1Tubb3, Soat1, Acat1 and Lef1
+sc.pl.umap(adata_mouse, color=['Notch1', 'Notch2', 'Notch3', 'Hes1', 'Tubb3', 'Soat1', 'Acat1', 'Lef1'], color_map = 'RdBu_r', vmin='p1', vmax='p99', ncols=3, save = '_Notch_Hes1_Tubb3_Soat1_Acat1_Lef1_mouse.png')
+
+# dotplot
+dp = sc.pl.DotPlot(adata_mouse,
+                                var_names = ['Notch1', 'Notch2', 'Notch3', 'Hes1', 'Tubb3', 'Soat1', 'Acat1', 'Lef1'],
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.savefig('figures/DotPlot_Notch_Hes1_Tubb3_Soat1_Acat1_Lef1_mouse.png')
+
+####################################################################
 adata_human_raw = adata_human.raw.to_adata()
 adata_human_raw.X = sp.csr_matrix.todense(adata_human_raw.X)
 adata_human_raw.X = adata_human_raw.to_df()

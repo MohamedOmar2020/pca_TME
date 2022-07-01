@@ -15,6 +15,7 @@ import pandas as pd
 import scanpy as sc
 import seaborn as sns
 import anndata as ad
+import sc_toolbox as sct
 
 sc.settings.figdir = 'figures'
 sc.set_figure_params(dpi_save = 300)
@@ -308,6 +309,9 @@ adata_mouse_c5c6c7.obs['Mki67_status'] = 'negative'
 adata_mouse_c5c6c7.obs.loc[mki67_cond, 'Mki67_status'] = 'positive'
 adata_mouse_c5c6c7.obs['Mki67_status'].value_counts()
 
+## N of Mki67+ cells in Postn+ clusters
+pd.crosstab(adata_mouse_c5c6c7.obs['cluster'], adata_mouse_c5c6c7.obs['Mki67_status'])
+
 ############
 ## do the same for all adata
 countMat_all = pd.concat([adata_mouse.to_df(), adata_mouse.obs], axis=1)
@@ -318,6 +322,9 @@ adata_mouse.obs['Mki67_status'] = 'negative'
 adata_mouse.obs.loc[mki67_cond_all, 'Mki67_status'] = 'positive'
 adata_mouse.obs['Mki67_status'].value_counts()
 
+## N of Mki67+ cells in all clusters
+pd.crosstab(adata_mouse.obs['cluster'], adata_mouse.obs['Mki67_status'])
+
 ###########
 ## plot cells by Mki67 status
 
@@ -327,25 +334,155 @@ sc.pl.umap(adata_mouse_c5c6c7, color=['Mki67', 'Mki67_status'], color_map = 'RdB
 # all clusters
 sc.pl.umap(adata_mouse, color=['Mki67', 'Mki67_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_mouseAll_Mki67Expression_Mki67status.png')
 
+Mki67_relativeFrequency_all = sct.tools.relative_frequency_per_cluster(adata_mouse, group_by='cluster', xlabel='Mki67_status', condition=None)
+Mki67_relativeFrequency_all['cluster'] = 'c'+Mki67_relativeFrequency_all['cluster']
+sct.plot.cluster_composition_stacked_barplot(Mki67_relativeFrequency_all, xlabel='cluster', figsize=(8, 10), width=0.8, label_size=20, tick_size=16, margins=(0.02, 0.04), colors=adata_mouse.uns['Mki67_status_colors'], save = 'figures/Mki67_status.png')
+
+#################################################################
+## which cells in mouse co-express Postn plus Lgr5
+
+# subset to c5 c6 and c7
+adata_mouse_c5c6c7 = adata_mouse[adata_mouse.obs['cluster'].isin(['5','6','7'])]
+adata_mouse_c5c6c7.obs['cluster'].value_counts()
+
+# plot Postn
+sc.pl.violin(adata_mouse_c5c6c7, ['Postn'], groupby = 'cluster')
+
+## plot Mki67
+# all clusters
+sc.pl.violin(adata_mouse, ['Mki67'], groupby = 'cluster', save='_Lgr5_mouse.png')
+sc.pl.umap(adata_mouse, color=['Postn', 'Lgr5'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_Lgr5_mouse.png')
+
+# just c5, c6, and c7
+sc.pl.violin(adata_mouse_c5c6c7, ['Lgr5'], groupby = 'cluster', save='_Postn+Lgr5+.png')
+sc.pl.umap(adata_mouse_c5c6c7, color=['Postn', 'Lgr5'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_Lgr5_mouse_c5c6c7.png')
+
+##########
+## get cells that are Lgr5+
+countMat_c5c6c7 = pd.concat([adata_mouse_c5c6c7.to_df(), adata_mouse_c5c6c7.obs], axis=1)
+
+Lgr5_cond = (countMat_c5c6c7.Lgr5 >= countMat_c5c6c7['Lgr5'].quantile(0.9))
+
+adata_mouse_c5c6c7.obs['Lgr5_status'] = 'negative'
+adata_mouse_c5c6c7.obs.loc[Lgr5_cond, 'Lgr5_status'] = 'positive'
+adata_mouse_c5c6c7.obs['Lgr5_status'].value_counts()
+
+## N of Mki67+ cells in Postn+ clusters
+pd.crosstab(adata_mouse_c5c6c7.obs['cluster'], adata_mouse_c5c6c7.obs['Lgr5_status'])
+
+############
+## do the same for all adata
+countMat_all = pd.concat([adata_mouse.to_df(), adata_mouse.obs], axis=1)
+
+Lgr5_cond_all = (countMat_all.Lgr5 >= countMat_all['Lgr5'].quantile(0.9))
+
+adata_mouse.obs['Lgr5_status'] = 'negative'
+adata_mouse.obs.loc[Lgr5_cond_all, 'Lgr5_status'] = 'positive'
+adata_mouse.obs['Lgr5_status'].value_counts()
+
+## N of Mki67+ cells in all clusters
+pd.crosstab(adata_mouse.obs['cluster'], adata_mouse.obs['Lgr5_status'])
+
+############################
+## plot cells by Lgr5 status
+
+# only in c5 c6 and c7
+sc.pl.umap(adata_mouse_c5c6c7, color=['Lgr5', 'Lgr5_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_c5c6c7_Lgr5Expression_Lgr5status.png')
+
+# all clusters
+sc.pl.umap(adata_mouse, color=['Lgr5', 'Lgr5_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_mouseAll_Lgr5Expression_Lgr5status.png')
+
+Lgr5_relativeFrequency_all = sct.tools.relative_frequency_per_cluster(adata_mouse, group_by='cluster', xlabel='Lgr5_status', condition=None)
+Lgr5_relativeFrequency_all['cluster'] = 'c'+Lgr5_relativeFrequency_all['cluster']
+sct.plot.cluster_composition_stacked_barplot(Lgr5_relativeFrequency_all, xlabel='cluster', figsize=(8, 10), width=0.8, label_size=20, tick_size=16, margins=(0.02, 0.04), colors=adata_mouse.uns['Lgr5_status_colors'], save = 'figures/Lgr5_status.png')
+
+##################################################################
+## Postn+ cells that express Lef1
+
+## plot Lef1
+# all clusters
+sc.pl.violin(adata_mouse, ['Lef1'], groupby = 'cluster', save='_Lef1_mouse.png')
+sc.pl.umap(adata_mouse, color=['Postn', 'Lef1'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_Lef1_mouse.png')
+
+# just c5, c6, and c7
+sc.pl.violin(adata_mouse_c5c6c7, ['Lef1'], groupby = 'cluster', save='_Postn+Lef1+.png')
+sc.pl.umap(adata_mouse_c5c6c7, color=['Postn', 'Lef1'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_Lef1_mouse_c5c6c7.png')
+
+##########
+## get cells that are Lef1+
+# Lef1 is not present in the normalized count matrix, present only in the raw one
+# We get the raw then normalize it to match that done in Mki67
+adata_mouse_c5c6c7_raw = adata_mouse_c5c6c7.raw.to_adata()
+#sc.pp.log1p(adata_mouse_c5c6c7_raw)
+#sc.pp.scale(adata_mouse_c5c6c7_raw, max_value=10)
+countMat_c5c6c7['Lef1'].mean()
+sc.pl.violin(adata_mouse_c5c6c7_raw, ['Lef1'], groupby = 'cluster')
+
+countMat_c5c6c7 = pd.concat([adata_mouse_c5c6c7_raw.to_df(), adata_mouse_c5c6c7_raw.obs], axis=1)
+
+Lef1_cond = (countMat_c5c6c7.Lef1 >= countMat_c5c6c7['Lef1'].quantile(0.962))
+
+adata_mouse_c5c6c7.obs['Lef1_status'] = 'negative'
+adata_mouse_c5c6c7.obs.loc[Lef1_cond, 'Lef1_status'] = 'positive'
+adata_mouse_c5c6c7.obs['Lef1_status'].value_counts()
+
+## N of Lef1+ cells in Postn+ clusters
+pd.crosstab(adata_mouse_c5c6c7.obs['cluster'], adata_mouse.obs['Lef1_status'])
+
+############
+## do the same for all adata
+adata_mouse_raw = adata_mouse.raw.to_adata()
+countMat_all = pd.concat([adata_mouse_raw.to_df(), adata_mouse_raw.obs], axis=1)
+
+Lef1_cond_all = (countMat_all.Lef1 >= countMat_all['Lef1'].quantile(0.962))
+
+adata_mouse.obs['Lef1_status'] = 'negative'
+adata_mouse.obs.loc[Lef1_cond_all, 'Lef1_status'] = 'positive'
+adata_mouse.obs['Lef1_status'].value_counts()
+
+###########
+## plot cells by Lef1 status
+
+# only in c5 c6 and c7
+sc.pl.umap(adata_mouse_c5c6c7, color=['Lef1', 'Lef1_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_c5c6c7_Lef1Expression_Lef1status.png')
+
+# all clusters
+sc.pl.umap(adata_mouse, color=['Lef1', 'Lef1_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_mouseAll_Lef1Expression_Lef1status.png')
+
+## N of Lef1+ cells in all clusters
+pd.crosstab(adata_mouse.obs['cluster'], adata_mouse.obs['Lef1_status'])
+
 ####################################################################
 # umaps for Notch1, Notch2, Notch3, Hes1Tubb3, Soat1, Acat1 and Lef1
 sc.pl.umap(adata_mouse, color=['Notch1', 'Notch2', 'Notch3', 'Hes1', 'Tubb3', 'Soat1', 'Acat1', 'Lef1'], color_map = 'RdBu_r', vmin='p1', vmax='p99', ncols=3, save = '_Notch_Hes1_Tubb3_Soat1_Acat1_Lef1_mouse.png')
 
 # dotplot
 dp = sc.pl.DotPlot(adata_mouse,
-                                var_names = ['Notch1', 'Notch2', 'Notch3', 'Hes1', 'Tubb3', 'Soat1', 'Acat1', 'Lef1'],
-                                categories_order = ['0','1','2','3','4','5','6','7'],
-                                groupby='cluster', cmap = 'Reds'
-                                )
+                             var_names = ['Notch1', 'Notch2', 'Notch3', 'Hes1', 'Tubb3', 'Soat1', 'Acat1', 'Lef1'],
+                             categories_order = ['0','1','2','3','4','5','6','7'],
+                             groupby='cluster', cmap = 'Reds'
+                            )
 dp.savefig('figures/DotPlot_Notch_Hes1_Tubb3_Soat1_Acat1_Lef1_mouse.png')
 
 ####################################################################
-adata_human_raw = adata_human.raw.to_adata()
-adata_human_raw.X = sp.csr_matrix.todense(adata_human_raw.X)
-adata_human_raw.X = adata_human_raw.to_df()
-adata_human_raw.write('outs/forCellChat/adata_human_norm.h5ad')
+## get cluster markers
 
-#sc.tl.rank_genes_groups(adata_human_new, 'cluster', method='t-test')
+# mouse
+sc.tl.rank_genes_groups(adata_mouse, 'cluster', pts=True, use_raw = False)
+
+markers_mouse_c0 = sc.get.rank_genes_groups_df(adata_mouse, group = '0')
+markers_mouse_c1 = sc.get.rank_genes_groups_df(adata_mouse, group = '1')
+markers_mouse_c2 = sc.get.rank_genes_groups_df(adata_mouse, group = '2')
+markers_mouse_c3 = sc.get.rank_genes_groups_df(adata_mouse, group = '3')
+markers_mouse_c4 = sc.get.rank_genes_groups_df(adata_mouse, group = '4')
+markers_mouse_c5 = sc.get.rank_genes_groups_df(adata_mouse, group = '5')
+markers_mouse_c6 = sc.get.rank_genes_groups_df(adata_mouse, group = '6')
+markers_mouse_c7 = sc.get.rank_genes_groups_df(adata_mouse, group = '7')
+
+########
+# human
+sc.tl.rank_genes_groups(adata_human_new, 'cluster', pts=True, use_raw = False)
+
 markers_human_c0 = sc.get.rank_genes_groups_df(adata_human_new, group = '0')
 markers_human_c1 = sc.get.rank_genes_groups_df(adata_human_new, group = '1')
 markers_human_c2 = sc.get.rank_genes_groups_df(adata_human_new, group = '2')
@@ -355,6 +492,253 @@ markers_human_c5 = sc.get.rank_genes_groups_df(adata_human_new, group = '5')
 markers_human_c6 = sc.get.rank_genes_groups_df(adata_human_new, group = '6')
 markers_human_c7 = sc.get.rank_genes_groups_df(adata_human_new, group = '7')
 
+# fix gene symbols
+markers_human_c0['names'] = markers_human_c0['names'].str.title()
+markers_human_c1['names'] = markers_human_c1['names'].str.title()
+markers_human_c2['names'] = markers_human_c2['names'].str.title()
+markers_human_c3['names'] = markers_human_c3['names'].str.title()
+markers_human_c4['names'] = markers_human_c4['names'].str.title()
+markers_human_c5['names'] = markers_human_c5['names'].str.title()
+markers_human_c6['names'] = markers_human_c6['names'].str.title()
+markers_human_c7['names'] = markers_human_c7['names'].str.title()
+
+####################
+## get the top markers
+
+# mouse
+top100_mouse_c0 = markers_mouse_c0[0:100]
+top100_mouse_c1 = markers_mouse_c1[0:100]
+top100_mouse_c2 = markers_mouse_c2[0:100]
+top100_mouse_c3 = markers_mouse_c3[0:100]
+top100_mouse_c4 = markers_mouse_c4[0:100]
+top100_mouse_c5 = markers_mouse_c5[0:100]
+top100_mouse_c6 = markers_mouse_c6[0:100]
+top100_mouse_c7 = markers_mouse_c7[0:100]
+
+# human
+top100_human_c0 = markers_human_c0[0:100]
+top100_human_c1 = markers_human_c1[0:100]
+top100_human_c2 = markers_human_c2[0:100]
+top100_human_c3 = markers_human_c3[0:100]
+top100_human_c4 = markers_human_c4[0:100]
+top100_human_c5 = markers_human_c5[0:100]
+top100_human_c6 = markers_human_c6[0:100]
+top100_human_c7 = markers_human_c7[0:100]
+
+#######################
+## get the genes in common
+intersection_c0 = pd.merge(top100_mouse_c0, top100_human_c0, how='inner', on=['names'])
+intersection_c1 = pd.merge(top100_mouse_c1, top100_human_c1, how='inner', on=['names'])
+intersection_c2 = pd.merge(top100_mouse_c2, top100_human_c2, how='inner', on=['names'])
+intersection_c3 = pd.merge(top100_mouse_c3, top100_human_c3, how='inner', on=['names'])
+intersection_c4 = pd.merge(top100_mouse_c4, top100_human_c4, how='inner', on=['names'])
+intersection_c5 = pd.merge(top100_mouse_c5, top100_human_c5, how='inner', on=['names'])
+intersection_c6 = pd.merge(top100_mouse_c6, top100_human_c6, how='inner', on=['names'])
+intersection_c7 = pd.merge(top100_mouse_c7, top100_human_c7, how='inner', on=['names'])
+
+##########################
+## Plot the genes in common
+
+# dotplot 1 (c0,c1,c2): common markers only
+c0c1c2_common = [intersection_c0['names'][1:20], intersection_c1['names'][1:20], intersection_c2['names'][1:20]]
+c0c1c2_common = [x for xs in c0c1c2_common for x in xs]
+
+# mouse
+dp = sc.pl.DotPlot(adata_mouse,
+                                var_names = c0c1c2_common,
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/mouse_dotplot_c0c1c2_CommonOnly.png')
+
+#####
+# human
+dp = sc.pl.DotPlot(adata_human_new,
+                                var_names = [gene.upper() for gene in c0c1c2_common],
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/human_dotplot_c0c1c2_CommonOnly.png')
+
+####################
+# dotplot 1 (c3,c4, c5, c6, c7): common markers only
+c3c4c5c6c7_common = [intersection_c3['names'][1:20], intersection_c4['names'][1:20], intersection_c5['names'][1:20], intersection_c6['names'][1:20], intersection_c7['names'][1:20]]
+c3c4c5c6c7_common = [x for xs in c3c4c5c6c7_common for x in xs]
+
+# mouse
+dp = sc.pl.DotPlot(adata_mouse,
+                                var_names = c3c4c5c6c7_common,
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/mouse_dotplot_c3c4c5c6c7_CommonOnly.png')
+
+######
+# human
+dp = sc.pl.DotPlot(adata_human_new,
+                                var_names = [gene.upper() for gene in c3c4c5c6c7_common],
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/human_dotplot_c3c4c5c6c7_CommonOnly.png')
+
+##############################################################################
+## Plot the genes in common: individual clusters
+
+# dotplot c0: common markers only
+# mouse
+dp = sc.pl.DotPlot(adata_mouse,
+                                var_names = intersection_c0['names'],
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/mouse_dotplot_c0_CommonOnly.png')
+
+#####
+# human
+dp = sc.pl.DotPlot(adata_human_new,
+                                var_names = [gene.upper() for gene in intersection_c0['names']],
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/human_dotplot_c0_CommonOnly.png')
+
+####################
+
+# dotplot c1: common markers only
+# mouse
+dp = sc.pl.DotPlot(adata_mouse,
+                                var_names = intersection_c1['names'],
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/mouse_dotplot_c1_CommonOnly.png')
+
+#####
+# human
+dp = sc.pl.DotPlot(adata_human_new,
+                                var_names = [gene.upper() for gene in intersection_c1['names']],
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/human_dotplot_c1_CommonOnly.png')
+
+####################
+
+# dotplot c2: common markers only
+# mouse
+dp = sc.pl.DotPlot(adata_mouse,
+                                var_names = intersection_c2['names'],
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/mouse_dotplot_c2_CommonOnly.png')
+
+#####
+# human
+dp = sc.pl.DotPlot(adata_human_new,
+                                var_names = [gene.upper() for gene in intersection_c2['names']],
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/human_dotplot_c2_CommonOnly.png')
+
+########################
+# dotplot c3: common markers only
+# mouse
+dp = sc.pl.DotPlot(adata_mouse,
+                                var_names = intersection_c3['names'],
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/mouse_dotplot_c3_CommonOnly.png')
+
+#####
+# human
+dp = sc.pl.DotPlot(adata_human_new,
+                                var_names = [gene.upper() for gene in intersection_c3['names']],
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/human_dotplot_c3_CommonOnly.png')
+
+########################
+# dotplot c4: common markers only
+# mouse
+dp = sc.pl.DotPlot(adata_mouse,
+                                var_names = intersection_c4['names'],
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/mouse_dotplot_c4_CommonOnly.png')
+
+#####
+# human
+dp = sc.pl.DotPlot(adata_human_new,
+                                var_names = [gene.upper() for gene in intersection_c4['names']],
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/human_dotplot_c4_CommonOnly.png')
+
+########################
+# dotplot c5: common markers only
+# mouse
+dp = sc.pl.DotPlot(adata_mouse,
+                                var_names = intersection_c5['names'],
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/mouse_dotplot_c5_CommonOnly.png')
+
+#####
+# human
+dp = sc.pl.DotPlot(adata_human_new,
+                                var_names = [gene.upper() for gene in intersection_c5['names']],
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/human_dotplot_c5_CommonOnly.png')
+
+########################
+# dotplot c6: common markers only
+# mouse
+dp = sc.pl.DotPlot(adata_mouse,
+                                var_names = intersection_c6['names'],
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/mouse_dotplot_c6_CommonOnly.png')
+
+#####
+# human
+dp = sc.pl.DotPlot(adata_human_new,
+                                var_names = [gene.upper() for gene in intersection_c6['names']],
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/human_dotplot_c6_CommonOnly.png')
+
+########################
+# dotplot c7: common markers only
+# mouse
+dp = sc.pl.DotPlot(adata_mouse,
+                                var_names = intersection_c7['names'],
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/mouse_dotplot_c7_CommonOnly.png')
+
+#####
+# human
+dp = sc.pl.DotPlot(adata_human_new,
+                                var_names = [gene.upper() for gene in intersection_c7['names']],
+                                categories_order = ['0','1','2','3','4','5','6','7'],
+                                groupby='cluster', cmap = 'Reds'
+                                )
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/human_dotplot_c7_CommonOnly.png')
+
+###################################
 #markers_human_c0.sort_values(by = ['logfoldchanges'], inplace=True, ascending = False)
 #markers_human_c1.sort_values(by = ['logfoldchanges'], inplace=True, ascending = False)
 #markers_human_c2.sort_values(by = ['logfoldchanges'], inplace=True, ascending = False)
@@ -529,23 +913,9 @@ sc.pl.umap(
 )
 ##############################
 
-markers_human_c0['names'] = markers_human_c0['names'].str.title()
-markers_human_c1['names'] = markers_human_c1['names'].str.title()
-markers_human_c2['names'] = markers_human_c2['names'].str.title()
-markers_human_c3['names'] = markers_human_c3['names'].str.title()
-markers_human_c4['names'] = markers_human_c4['names'].str.title()
-markers_human_c5['names'] = markers_human_c5['names'].str.title()
-markers_human_c6['names'] = markers_human_c6['names'].str.title()
-markers_human_c7['names'] = markers_human_c7['names'].str.title()
 
-markers_mouse_c0 = sc.get.rank_genes_groups_df(adata_mouse, group = '0')
-markers_mouse_c1 = sc.get.rank_genes_groups_df(adata_mouse, group = '1')
-markers_mouse_c2 = sc.get.rank_genes_groups_df(adata_mouse, group = '2')
-markers_mouse_c3 = sc.get.rank_genes_groups_df(adata_mouse, group = '3')
-markers_mouse_c4 = sc.get.rank_genes_groups_df(adata_mouse, group = '4')
-markers_mouse_c5 = sc.get.rank_genes_groups_df(adata_mouse, group = '5')
-markers_mouse_c6 = sc.get.rank_genes_groups_df(adata_mouse, group = '6')
-markers_mouse_c7 = sc.get.rank_genes_groups_df(adata_mouse, group = '7')
+
+
 
 
 top100_mouse_c0 = markers_mouse_c0[0:100]

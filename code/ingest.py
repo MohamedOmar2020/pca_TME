@@ -283,7 +283,7 @@ dp2.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures
 #################################################################
 ## which cells in mouse c5,6,7 co-express Postn plus Mki67, and Ar?
 
-# subset to c5 c6 and c7
+# subset to c5, c6, and c7
 adata_mouse_c5c6c7 = adata_mouse[adata_mouse.obs['cluster'].isin(['5','6','7'])]
 adata_mouse_c5c6c7.obs['cluster'].value_counts()
 
@@ -350,7 +350,7 @@ sc.pl.violin(adata_mouse_c5c6c7, ['Postn'], groupby = 'cluster')
 
 ## plot Mki67
 # all clusters
-sc.pl.violin(adata_mouse, ['Mki67'], groupby = 'cluster', save='_Lgr5_mouse.png')
+sc.pl.violin(adata_mouse, ['Lgr5'], groupby = 'cluster', save='_Lgr5_mouse.png')
 sc.pl.umap(adata_mouse, color=['Postn', 'Lgr5'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_Lgr5_mouse.png')
 
 # just c5, c6, and c7
@@ -594,7 +594,7 @@ dp = sc.pl.DotPlot(adata_mouse,
                                 )
 dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/mouse_dotplot_c0_CommonOnly.png')
 
-#####
+#######
 # human
 dp = sc.pl.DotPlot(adata_human_new,
                                 var_names = [gene.upper() for gene in intersection_c0['names']],
@@ -603,7 +603,7 @@ dp = sc.pl.DotPlot(adata_human_new,
                                 )
 dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/human_dotplot_c0_CommonOnly.png')
 
-####################
+###########################
 
 # dotplot c1: common markers only
 # mouse
@@ -739,15 +739,128 @@ dp = sc.pl.DotPlot(adata_human_new,
 dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/human_dotplot_c7_CommonOnly.png')
 
 ###################################
-#markers_human_c0.sort_values(by = ['logfoldchanges'], inplace=True, ascending = False)
-#markers_human_c1.sort_values(by = ['logfoldchanges'], inplace=True, ascending = False)
-#markers_human_c2.sort_values(by = ['logfoldchanges'], inplace=True, ascending = False)
-#markers_human_c3.sort_values(by = ['logfoldchanges'], inplace=True, ascending = False)
-#markers_human_c4.sort_values(by = ['logfoldchanges'], inplace=True, ascending = False)
-#markers_human_c5.sort_values(by = ['logfoldchanges'], inplace=True, ascending = False)
-#markers_human_c6.sort_values(by = ['logfoldchanges'], inplace=True, ascending = False)
-#markers_human_c7.sort_values(by = ['logfoldchanges'], inplace=True, ascending = False)
 
+#################################################################
+## which cells in human c5,6,7 co-express Postn plus Mki67, and Ar?
+
+# subset to c5, c6, and c7
+adata_human_new_c5c6c7 = adata_human_new[adata_human_new.obs['cluster'].isin(['5','6','7'])]
+adata_human_new_c5c6c7.obs['cluster'].value_counts()
+
+# plot Postn
+sc.pl.violin(adata_human_new_c5c6c7, ['POSTN'], groupby = 'cluster')
+
+## plot Mki67
+# all clusters
+sc.pl.violin(adata_human_new, ['MKI67'], groupby = 'cluster', save='_Mki67_human.png')
+sc.pl.umap(adata_human_new, color=['POSTN', 'MKI67'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_Mki67_human.png')
+
+# just c5, c6, and c7
+sc.pl.violin(adata_human_new_c5c6c7, ['MKI67'], groupby = 'cluster', save='_human_Postn+Mki67+.png')
+sc.pl.umap(adata_human_new_c5c6c7, color=['POSTN', 'MKI67'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_Mki67_human_c5c6c7.png')
+
+##########
+## get cells that are Mki67+
+countMat_c5c6c7_human = pd.concat([adata_human_new_c5c6c7.to_df(), adata_human_new_c5c6c7.obs], axis=1)
+
+mki67_cond_human = (countMat_c5c6c7_human.MKI67 >= countMat_c5c6c7_human['MKI67'].quantile(0.9))
+
+adata_human_new_c5c6c7.obs['MKI67_status'] = 'negative'
+adata_human_new_c5c6c7.obs.loc[mki67_cond_human, 'MKI67_status'] = 'positive'
+adata_human_new_c5c6c7.obs['MKI67_status'].value_counts()
+
+## N of Mki67+ cells in Postn+ clusters
+pd.crosstab(adata_human_new_c5c6c7.obs['cluster'], adata_human_new_c5c6c7.obs['MKI67_status'])
+
+############
+## do the same for all adata
+countMat_all_human = pd.concat([adata_human_new.to_df(), adata_human_new.obs], axis=1)
+
+mki67_cond_all_human = (countMat_all_human.MKI67 >= countMat_all_human['MKI67'].quantile(0.9))
+
+adata_human_new.obs['MKI67_status'] = 'negative'
+adata_human_new.obs.loc[mki67_cond_all_human, 'MKI67_status'] = 'positive'
+adata_human_new.obs['MKI67_status'].value_counts()
+
+## N of Mki67+ cells in all clusters
+pd.crosstab(adata_human_new.obs['cluster'], adata_human_new.obs['MKI67_status'])
+
+###########
+## plot cells by Mki67 status
+
+# only in c5 c6 and c7
+sc.pl.umap(adata_human_new_c5c6c7, color=['MKI67', 'MKI67_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_c5c6c7_MKI67Expression_MKI67status.png')
+
+# all clusters
+sc.pl.umap(adata_human_new, color=['MKI67', 'MKI67_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_humanAll_MKI67Expression_MKI67status.png')
+
+Mki67_relativeFrequency_all_human = sct.tools.relative_frequency_per_cluster(adata_human_new, group_by='cluster', xlabel='MKI67_status', condition=None)
+Mki67_relativeFrequency_all_human['cluster'] = 'c'+Mki67_relativeFrequency_all_human['cluster']
+sct.plot.cluster_composition_stacked_barplot(Mki67_relativeFrequency_all_human, xlabel='cluster', figsize=(8, 10), width=0.8, label_size=20, tick_size=16, margins=(0.02, 0.04), colors=adata_human_new.uns['MKI67_status_colors'], save = 'figures/MKI67_status_human.png')
+
+#################################################################
+## which cells in human co-express Postn plus Lgr5
+
+adata_human_new_raw = adata_human_new.raw.to_adata()
+
+# subset to c5 c6 and c7
+adata_human_new_raw_c5c6c7 = adata_human_new_raw[adata_human_new_raw.obs['cluster'].isin(['5','6','7'])]
+adata_human_new_raw_c5c6c7.obs['cluster'].value_counts()
+
+# plot Postn
+sc.pl.violin(adata_human_new_raw_c5c6c7, ['POSTN'], groupby = 'cluster')
+
+## plot Mki67
+# all clusters
+sc.pl.violin(adata_human_new_raw, ['LGR5'], groupby = 'cluster', save='_Lgr5_human.png')
+sc.pl.umap(adata_human_new_raw, color=['POSTN', 'LGR5'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_Lgr5_human.png')
+
+# just c5, c6, and c7
+sc.pl.violin(adata_human_new_raw_c5c6c7, ['LGR5'], groupby = 'cluster', save='_Postn+Lgr5+_human.png')
+sc.pl.umap(adata_human_new_raw_c5c6c7, color=['POSTN', 'LGR5'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_Lgr5_human_c5c6c7.png')
+
+
+##########
+## get cells that are Lgr5+
+
+countMat_c5c6c7_human = pd.concat([adata_human_new_raw_c5c6c7.to_df(), adata_human_new_raw_c5c6c7.obs], axis=1)
+
+Lgr5_cond_human = (countMat_c5c6c7_human.LGR5 >= countMat_c5c6c7_human['LGR5'].quantile(0.999))
+
+adata_human_new_raw_c5c6c7.obs['LGR5_status'] = 'negative'
+adata_human_new_raw_c5c6c7.obs.loc[Lgr5_cond_human, 'LGR5_status'] = 'positive'
+adata_human_new_raw_c5c6c7.obs['LGR5_status'].value_counts()
+
+## N of Mki67+ cells in Postn+ clusters
+pd.crosstab(adata_human_new_raw_c5c6c7.obs['cluster'], adata_human_new_raw_c5c6c7.obs['Lgr5_status'])
+
+############
+## do the same for all adata
+countMat_all_human = pd.concat([adata_human_new_raw.to_df(), adata_human_new_raw.obs], axis=1)
+
+Lgr5_cond_all_human = (countMat_all_human.LGR5 >= countMat_all_human['LGR5'].quantile(0.9985))
+
+adata_human_new_raw.obs['LGR5_status'] = 'negative'
+adata_human_new_raw.obs.loc[Lgr5_cond_all_human, 'LGR5_status'] = 'positive'
+adata_human_new_raw.obs['LGR5_status'].value_counts()
+
+## N of Mki67+ cells in all clusters
+pd.crosstab(adata_human_new_raw.obs['cluster'], adata_human_new_raw.obs['LGR5_status'])
+
+############################
+## plot cells by Lgr5 status
+
+# only in c5 c6 and c7
+sc.pl.umap(adata_mouse_c5c6c7, color=['LGR5', 'LGR5_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_c5c6c7_Lgr5Expression_Lgr5status.png')
+
+# all clusters
+sc.pl.umap(adata_human_new_raw, color=['LGR5', 'LGR5_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_humanAll_Lgr5Expression_Lgr5status.png')
+
+Lgr5_relativeFrequency_all_human = sct.tools.relative_frequency_per_cluster(adata_human_new_raw, group_by='cluster', xlabel='LGR5_status', condition=None)
+Lgr5_relativeFrequency_all_human['cluster'] = 'c'+Lgr5_relativeFrequency_all_human['cluster']
+sct.plot.cluster_composition_stacked_barplot(Lgr5_relativeFrequency_all_human, xlabel='cluster', figsize=(8, 10), width=0.8, label_size=20, tick_size=16, margins=(0.02, 0.04), colors=adata_human_new_raw.uns['LGR5_status_colors'], save = 'figures/Lgr5_status_human.png')
+
+###########################################
 markers_human_c0.to_csv('markers_human_c0.csv')
 markers_human_c1.to_csv('markers_human_c1.csv')
 markers_human_c2.to_csv('markers_human_c2.csv')

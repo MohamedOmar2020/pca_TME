@@ -668,7 +668,7 @@ def ligandreceptor_permutation_test(adata):
 
     # instead could look at unprocessed layer
     rawadata = sc.read_h5ad(
-        "/home/ryc4001/Documents/scproj/fapcm/outs/h5ads/fapcm_unfiltered_v6.h5ad"
+        "outs/h5ads/fapcm_unfiltered_v6.h5ad"
     )
     rawadata = rawadata[rawadata.obs_names.isin(adata.obs_names.tolist())]
     rawadata.obs["phenotypes"] = adata.obs["phenotypes"]

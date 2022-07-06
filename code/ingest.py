@@ -312,7 +312,7 @@ adata_mouse_c5c6c7.obs['Mki67_status'].value_counts()
 ## N of Mki67+ cells in Postn+ clusters
 pd.crosstab(adata_mouse_c5c6c7.obs['cluster'], adata_mouse_c5c6c7.obs['Mki67_status'])
 
-############
+##############
 ## do the same for all adata
 countMat_all = pd.concat([adata_mouse.to_df(), adata_mouse.obs], axis=1)
 
@@ -653,7 +653,7 @@ dp = sc.pl.DotPlot(adata_mouse,
                                 )
 dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/mouse_dotplot_c3_CommonOnly.png')
 
-#####
+########
 # human
 dp = sc.pl.DotPlot(adata_human_new,
                                 var_names = [gene.upper() for gene in intersection_c3['names']],
@@ -662,7 +662,7 @@ dp = sc.pl.DotPlot(adata_human_new,
                                 )
 dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/human_dotplot_c3_CommonOnly.png')
 
-########################
+##########################
 # dotplot c4: common markers only
 # mouse
 dp = sc.pl.DotPlot(adata_mouse,
@@ -672,7 +672,7 @@ dp = sc.pl.DotPlot(adata_mouse,
                                 )
 dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/mouse_dotplot_c4_CommonOnly.png')
 
-#####
+#######
 # human
 dp = sc.pl.DotPlot(adata_human_new,
                                 var_names = [gene.upper() for gene in intersection_c4['names']],
@@ -719,7 +719,7 @@ dp = sc.pl.DotPlot(adata_human_new,
                                 )
 dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/human_dotplot_c6_CommonOnly.png')
 
-########################
+############################
 # dotplot c7: common markers only
 # mouse
 dp = sc.pl.DotPlot(adata_mouse,
@@ -729,7 +729,7 @@ dp = sc.pl.DotPlot(adata_mouse,
                                 )
 dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/mouse_dotplot_c7_CommonOnly.png')
 
-#####
+#######
 # human
 dp = sc.pl.DotPlot(adata_human_new,
                                 var_names = [gene.upper() for gene in intersection_c7['names']],
@@ -847,10 +847,10 @@ adata_human_new_raw.obs['LGR5_status'].value_counts()
 ## N of Mki67+ cells in all clusters
 pd.crosstab(adata_human_new_raw.obs['cluster'], adata_human_new_raw.obs['LGR5_status'])
 
-############################
+############
 ## plot cells by Lgr5 status
 
-# only in c5 c6 and c7
+# only in c5, c6, and c7
 sc.pl.umap(adata_mouse_c5c6c7, color=['LGR5', 'LGR5_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_c5c6c7_Lgr5Expression_Lgr5status.png')
 
 # all clusters
@@ -860,7 +860,8 @@ Lgr5_relativeFrequency_all_human = sct.tools.relative_frequency_per_cluster(adat
 Lgr5_relativeFrequency_all_human['cluster'] = 'c'+Lgr5_relativeFrequency_all_human['cluster']
 sct.plot.cluster_composition_stacked_barplot(Lgr5_relativeFrequency_all_human, xlabel='cluster', figsize=(8, 10), width=0.8, label_size=20, tick_size=16, margins=(0.02, 0.04), colors=adata_human_new_raw.uns['LGR5_status_colors'], save = 'figures/Lgr5_status_human.png')
 
-###########################################
+##############################################################################################
+
 markers_human_c0.to_csv('markers_human_c0.csv')
 markers_human_c1.to_csv('markers_human_c1.csv')
 markers_human_c2.to_csv('markers_human_c2.csv')

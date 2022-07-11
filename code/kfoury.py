@@ -82,7 +82,7 @@ adata_BoneMet.obs['organ'].value_counts()
 adata_BoneMet.write('data/kfoury/adata_BoneMet.h5ad')
 
 ## read the adata
-adata_BoneMet = sc.read('data/kfoury/adata_BoneMet.h5ad')
+#adata_BoneMet = sc.read('data/kfoury/adata_BoneMet.h5ad')
 
 #####################################################
 ## Preprocess
@@ -151,7 +151,7 @@ sc.pl.rank_genes_groups(adata_BoneMet, n_genes=25, sharey=False)
 adata_BoneMet.write('data/kfoury/adata_BoneMet_proc.h5ad')
 
 # read
-adata_BoneMet = sc.read_h5ad('data/kfoury/adata_BoneMet_proc.h5ad')
+#adata_BoneMet = sc.read_h5ad('data/kfoury/adata_BoneMet_proc.h5ad')
 
 ########################
 # check if bone mets cells are present in the metadata file
@@ -175,10 +175,10 @@ sc.pl.umap(adata_BoneMet, color = ['cells'], save='_kfoury_boneMets_celltypes.pn
 sc.pl.umap(adata_BoneMet, color = ['cells'], groups = ['Progenitors', 'Osteoblasts', 'Osteoclasts', 'Endothelial', 'Pericytes'], save='_kfoury_boneMets_stroma.png')
 
 # Write
-adata_BoneMet.write('data/kfoury/adata_BoneMet_proc.h5ad')
+#adata_BoneMet.write('data/kfoury/adata_BoneMet_proc.h5ad')
 
 # read
-adata_BoneMet = sc.read('data/kfoury/adata_BoneMet_proc.h5ad')
+#adata_BoneMet = sc.read('data/kfoury/adata_BoneMet_proc.h5ad')
 
 ##################################################################################
 ## subset to the stromal cells ???
@@ -186,10 +186,10 @@ adata_BoneMet.obs_names = adata_BoneMet.obs['cellID']
 adata_BoneMet_stroma = adata_BoneMet[adata_BoneMet.obs['cells'].isin(['Osteoblasts', 'Osteoclasts', 'Endothelial', 'Pericytes'],)]
 
 # Write
-adata_BoneMet_stroma.write('data/kfoury/adata_BoneMet_stroma.h5ad')
+#adata_BoneMet_stroma.write('data/kfoury/adata_BoneMet_stroma.h5ad')
 
 # read
-adata_BoneMet_stroma = sc.read('data/kfoury/adata_BoneMet_stroma.h5ad')
+#adata_BoneMet_stroma = sc.read('data/kfoury/adata_BoneMet_stroma.h5ad')
 
 ####
 adata_BoneMet_stroma.obs['cells'].value_counts()
@@ -265,6 +265,12 @@ sc.pl.umap(adata_BoneMet_stroma, color='cells',  save = '_kfoury_originalCells.p
 # human
 sc.tl.rank_genes_groups(adata_BoneMet_stroma, 'cluster', pts=True, use_raw = False, method = 't-test_overestim_var')
 sc.pl.rank_genes_groups(adata_BoneMet_stroma, n_genes=25, sharey=True)
+
+# Write
+adata_BoneMet_stroma.write('data/kfoury/adata_BoneMet_stroma.h5ad')
+
+## read the adata
+adata_BoneMet_stroma = sc.read('data/kfoury/adata_BoneMet_stroma.h5ad')
 
 ####################################################################
 ## get cluster markers

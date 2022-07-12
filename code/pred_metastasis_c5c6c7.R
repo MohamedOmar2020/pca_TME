@@ -31,36 +31,19 @@ library(xtable)
 ### Load expression and phenotype data
 load("./data/bulk/MetastasisDataGood.rda")
 
-
-# load the cluster markers of c5,c6, and c7
-c5_markers <- read.delim('./tables/markers_human_c5.csv', sep = ',')
 ############################################################################
-# Make mechanistic pairs
+# load the pairs
 
 # load mechanistic pairs
-load("./Objs/StromaPairs.rda")
-
-StromaPairs[,c(1,2)] <- StromaPairs[,c(2,1)]
-
-# Make mechanistic pairs
-
-#BadGenes <- c("FDFT1", "FASN", "SREBF1", "DHCR7", "LSS", "HMGCS1", "DHCR24", "SCD", "FADS2", "SQLE", "IDI1", "CYP51A1", "SC5D", "HMGCR", "FDPS", "MVD", "MVK", "NSDHL", "ACSS2", "TM7SF2", "HSD17B7", "MSMO1", "FADS3", "ACSL1", "SREBF2", "ACACA", "FADS1", "ELOVL5", "ACSL3", "ME1", "HSD17B12", "ELOVL7", "FAXDC2", "ELOVL4", "ACSL4", "PTPLAD1", "PTPLB", "ACOT4")
-
-#GoodGenes <- c("ELOVL3", "ACLY", "TECR", "ACOT1", "PTPLA", "OLAH", "SCD5", "MLYCD", "ACSL6", "ACOT2", "ACSBG2", "ACSBG1", "FADS6", "ELOVL2", "ACSL5", "IDI2", "EBP", "ACAT2", "ACOT7", "ELOVL1", "ELOVL6", "PMVK", "MCAT", "OXSM", "ME2")
+load('./data/MYC_pairs.rda')
+load('./data/MYC_pairs_top.rda')
 
 
-#Lipogenesis <- expand.grid(BadGenes, GoodGenes)
-#Lipogenesis <- as.matrix(Lipogenesis)
-#Lipogenesis[,c(1,2)] <- Lipogenesis[, c(2,1)]
-#colnames(Lipogenesis) <- c("GoodGene", "BadGene")
-
-myTSPs <- StromaPairs
-colnames(myTSPs) <- c("GoodGene", "BadGene")
-#myTSPs <- lipogenesisPairs
+myTSPs <- as.matrix(MYC_pairs_top)
 
 ### Quantile normalize
-usedTrainMat <- normalizeBetweenArrays(mixTrainMat, method = "quantile")[RGenes, ]
-usedTestMat <- normalizeBetweenArrays(mixTestMat, method = "quantile")[RGenes, ]
+usedTrainMat <- normalizeBetweenArrays(mixTrainMat, method = "quantile")
+usedTestMat <- normalizeBetweenArrays(mixTestMat, method = "quantile")
 
 ### Common genes
 keepGns <- intersect(as.vector(myTSPs), rownames(usedTrainMat))
@@ -92,38 +75,21 @@ featNo <- nrow(usedTrainMat)
 set.seed(333)
 
 ktspPredictorRes <- SWAP.Train.KTSP(
-  usedTrainMat, usedTrainGroup, krange = ktsp,
-  FilterFunc = SWAP.Filter.Wilcoxon, featureNo=featNo, RestrictedPairs = myTSPs)
+  usedTrainMat, usedTrainGroup, krange = 25,
+  FilterFunc = SWAP.Filter.Wilcoxon, featureNo=featNo, RestrictedPairs = myTSPs, disjoint = F)
 
 ktspPredictorRes
 
 ### Check consistency with biology
-keepTest <- ktspPredictorRes$TSPs[,1] %in% myTSPs[,"GoodGene"] & ktspPredictorRes$TSPs[,2] %in% myTSPs[,"BadGene"]
+keepTest <- ktspPredictorRes$TSPs[,1] %in% myTSPs[,"up"] & ktspPredictorRes$TSPs[,2] %in% myTSPs[,"down"]
 
 table(keepTest)
 
-### Subset
+## Subset
 ktspPredictorRes$score <- ktspPredictorRes$score[keepTest]
 ktspPredictorRes$TSPs <- ktspPredictorRes$TSPs[keepTest, ]
-#ktspPredictorRes$tieVote  <- ktspPredictorRes$tieVote[!is.na(ktspPredictorRes$tieVote)][keepTest]
 ktspPredictorRes$tieVote <- droplevels(ktspPredictorRes$tieVote[keepTest])
-
-#save(ktspPredictorRes, file = "./Objs/KTSP/MechKTSP94Pairs.rda")
-
-#Mechanistic_KTSP <- cbind(ktspPredictorRes$TSPs, ktspPredictorRes$score)
-#colnames(Mechanistic_KTSP) <- c("gene1", "gene2", "score")
-
-#write.csv(Mechanistic_KTSP, file = "./Objs/KTSP/MechanisticKTSP.csv")
-#print(xtable(Mechanistic_KTSP, type = "latex"), file = "./Objs/KTSP/Mechanistic.tex")
-
-## Save the mechanistic Pairs
-#MechanisticKTSP_Pairs <- c("COX7B>EZH2", "RAD21>ARHGEF11", "GTF2B>SF3B4", "TP53>MTMR4", "BTG2>CHD4", "MZF1>PITX1", "NCOR1>TRIP13")
-#save(MechanisticKTSP_Pairs, file = "./Objs/KTSP/MechanisticKTSP_Pairs.rda")
-
-### Check how many TSP
-#xx <- SWAP.Filter.Wilcoxon(usedTrainGroup,usedTrainMat,featureNo=featNo)
-#dim(myTSPs[myTSPs[,1] %in% xx & myTSPs[,2] %in% xx ,])
-#choose(78,2)
+ktspPredictorRes$name <- paste0(nrow(ktspPredictorRes$TSPs), 'TSPs')
 
 ############################################################################
 ### Compute the sum and find the best threshold: All training samples
@@ -132,7 +98,7 @@ summary(ktspStatsTrainRes$statistics)
 
 ### Threshold
 thr <- coords(roc(usedTrainGroup, ktspStatsTrainRes$statistics, levels = c("No_Mets", "Mets"), direction = "<"), "best")["threshold"]
-thr
+thr 
 
 ### Print ROC curve local maximas
 coords(roc(usedTrainGroup, ktspStatsTrainRes$statistics, levels = c("No_Mets", "Mets"), direction = "<"), "local maximas")
@@ -198,30 +164,19 @@ datTrain <- Reduce("rbind", dfTspTrain)
 ## Rename columns
 #colnames(datTrain)[colnames(datTrain) %in% c("variable", "value")] <- c("Gene", "Expression")
 
-########################
-## Make paired boxplot
-# png("./Figs/KTSP/mechanistic.trainKTSPexprs.png", width = 3000, height = 1500, res = 200)
-# bxplt <- ggplot(na.omit(datTrain), aes(x=Gene, y=Expression, fill=Group)) +
-#   geom_boxplot(outlier.shape = NA) +
-#   geom_point(aes(group=Group), position = position_jitterdodge(), size=0.75, color=rgb(0.2,0.2,0.2,0.5)) +
-#   facet_wrap(~pair, scales = "free", nrow = 2) +
-#   theme(axis.text = element_text(face = "bold", size = 12), axis.title = element_text(face = "bold", size = 12), legend.position = "bottom", legend.text = element_text(face = "bold", size = 17.5), legend.title = element_text(face = "bold", size = 17.5), strip.text.x = element_text(face = "bold", size = 11))
-# bxplt
-# dev.off()
-
-#####################
+##############
 ## Scatter plots
-png(filename = "./Figs/KTSP/MechanisticKTSP_Train_ScatterPlot_Combined.png", width=3000, height=1500, res=300)
+png(filename = "./figures/bulk/MechanisticKTSP_Train_ScatterPlot_Combined.png", width=3000, height=1500, res=300)
 ### Prepare ggplot
 sctplt <- ggplot(na.omit(datTrain), aes(x=Gene1, y=Gene2, color=Group)) +
-  geom_point(size=0.75) + geom_abline(intercept=0, slope=1, alpha=0.5) +
+  geom_point(size=0.5) + geom_abline(intercept=0, slope=1, alpha=0.5) +
   facet_wrap(~ pair, scales="free", nrow=2) +
-  theme(axis.text=element_text(face="bold", size = 12),
-        axis.title=element_text(face="bold", size = 12),
+  theme(axis.text=element_text(face="bold", size = 6),
+        axis.title=element_text(face="bold", size = 8),
         legend.position="bottom",
-        legend.text=element_text(face="bold", size=17.5),
-        legend.title = element_text(face="bold", size=17.5),
-        strip.text.x = element_text(face="bold", size=11))
+        legend.text=element_text(face="bold", size=10),
+        legend.title = element_text(face="bold", size=10),
+        strip.text.x = element_text(face="bold", size=6))
 sctplt
 dev.off()
 
@@ -268,17 +223,17 @@ datTest <- Reduce("rbind", dfTspTest)
 
 #####################
 ## Scatter plots
-png(filename = "./Figs/KTSP/MechanisticKTSP_Test_ScatterPlot_Combined.png", width=3000, height=1500, res=300)
+png(filename = "./figures/bulk/MechanisticKTSP_Test_ScatterPlot_Combined.png", width=3000, height=1500, res=300)
 ### Prepare ggplot
 sctplt <- ggplot(na.omit(datTest), aes(x=Gene1, y=Gene2, color=Group)) +
-  geom_point(size=0.75) + geom_abline(intercept=0, slope=1, alpha=0.5) +
+  geom_point(size=0.5) + geom_abline(intercept=0, slope=1, alpha=0.5) +
   facet_wrap(~ pair, scales="free", nrow=2) +
-  theme(axis.text=element_text(face="bold", size = 12),
-        axis.title=element_text(face="bold", size = 12),
+  theme(axis.text=element_text(face="bold", size = 6),
+        axis.title=element_text(face="bold", size = 8),
         legend.position="bottom",
-        legend.text=element_text(face="bold", size=17.5),
-        legend.title = element_text(face="bold", size=17.5),
-        strip.text.x = element_text(face="bold", size=11))
+        legend.text=element_text(face="bold", size=10),
+        legend.title = element_text(face="bold", size=10),
+        strip.text.x = element_text(face="bold", size=6))
 sctplt
 dev.off()
 
@@ -289,9 +244,9 @@ dev.off()
 ### Prepare the legend
 forLegend_KTSP <- apply(rbind(
   ci(roc(usedTrainGroup, ktspStatsTrainRes$statistics, levels = c("No_Mets", "Mets"), direction = "<")),
-  ci(roc(usedTestGroup, ktspStatsTestRes$statistics, levels = c("No_Mets", "Mets"), direction = "<")),
-  ci(roc(usedTrainGroup, ktspStatsTrainUnRes$statistics, levels = c("No_Mets", "Mets"), direction = "<")),
-  ci(roc(usedTestGroup, ktspStatsTestUnRes$statistics, levels = c("No_Mets", "Mets"), direction = "<"))
+  ci(roc(usedTestGroup, ktspStatsTestRes$statistics, levels = c("No_Mets", "Mets"), direction = "<"))
+  #ci(roc(usedTrainGroup, ktspStatsTrainUnRes$statistics, levels = c("No_Mets", "Mets"), direction = "<")),
+  #ci(roc(usedTestGroup, ktspStatsTestUnRes$statistics, levels = c("No_Mets", "Mets"), direction = "<"))
 ),  1, function(x) {
   x <- format(round(x, digits=2), nsmall=2)
   paste("AUC: ", x[[2]], ";", "95% CI: ", x[[1]], "-", x[[3]])
@@ -306,9 +261,9 @@ datTrn_KTSP <- melt(data.frame(
   ## Training Group
   Training= usedTrainGroup,
   ## Agnostic KTSP SUM: the lowest mus be for disease status
-  Agnostic.Training = ktspStatsTrainUnRes$statistics,
+  #Agnostic.Training = ktspStatsTrainUnRes$statistics,
   ## Mechanistic KTSP SUM training
-  Mechanistic.Training= ktspStatsTrainRes$statistics))
+  PRN_signature.Training= ktspStatsTrainRes$statistics))
 ### Change Colnames
 colnames(datTrn_KTSP) <- c("Status", "KTSP_type", "KTSP_sum")
 
@@ -318,9 +273,9 @@ datTst_KTSP <- melt(data.frame(
   ## Testing group
   Testing= usedTestGroup,
   ## Agnostic KTSP SUM: the lowest mus be for disease status
-  Agnostic.Testing=ktspStatsTestUnRes$statistics,
+  #Agnostic.Testing=ktspStatsTestUnRes$statistics,
   ## Mechanistic KTSP SUM training
-  Mechanistic.Testing=ktspStatsTestRes$statistics))
+  PRN_signature.Testing=ktspStatsTestRes$statistics))
 ### Change Colnames
 colnames(datTst_KTSP) <- c("Status", "KTSP_type", "KTSP_sum")
 
@@ -330,18 +285,18 @@ dat_KTSP$Status <- as.numeric(dat_KTSP$Status)-1
 ####
 ### Replace levels
 levels(dat_KTSP$KTSP_type) <- gsub("\\.", "-", levels(dat_KTSP$KTSP_type))
-levels(dat_KTSP$KTSP_type) <- paste(levels(dat_KTSP$KTSP_type), forLegend_KTSP[c(3,1,4,2)])
+levels(dat_KTSP$KTSP_type) <- paste(levels(dat_KTSP$KTSP_type), forLegend_KTSP[c(1,2)])
 
 #################################################################
 ### Plot Curve
-png("./Figs/KTSP/CompareAUCggplot_Combined.png",
+png("./figures/bulk/CompareAUCggplot_Combined.png",
     width=3000, height=3000, res=360)
 ### Color
 myCol <- brewer.pal(3, "Dark2")[c(2,1)]
 ### Plot and legend titles
-plotTitle <- "AUC mechanistic (Combined) vs agnostic K-TSP"
-legendTitle <- paste("Mechanistic (", nrow(ktspPredictorRes$TSPs), " pairs)",
-                     " Agnostic (", nrow(ktspPredictorUnRes$TSPs), " pairs)",  sep="")
+plotTitle <- "Performance of the PRN stromal signature at predicting metastasis"
+#legendTitle <- paste("Mechanistic (", nrow(ktspPredictorRes$TSPs), " pairs)",
+#                     " Agnostic (", nrow(ktspPredictorUnRes$TSPs), " pairs)",  sep="")
 ### Plot
 basicplot_KTSP_Combined <- ggplot(dat_KTSP, aes(d=Status, m=KTSP_sum, color=KTSP_type,
                                                 linetype = KTSP_type)) +
@@ -354,50 +309,10 @@ basicplot_KTSP_Combined <- ggplot(dat_KTSP, aes(d=Status, m=KTSP_sum, color=KTSP
         legend.background=element_rect(fill="lightblue1"),
         legend.text=element_text(face="plain", size = 10),
         legend.title = element_text(face="bold", size=12)) +
-  scale_color_manual(legendTitle, values=rep(myCol, 2)) +
-  scale_linetype_manual(legendTitle, values=rep(c("solid", "dotted"), each=2)) +
+  #scale_color_manual(legendTitle, values=rep(myCol, 2)) +
+  scale_linetype_manual(values=rep(c("solid", "dotted"), each=2)) +
   guides(colour = guide_legend(override.aes = list(size=3)))
 ### Plot
 basicplot_KTSP_Combined
 ### Close device
 dev.off()
-
-save(basicplot_KTSP_Combined, file = "./Objs/KTSP/BasicPlot_KTSP_Combined.rda")
-
-
-####################
-# Load the pre-saved ROC stats for all the RF models (Mechanistic and agnostic with different N of pairs)
-load("./Objs/KTSP/KTSPAUCStats.rda")
-
-# Load the original data just for the phenotype variable
-load("./Objs/PhenoStrSampling.rda")
-
-## For the forest plot
-AUCs_KTSP_StrSampling <-  rbind(
-  ci(roc(usedTrainGroup, ktspStatsTrainRes$statistics, levels = c("No_Mets", "Mets"), direction = "<")),
-  ci(roc(usedTestGroup, ktspStatsTestRes$statistics, levels = c("No_Mets", "Mets"), direction = "<")),
-  ci(roc(usedTrainGroup, ktspStatsTrainUnRes$statistics, levels = c("No_Mets", "Mets"), direction = "<")),
-  ci(roc(usedTestGroup, ktspStatsTestUnRes$statistics, levels = c("No_Mets", "Mets"), direction = "<")),
-  ci(roc(usedTrainGroup, ktspStatsTrainUnRes_50Feat$statistics, levels = c("No_Mets", "Mets"), direction = "<")),
-  ci(roc(usedTestGroup, ktspStatsTestUnRes_50Feat$statistics, levels = c("No_Mets", "Mets"), direction = "<")),
-  ci(roc(usedTrainGroup, ktspStatsTrainUnRes_100Feat$statistics, levels = c("No_Mets", "Mets"), direction = "<")),
-  ci(roc(usedTestGroup, ktspStatsTestUnRes_100Feat$statistics, levels = c("No_Mets", "Mets"), direction = "<")),
-  ci(roc(usedTrainGroup, ktspStatsTrainUnRes_500Feat$statistics, levels = c("No_Mets", "Mets"), direction = "<")),
-  ci(roc(usedTestGroup, ktspStatsTestUnRes_500Feat$statistics, levels = c("No_Mets", "Mets"), direction = "<"))
-)
-
-
-AUCs_KTSP_StrSampling[,c(1,2,3)] <- AUCs_KTSP_StrSampling[,c(2,1,3)]
-colnames(AUCs_KTSP_StrSampling) <- c("AUC", "CI_low", "CI_High")
-
-
-
-AUCs_KTSP_StrSampling <- as.data.frame(AUCs_KTSP_StrSampling)
-
-AUCs_KTSP_StrSampling$model_type <- c("Mechanistic", "Mechanistic", "Agnostic", "Agnostic", "Agnostic50Feat", "Agnostic50Feat", "Agnostic100Feat", "Agnostic100Feat", "Agnostic500Feat", "Agnostic500Feat")
-AUCs_KTSP_StrSampling$data_type <- c("Training", "Testing", "Training", "Testing", "Training", "Testing", "Training", "Testing", "Training", "Testing")
-AUCs_KTSP_StrSampling$algorithm <- rep("KTSP", 10)
-AUCs_KTSP_StrSampling$approach <- rep("Str.Sampling", 10)  
-
-save(AUCs_KTSP_StrSampling, file = "./Objs/KTSP/AUCs_KTSP_StrSampling.rda")
-

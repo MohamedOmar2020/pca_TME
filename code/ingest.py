@@ -452,7 +452,226 @@ sc.pl.umap(adata_mouse, color=['Lef1', 'Lef1_status'], color_map = 'RdBu_r', vmi
 ## N of Lef1+ cells in all clusters
 pd.crosstab(adata_mouse.obs['cluster'], adata_mouse.obs['Lef1_status'])
 
+
 ####################################################################
+#################################################################
+## which cells in mouse co-express Postn plus Nrg1
+
+# subset to c5 c6 and c7
+adata_mouse_c5c6c7 = adata_mouse[adata_mouse.obs['cluster'].isin(['5','6','7'])]
+adata_mouse_c5c6c7.obs['cluster'].value_counts()
+
+## plot Nrg1
+# all clusters
+sc.pl.violin(adata_mouse, ['Nrg1'], groupby = 'cluster', save='_Nrg1_mouse.png')
+sc.pl.umap(adata_mouse, color=['Postn', 'Nrg1'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_Nrg1_mouse.png')
+
+# just c5, c6, and c7
+sc.pl.violin(adata_mouse_c5c6c7, ['Nrg1'], groupby = 'cluster', save='_Postn+Nrg1+.png')
+sc.pl.umap(adata_mouse_c5c6c7, color=['Postn', 'Nrg1'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_Nrg1_mouse_c5c6c7.png')
+
+##########
+## get cells that are Nrg1+
+countMat_c5c6c7 = pd.concat([adata_mouse_c5c6c7.to_df(), adata_mouse_c5c6c7.obs], axis=1)
+
+Nrg1_cond = (countMat_c5c6c7.Nrg1 >= countMat_c5c6c7['Nrg1'].quantile(0.9))
+
+adata_mouse_c5c6c7.obs['Nrg1_status'] = 'negative'
+adata_mouse_c5c6c7.obs.loc[Nrg1_cond, 'Nrg1_status'] = 'positive'
+adata_mouse_c5c6c7.obs['Nrg1_status'].value_counts()
+
+## N of Mki67+ cells in Postn+ clusters
+pd.crosstab(adata_mouse_c5c6c7.obs['cluster'], adata_mouse_c5c6c7.obs['Nrg1_status'])
+
+############
+## do the same for all adata
+countMat_all = pd.concat([adata_mouse.to_df(), adata_mouse.obs], axis=1)
+
+Nrg1_cond_all = (countMat_all.Nrg1 >= countMat_all['Nrg1'].quantile(0.9))
+
+adata_mouse.obs['Nrg1_status'] = 'negative'
+adata_mouse.obs.loc[Nrg1_cond_all, 'Nrg1_status'] = 'positive'
+adata_mouse.obs['Nrg1_status'].value_counts()
+
+## N of Mki67+ cells in all clusters
+pd.crosstab(adata_mouse.obs['cluster'], adata_mouse.obs['Nrg1_status'])
+
+############################
+## plot cells by Lgr5 status
+
+# only in c5 c6 and c7
+sc.pl.umap(adata_mouse_c5c6c7, color=['Nrg1', 'Nrg1_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_c5c6c7_Nrg1Expression_Nrg1status.png')
+
+# all clusters
+sc.pl.umap(adata_mouse, color=['Nrg1', 'Nrg1_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_mouseAll_Nrg1Expression_Nrg1status.png')
+
+Nrg1_relativeFrequency_all = sct.tools.relative_frequency_per_cluster(adata_mouse, group_by='cluster', xlabel='Nrg1_status', condition=None)
+Nrg1_relativeFrequency_all['cluster'] = 'c'+Nrg1_relativeFrequency_all['cluster']
+sct.plot.cluster_composition_stacked_barplot(Nrg1_relativeFrequency_all, xlabel='cluster', figsize=(8, 10), width=0.8, label_size=20, tick_size=16, margins=(0.02, 0.04), colors=adata_mouse.uns['Nrg1_status_colors'], save = 'figures/Nrg1_status.png')
+
+####################################################################
+#################################################################
+## which cells in mouse co-express Postn plus Nrg2
+
+# subset to c5 c6 and c7
+adata_mouse_c5c6c7 = adata_mouse[adata_mouse.obs['cluster'].isin(['5','6','7'])]
+adata_mouse_c5c6c7.obs['cluster'].value_counts()
+
+## plot Nrg1
+# all clusters
+sc.pl.violin(adata_mouse, ['Nrg2'], groupby = 'cluster', save='_Nrg2_mouse.png')
+sc.pl.umap(adata_mouse, color=['Postn', 'Nrg2'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_Nrg2_mouse.png')
+
+# just c5, c6, and c7
+sc.pl.violin(adata_mouse_c5c6c7, ['Nrg2'], groupby = 'cluster', save='_Postn+Nrg2+.png')
+sc.pl.umap(adata_mouse_c5c6c7, color=['Postn', 'Nrg2'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_Nrg2_mouse_c5c6c7.png')
+
+##########
+## get cells that are Nrg2+
+
+############
+## do the same for all adata
+adata_mouse_raw = adata_mouse.raw.to_adata()
+countMat_all = pd.concat([adata_mouse_raw.to_df(), adata_mouse_raw.obs], axis=1)
+
+Nrg2_cond_all = (countMat_all.Nrg2 >= countMat_all['Nrg2'].quantile(0.94))
+
+adata_mouse_raw.obs['Nrg2_status'] = 'negative'
+adata_mouse_raw.obs.loc[Nrg2_cond_all, 'Nrg2_status'] = 'positive'
+adata_mouse_raw.obs['Nrg2_status'].value_counts()
+
+## N of Mki67+ cells in all clusters
+pd.crosstab(adata_mouse_raw.obs['cluster'], adata_mouse_raw.obs['Nrg2_status'])
+
+############################
+## plot cells by Lgr5 status
+
+# all clusters
+sc.pl.umap(adata_mouse_raw, color=['Nrg2', 'Nrg2_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_mouseAll_Nrg2Expression_Nrg2status.png')
+
+Nrg2_relativeFrequency_all = sct.tools.relative_frequency_per_cluster(adata_mouse_raw, group_by='cluster', xlabel='Nrg2_status', condition=None)
+Nrg2_relativeFrequency_all['cluster'] = 'c'+Nrg2_relativeFrequency_all['cluster']
+sct.plot.cluster_composition_stacked_barplot(Nrg2_relativeFrequency_all, xlabel='cluster', figsize=(8, 10), width=0.8, label_size=20, tick_size=16, margins=(0.02, 0.04), colors=adata_mouse_raw.uns['Nrg2_status_colors'], save = 'figures/Nrg2_status.png')
+
+####################################################################
+#################################################################
+## which cells in mouse express Oncecut2
+
+# subset to c5 c6 and c7
+adata_mouse_c5c6c7 = adata_mouse[adata_mouse.obs['cluster'].isin(['5','6','7'])]
+adata_mouse_c5c6c7.obs['cluster'].value_counts()
+
+## plot Nrg1
+# all clusters
+sc.pl.violin(adata_mouse, ['Onecut2'], groupby = 'cluster', save='_Onecut2_mouse.png')
+sc.pl.umap(adata_mouse, color=['Postn', 'Onecut2'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_Onecut2_mouse.png')
+
+# just c5, c6, and c7
+sc.pl.violin(adata_mouse_c5c6c7, ['Onecut2'], groupby = 'cluster', save='_Postn+Onecut2+.png')
+sc.pl.umap(adata_mouse_c5c6c7, color=['Postn', 'Onecut2'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_Onecut2_mouse_c5c6c7.png')
+
+##########
+## get cells that are Nrg1+
+countMat_c5c6c7 = pd.concat([adata_mouse_c5c6c7.to_df(), adata_mouse_c5c6c7.obs], axis=1)
+
+Onecut2_cond = (countMat_c5c6c7.Onecut2 >= countMat_c5c6c7['Onecut2'].quantile(0.9))
+
+adata_mouse_c5c6c7.obs['Onecut2_status'] = 'negative'
+adata_mouse_c5c6c7.obs.loc[Onecut2_cond, 'Onecut2_status'] = 'positive'
+adata_mouse_c5c6c7.obs['Onecut2_status'].value_counts()
+
+## N of Mki67+ cells in Postn+ clusters
+pd.crosstab(adata_mouse_c5c6c7.obs['cluster'], adata_mouse_c5c6c7.obs['Onecut2_status'])
+
+############
+## do the same for all adata
+countMat_all = pd.concat([adata_mouse.to_df(), adata_mouse.obs], axis=1)
+
+Onecut2_cond_all = (countMat_all.Onecut2 >= countMat_all['Onecut2'].quantile(0.98))
+
+adata_mouse.obs['Onecut2_status'] = 'negative'
+adata_mouse.obs.loc[Onecut2_cond_all, 'Onecut2_status'] = 'positive'
+adata_mouse.obs['Onecut2_status'].value_counts()
+
+## N of Mki67+ cells in all clusters
+pd.crosstab(adata_mouse.obs['cluster'], adata_mouse.obs['Onecut2_status'])
+
+############################
+## plot cells by Lgr5 status
+
+# all clusters
+sc.pl.umap(adata_mouse, color=['Onecut2', 'Onecut2_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_mouseAll_Onecut2Expression_Onecut2status.png')
+
+Onecut2_relativeFrequency_all = sct.tools.relative_frequency_per_cluster(adata_mouse, group_by='cluster', xlabel='Nrg1_status', condition=None)
+Onecut2_relativeFrequency_all['cluster'] = 'c'+Onecut2_relativeFrequency_all['cluster']
+sct.plot.cluster_composition_stacked_barplot(Onecut2_relativeFrequency_all, xlabel='cluster', figsize=(8, 10), width=0.8, label_size=20, tick_size=16, margins=(0.02, 0.04), colors=adata_mouse.uns['Onecut2_status_colors'], save = 'figures/Onecut2_status.png')
+
+
+####################################################################
+#################################################################
+## which cells in mouse co-express Ccl11 plus Ccl20
+
+# subset to c5 c6 and c7
+adata_mouse_c0c1 = adata_mouse[adata_mouse.obs['cluster'].isin(['0','1'])]
+adata_mouse_c0c1.obs['cluster'].value_counts()
+
+## plot Nrg1
+# all clusters
+sc.pl.violin(adata_mouse, ['Ccl11', 'Ccl20'], groupby = 'cluster', save='_Ccl11_Ccl20_mouse.png')
+sc.pl.umap(adata_mouse, color=['Ccl11', 'Ccl20'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Ccl11_Ccl20_mouse.png')
+
+# just c0, c6, and c7
+sc.pl.umap(adata_mouse_c0c1, color=['Ccl11', 'Ccl20'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Ccl11_Ccl20_mouse_c0c1.png')
+
+##########
+## get cells that are CCl11+
+
+countMat_all = pd.concat([adata_mouse.to_df(), adata_mouse.obs], axis=1)
+
+Ccl11_cond_all = (countMat_all.Ccl11 >= countMat_all['Ccl11'].quantile(0.9))
+
+adata_mouse.obs['Ccl11_status'] = 'negative'
+adata_mouse.obs.loc[Ccl11_cond_all, 'Ccl11_status'] = 'positive'
+adata_mouse.obs['Ccl11_status'].value_counts()
+
+## N of Mki67+ cells in all clusters
+pd.crosstab(adata_mouse.obs['cluster'], adata_mouse.obs['Ccl11_status'])
+
+########
+## get cells that are CCl20+
+
+countMat_all = pd.concat([adata_mouse.to_df(), adata_mouse.obs], axis=1)
+
+Ccl20_cond_all = (countMat_all.Ccl20 >= countMat_all['Ccl20'].quantile(0.99))
+
+adata_mouse.obs['Ccl20_status'] = 'negative'
+adata_mouse.obs.loc[Ccl20_cond_all, 'Ccl20_status'] = 'positive'
+adata_mouse.obs['Ccl20_status'].value_counts()
+
+## N of Mki67+ cells in all clusters
+pd.crosstab(adata_mouse.obs['cluster'], adata_mouse.obs['Ccl20_status'])
+
+############################
+## plot cells by Ccl11 and Ccl20 status
+
+# Ccl11
+sc.pl.umap(adata_mouse, color=['Ccl11', 'Ccl11_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_mouseAll_Ccl11Expression_Ccl11status.png')
+
+Ccl11_relativeFrequency_all = sct.tools.relative_frequency_per_cluster(adata_mouse, group_by='cluster', xlabel='Ccl11_status', condition=None)
+Ccl11_relativeFrequency_all['cluster'] = 'c'+Ccl11_relativeFrequency_all['cluster']
+sct.plot.cluster_composition_stacked_barplot(Ccl11_relativeFrequency_all, xlabel='cluster', figsize=(8, 10), width=0.8, label_size=20, tick_size=16, margins=(0.02, 0.04), colors=adata_mouse.uns['Ccl11_status_colors'], save = 'figures/Ccl11_status.png')
+
+#######
+# Ccl20
+sc.pl.umap(adata_mouse, color=['Ccl20', 'Ccl20_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_mouseAll_Ccl20Expression_Ccl20status.png')
+
+Ccl20_relativeFrequency_all = sct.tools.relative_frequency_per_cluster(adata_mouse, group_by='cluster', xlabel='Ccl20_status', condition=None)
+Ccl20_relativeFrequency_all['cluster'] = 'c'+Ccl20_relativeFrequency_all['cluster']
+sct.plot.cluster_composition_stacked_barplot(Ccl20_relativeFrequency_all, xlabel='cluster', figsize=(8, 10), width=0.8, label_size=20, tick_size=16, margins=(0.02, 0.04), colors=adata_mouse.uns['Ccl20_status_colors'], save = 'figures/Ccl20_status.png')
+
+
+########################################################################################################################################
+########################################################################################################################################
 # umaps for Notch1, Notch2, Notch3, Hes1Tubb3, Soat1, Acat1 and Lef1
 sc.pl.umap(adata_mouse, color=['Notch1', 'Notch2', 'Notch3', 'Hes1', 'Tubb3', 'Soat1', 'Acat1', 'Lef1'], color_map = 'RdBu_r', vmin='p1', vmax='p99', ncols=3, save = '_Notch_Hes1_Tubb3_Soat1_Acat1_Lef1_mouse.png')
 

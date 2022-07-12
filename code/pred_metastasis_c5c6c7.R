@@ -68,7 +68,7 @@ myTSPs <- myTSPs[myTSPs[,1] %in% keepGns & myTSPs[,2] %in% keepGns , ]
 ###########################################################################
 
 ### Set Feature number and max k
-ktsp <- c(3:25) #18
+ktsp <- c(3:25)
 featNo <- nrow(usedTrainMat)
 
 ### Train a classifier using default filtering function based on Wilcoxon
@@ -91,6 +91,7 @@ ktspPredictorRes$TSPs <- ktspPredictorRes$TSPs[keepTest, ]
 ktspPredictorRes$tieVote <- droplevels(ktspPredictorRes$tieVote[keepTest])
 ktspPredictorRes$name <- paste0(nrow(ktspPredictorRes$TSPs), 'TSPs')
 
+save(ktspPredictorRes, file = './objs/PRN_stromal_signature.rda')
 ############################################################################
 ### Compute the sum and find the best threshold: All training samples
 ktspStatsTrainRes <- SWAP.KTSP.Statistics(inputMat = usedTrainMat, classifier = ktspPredictorRes, CombineFunc = sum)

@@ -209,7 +209,23 @@ sc.pl.violin(adata_human_new, ['POSTN'], groupby = 'cluster', save = '_Postn_hum
 # umap for Periostin human
 sc.pl.umap(adata_human_new, color='POSTN', color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_human_all.png')
 
-###############################
+
+####################################################################
+#################################################################
+## plot PdgfrA and PdgfrB
+
+## plot Pdgfra
+# all clusters
+sc.pl.umap(adata_mouse, color=['cluster', 'Pdgfra', 'Pdgfrb'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Pdgfra_Pdgfrb_mouse.png')
+
+# dotplot for Pdgfra per different mouse models
+dp = sc.pl.DotPlot(adata_mouse, var_names = ['Pdgfra', 'Pdgfrb'], groupby = 'cluster', cmap = 'Reds')
+dp.legend(width=2.5).savefig('figures/dotplot_Pdgfra_Pdgfrb_mouse.png')
+
+
+####################################################################
+####################################################################
+
 # c0 markers
 sc.pl.rank_genes_groups_dotplot(adata_mouse, var_names = ['Acta2', 'Myl9', 'Myh11', 'Tagln', 'Pdgfra', 'Mustn1', 'Angpt2', 'Notch3'], save = '_c0_mouse.png')
 
@@ -597,7 +613,7 @@ adata_mouse.obs['Onecut2_status'].value_counts()
 pd.crosstab(adata_mouse.obs['cluster'], adata_mouse.obs['Onecut2_status'])
 
 ############################
-## plot cells by Lgr5 status
+## plot cells by OnceCut2 status
 
 # all clusters
 sc.pl.umap(adata_mouse, color=['Onecut2', 'Onecut2_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_mouseAll_Onecut2Expression_Onecut2status.png')
@@ -605,7 +621,6 @@ sc.pl.umap(adata_mouse, color=['Onecut2', 'Onecut2_status'], color_map = 'RdBu_r
 Onecut2_relativeFrequency_all = sct.tools.relative_frequency_per_cluster(adata_mouse, group_by='cluster', xlabel='Nrg1_status', condition=None)
 Onecut2_relativeFrequency_all['cluster'] = 'c'+Onecut2_relativeFrequency_all['cluster']
 sct.plot.cluster_composition_stacked_barplot(Onecut2_relativeFrequency_all, xlabel='cluster', figsize=(8, 10), width=0.8, label_size=20, tick_size=16, margins=(0.02, 0.04), colors=adata_mouse.uns['Onecut2_status_colors'], save = 'figures/Onecut2_status.png')
-
 
 ####################################################################
 #################################################################

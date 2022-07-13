@@ -683,14 +683,19 @@ def ligandreceptor_permutation_test(adata):
             cluster_key="phenotypes",
             transmitter_params={"categories": "ligand"},
             receiver_params={"categories": "receptor"},
+            seed=123, show_progress_bar=True, corr_method='fdr_bh', alpha=0.05,
         )
+
+        for i in lradata.uns['phenotypes_ligrec'].keys():
+            lradata.uns['phenotypes_ligrec'][i].to_csv(f"objs/lr/{key}_"+str(i)+".csv")
+
         sq.pl.ligrec(
             lradata,
             cluster_key="phenotypes",
             source_groups=["fibroblasts", "luminal", "basal"],
             target_groups=["fibroblasts", "luminal", "basal"],
             means_range=(0.3, np.inf),
-            alpha=1e-4,
+            alpha=0.05, pvalue_threshold=0.05,
             swap_axes=True,
             save=f"_{key}_lr_interactions.png",
         )

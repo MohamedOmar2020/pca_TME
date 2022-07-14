@@ -202,13 +202,18 @@ dp.legend(width=2.5).savefig('figures/dotplot_Postn_mouse.png')
 dp = sc.pl.DotPlot(adata_mouse, var_names = 'Ar', groupby = 'key', cmap = 'Reds')
 dp.legend(width=2.5).savefig('figures/dotplot_Ar_mouse.png')
 
+
+################
+# dotplot for Pdgfra and Pdgfrb per different mouse models
+dp = sc.pl.DotPlot(adata_mouse, var_names = ['Pdgfra', 'Pdgfrb'], groupby = 'key', cmap = 'Reds')
+dp.legend(width=2.5).savefig('figures/dotplot_Pdgfra_Pdgfrb_models_mouse.png')
+
 ###############################
 # violin for Periostin human
 sc.pl.violin(adata_human_new, ['POSTN'], groupby = 'cluster', save = '_Postn_human.png')
 
 # umap for Periostin human
 sc.pl.umap(adata_human_new, color='POSTN', color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Postn_human_all.png')
-
 
 ####################################################################
 #################################################################
@@ -702,7 +707,7 @@ dp.savefig('figures/DotPlot_Notch_Hes1_Tubb3_Soat1_Acat1_Lef1_mouse.png')
 ## get cluster markers
 
 # mouse
-sc.tl.rank_genes_groups(adata_mouse, 'cluster', pts=True, use_raw = False)
+sc.tl.rank_genes_groups(adata_mouse, 'cluster', pts=True, use_raw = True)
 
 markers_mouse_c0 = sc.get.rank_genes_groups_df(adata_mouse, group = '0')
 markers_mouse_c1 = sc.get.rank_genes_groups_df(adata_mouse, group = '1')
@@ -713,9 +718,18 @@ markers_mouse_c5 = sc.get.rank_genes_groups_df(adata_mouse, group = '5')
 markers_mouse_c6 = sc.get.rank_genes_groups_df(adata_mouse, group = '6')
 markers_mouse_c7 = sc.get.rank_genes_groups_df(adata_mouse, group = '7')
 
+markers_mouse_c0.to_csv('tables/mouse/markers_mouse_c0.csv')
+markers_mouse_c1.to_csv('tables/mouse/markers_mouse_c1.csv')
+markers_mouse_c2.to_csv('tables/mouse/markers_mouse_c2.csv')
+markers_mouse_c3.to_csv('tables/mouse/markers_mouse_c3.csv')
+markers_mouse_c4.to_csv('tables/mouse/markers_mouse_c4.csv')
+markers_mouse_c5.to_csv('tables/mouse/markers_mouse_c5.csv')
+markers_mouse_c6.to_csv('tables/mouse/markers_mouse_c6.csv')
+markers_mouse_c7.to_csv('tables/mouse/markers_mouse_c7.csv')
+
 ########
 # human
-sc.tl.rank_genes_groups(adata_human_new, 'cluster', pts=True, use_raw = False)
+sc.tl.rank_genes_groups(adata_human_new, 'cluster', pts=True, use_raw = True)
 
 markers_human_c0 = sc.get.rank_genes_groups_df(adata_human_new, group = '0')
 markers_human_c1 = sc.get.rank_genes_groups_df(adata_human_new, group = '1')
@@ -725,6 +739,15 @@ markers_human_c4 = sc.get.rank_genes_groups_df(adata_human_new, group = '4')
 markers_human_c5 = sc.get.rank_genes_groups_df(adata_human_new, group = '5')
 markers_human_c6 = sc.get.rank_genes_groups_df(adata_human_new, group = '6')
 markers_human_c7 = sc.get.rank_genes_groups_df(adata_human_new, group = '7')
+
+markers_human_c0.to_csv('tables/human/markers_human_c0.csv')
+markers_human_c1.to_csv('tables/human/markers_human_c1.csv')
+markers_human_c2.to_csv('tables/human/markers_human_c2.csv')
+markers_human_c3.to_csv('tables/human/markers_human_c3.csv')
+markers_human_c4.to_csv('tables/human/markers_human_c4.csv')
+markers_human_c5.to_csv('tables/human/markers_human_c5.csv')
+markers_human_c6.to_csv('tables/human/markers_human_c6.csv')
+markers_human_c7.to_csv('tables/human/markers_human_c7.csv')
 
 # fix gene symbols
 markers_human_c0['names'] = markers_human_c0['names'].str.title()
@@ -1096,14 +1119,14 @@ sct.plot.cluster_composition_stacked_barplot(Lgr5_relativeFrequency_all_human, x
 
 ##############################################################################################
 
-markers_human_c0.to_csv('markers_human_c0.csv')
-markers_human_c1.to_csv('markers_human_c1.csv')
-markers_human_c2.to_csv('markers_human_c2.csv')
-markers_human_c3.to_csv('markers_human_c3.csv')
-markers_human_c4.to_csv('markers_human_c4.csv')
-markers_human_c5.to_csv('markers_human_c5.csv')
-markers_human_c6.to_csv('markers_human_c6.csv')
-markers_human_c7.to_csv('markers_human_c7.csv')
+markers_human_c0.to_csv('tables/human/markers_human_c0.csv')
+markers_human_c1.to_csv('tables/human/markers_human_c1.csv')
+markers_human_c2.to_csv('tables/human/markers_human_c2.csv')
+markers_human_c3.to_csv('tables/human/markers_human_c3.csv')
+markers_human_c4.to_csv('tables/human/markers_human_c4.csv')
+markers_human_c5.to_csv('tables/human/markers_human_c5.csv')
+markers_human_c6.to_csv('tables/human/markers_human_c6.csv')
+markers_human_c7.to_csv('tables/human/markers_human_c7.csv')
 
 
 #####################################

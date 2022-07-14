@@ -697,7 +697,7 @@ def ligandreceptor_permutation_test(adata):
             means_range=(0.3, np.inf),
             alpha=0.05, pvalue_threshold=0.05,
             swap_axes=True,
-            save=f"_{key}_lr_interactions.png",
+            save=f"_{key}_lr_interactions.pdf",
         )
 
 

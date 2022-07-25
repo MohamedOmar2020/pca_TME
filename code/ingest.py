@@ -32,9 +32,9 @@ adata_mouse.obs['cluster'].value_counts()
 
 # Process the human data using ingest
 # load the human data
-adata_human = sc.read_h5ad('human/h5ads/erg_fibroblasts_scvi_v6_regulons.h5ad', chunk_size=100000)
+adata_human = sc.read_h5ad('human/erg_fibroblasts_scvi_v6_regulons.h5ad', chunk_size=100000)
 
-adata_human.obs.erg.value_counts()
+pd.crosstab(adata_human.obs['case'], adata_human.obs['erg'])
 
 # change the var_names to match mouse gene symbols
 adata_human.var_names = [gene.title() for gene in adata_human.var_names]
@@ -358,6 +358,77 @@ sc.pl.umap(adata_mouse, color=['Mki67', 'Mki67_status'], color_map = 'RdBu_r', v
 Mki67_relativeFrequency_all = sct.tools.relative_frequency_per_cluster(adata_mouse, group_by='cluster', xlabel='Mki67_status', condition=None)
 Mki67_relativeFrequency_all['cluster'] = 'c'+Mki67_relativeFrequency_all['cluster']
 sct.plot.cluster_composition_stacked_barplot(Mki67_relativeFrequency_all, xlabel='cluster', figsize=(8, 10), width=0.8, label_size=20, tick_size=16, margins=(0.02, 0.04), colors=adata_mouse.uns['Mki67_status_colors'], save = 'figures/Mki67_status.png')
+
+#################################################################
+## which cells in mouse clusters co-express AR and Onecut2
+
+## plot Ar and Onecut2
+# all clusters
+sc.pl.violin(adata_mouse, ['Ar', 'Onecut2'], groupby = 'cluster', save='_Ar_Onecut2_mouse.png')
+sc.pl.umap(adata_mouse, color=['Ar', 'Onecut2'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Ar_Onecut2_mouse.png')
+
+##########
+## get cells that are Onecut2 +
+
+## do the same for all adata
+countMat_all = pd.concat([adata_mouse.to_df(), adata_mouse.obs], axis=1)
+
+Onecut2_cond_all = (countMat_all.Onecut2 >= countMat_all['Onecut2'].quantile(0.99))
+
+adata_mouse.obs['Onecut2_status'] = 'negative'
+adata_mouse.obs.loc[Onecut2_cond_all, 'Onecut2_status'] = 'positive'
+adata_mouse.obs['Onecut2_status'].value_counts()
+
+## N of Mki67+ cells in all clusters
+pd.crosstab(adata_mouse.obs['cluster'], adata_mouse.obs['Onecut2_status'])
+
+###########
+## plot cells by Mki67 status
+
+# all clusters
+sc.pl.umap(adata_mouse, color=['Onecut2', 'Onecut2_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_mouseAll_Onecut2Expression_Onecut2status.png')
+
+Onecut2_relativeFrequency_all = sct.tools.relative_frequency_per_cluster(adata_mouse, group_by='cluster', xlabel='Onecut2_status', condition=None)
+Onecut2_relativeFrequency_all['cluster'] = 'c'+Onecut2_relativeFrequency_all['cluster']
+sct.plot.cluster_composition_stacked_barplot(Onecut2_relativeFrequency_all, xlabel='cluster', figsize=(8, 10), width=0.8, label_size=20, tick_size=16, margins=(0.02, 0.04), colors=adata_mouse.uns['Onecut2_status_colors'], save = 'figures/Onecut2_status.png')
+
+
+#################################################################
+## which cells in mouse clusters co-express AR and Ezh2
+
+## plot Ar and Ezh2
+# all clusters
+sc.pl.violin(adata_mouse, ['Ar', 'Ezh2'], groupby = 'cluster', save='_Ar_Ezh2_mouse.png')
+sc.pl.umap(adata_mouse, color=['Ar', 'Ezh2'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Ar_Ezh2_mouse.png')
+
+##########
+## get cells that are Ezh2 +
+
+# Ezh2 is not present in the normalized count matrix, present only in the raw one
+adata_mouse_raw = adata_mouse.raw.to_adata()
+
+## do the same for all adata
+countMat_all = pd.concat([adata_mouse_raw.to_df(), adata_mouse_raw.obs], axis=1)
+
+Ezh2_cond_all = (countMat_all.Ezh2 >= countMat_all['Ezh2'].quantile(0.90))
+Ezh2_cond_all.value_counts()
+
+adata_mouse.obs['Ezh2_status'] = 'negative'
+adata_mouse.obs.loc[Ezh2_cond_all, 'Ezh2_status'] = 'positive'
+adata_mouse.obs['Ezh2_status'].value_counts()
+
+## N of Mki67+ cells in all clusters
+pd.crosstab(adata_mouse.obs['cluster'], adata_mouse.obs['Ezh2_status'])
+
+###########
+## plot cells by Mki67 status
+
+# all clusters
+sc.pl.umap(adata_mouse, color=['Ezh2', 'Ezh2_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_mouseAll_Ezh2Expression_Ezh2status.png')
+
+Ezh2_relativeFrequency_all = sct.tools.relative_frequency_per_cluster(adata_mouse, group_by='cluster', xlabel='Ezh2_status', condition=None)
+Ezh2_relativeFrequency_all['cluster'] = 'c'+Ezh2_relativeFrequency_all['cluster']
+sct.plot.cluster_composition_stacked_barplot(Ezh2_relativeFrequency_all, xlabel='cluster', figsize=(8, 10), width=0.8, label_size=20, tick_size=16, margins=(0.02, 0.04), colors=adata_mouse.uns['Ezh2_status_colors'], save = 'figures/Ezh2_status.png')
 
 #################################################################
 ## which cells in mouse co-express Postn plus Lgr5

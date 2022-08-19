@@ -16,9 +16,10 @@ import scanpy as sc
 import seaborn as sns
 import anndata as ad
 import sc_toolbox as sct
+import seaborn as sb
 
 sc.settings.figdir = 'figures'
-sc.set_figure_params(dpi_save = 300)
+sc.set_figure_params(dpi_save = 300, transparent = True)
 #plt.rcParams.update({'xtick.labelsize' : '50'})
 #plt.rcParams.update({'ytick.labelsize' : '50'})
 
@@ -129,6 +130,8 @@ adata_human_ERGpos.write('human/h5ads/erg_fibroblasts_scvi_v6_regulons_ERGpos_an
 #%%
 adata_human_new = sc.read_h5ad('human/erg_fibroblasts_scvi_v6_regulons_annot_new.h5ad', chunk_size=100000)
 
+pd.crosstab(adata_human_new.obs['case'], adata_human_new.obs['erg'])
+
 # re-cap the gene symbols
 adata_human_new.var_names = [gene.upper() for gene in adata_human_new.var_names]
 # subset also the adata_human.raw
@@ -136,19 +139,52 @@ tempAdata = adata_human_new.raw.to_adata()
 tempAdata.var_names = [gene.upper() for gene in tempAdata.var_names]
 adata_human_new.raw = tempAdata
 
+#################################################
+## boxplots by ERG status
+adata_human_new.obs['erg'].replace('0', 'ERG+', inplace=True)
+adata_human_new.obs['erg'].replace('1', 'ERG-', inplace=True)
+
+human_tab_Ar = sc.get.obs_df(adata_human_new, keys = ['cluster', 'erg', 'SFRP2', 'WNT5A', 'LGR5', 'APC',
+                                                          'WNT4', 'NOTUM', 'WIF1', 'WNT6', 'RORB', 'PTN'], layer = None, use_raw = True)
+
+sc.pl.umap(adata_human_new, color = 'erg')
+
+figsize = (15, 5)
+fig, ax = plt.subplots()
+fig.set_size_inches(figsize)
+palette = adata_human_new.uns["erg_colors"]  ## if you want the same colors as in UMAP
+
+fig = sb.boxplot(data=human_tab_Ar, x="cluster", y="PTN", width=0.6, hue="erg",
+                 showfliers=True, palette=palette)
+fig.set_xticklabels(fig.get_xticklabels(), rotation=90)  ## rotate labels
+plt.show()
+
 #######################
 ## umap clusters
 # mouse
-sc.pl.umap(adata_mouse, color='cluster', save= '_mouse.png')
+sc.pl.umap(adata_mouse, color='cluster', save= '_mouse_transparent.png')
 
 # human
-sc.pl.umap(adata_human_new, color='cluster', save = '_human.png')
+sc.pl.umap(adata_human_new, color='cluster', save = '_human_transparent.png')
 
 ##########################
 # Acta2 umap
 sc.pl.umap(adata_mouse, color=['cluster', 'Acta2'], save = '_mouse_ACTA2.png')
 
 sc.pl.umap(adata_human_new, color=['cluster', 'ACTA2'], save = '_human_ACTA2.png')
+
+sc.pl.violin(adata_mouse, ['Runx2'], groupby = 'cluster', use_raw=True, save='_mouse_Runx2.png')
+
+sc.pl.violin(adata_mouse, ['Bmp2'], groupby = 'cluster', use_raw=True, save='_mouse_Bmp2.png')
+
+sc.pl.violin(adata_human_new, ['BMP2'], groupby = 'cluster', use_raw=True, save='_human_BMP2.png')
+sc.pl.violin(adata_human_new, ['CDH11'], groupby = 'cluster', use_raw=True, save='_human_CDH11.png')
+sc.pl.violin(adata_mouse, ['Cdh11'], groupby = 'cluster', use_raw=True, save='_mouse_Cdh11.png')
+sc.pl.violin(adata_mouse, ['Aspn'], groupby = 'cluster', use_raw=True, save='_mouse_Aspn.png')
+sc.pl.violin(adata_human_new, ['ASPN'], groupby = 'cluster', use_raw=True, save='_human_ASPN.png')
+
+
+sc.pl.violin(adata_mouse, ['Igf1'], groupby = 'cluster', use_raw=True)
 
 ##########################
 ## cluster markers
@@ -157,6 +193,7 @@ sc.pl.umap(adata_human_new, color=['cluster', 'ACTA2'], save = '_human_ACTA2.png
 sc.tl.rank_genes_groups(adata_mouse, 'cluster', pts=True, use_raw = False)
 sc.pl.rank_genes_groups(adata_mouse, n_genes = 25, sharey=False, save = '_mouseMarkers_notRaw.png')
 markers_mouse_c3 = sc.get.rank_genes_groups_df(adata_mouse, group = '3')
+markers_mouse_c4 = sc.get.rank_genes_groups_df(adata_mouse, group = '4')
 
 # human
 sc.tl.rank_genes_groups(adata_human_new, 'cluster', pts=True, use_raw = False)
@@ -346,7 +383,7 @@ adata_mouse.obs['Mki67_status'].value_counts()
 ## N of Mki67+ cells in all clusters
 pd.crosstab(adata_mouse.obs['cluster'], adata_mouse.obs['Mki67_status'])
 
-###########
+###################
 ## plot cells by Mki67 status
 
 # only in c5 c6 and c7
@@ -389,7 +426,7 @@ pd.crosstab(adata_mouse.obs['cluster'], adata_mouse.obs['Onecut2_status'])
 sc.pl.umap(adata_mouse, color=['Onecut2', 'Onecut2_status'], color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_mouseAll_Onecut2Expression_Onecut2status.png')
 
 Onecut2_relativeFrequency_all = sct.tools.relative_frequency_per_cluster(adata_mouse, group_by='cluster', xlabel='Onecut2_status', condition=None)
-Onecut2_relativeFrequency_all['cluster'] = 'c'+Onecut2_relativeFrequency_all['cluster']
+Onecut2_relativeFrequency_all['cluster'] = 'c' + Onecut2_relativeFrequency_all['cluster']
 sct.plot.cluster_composition_stacked_barplot(Onecut2_relativeFrequency_all, xlabel='cluster', figsize=(8, 10), width=0.8, label_size=20, tick_size=16, margins=(0.02, 0.04), colors=adata_mouse.uns['Onecut2_status_colors'], save = 'figures/Onecut2_status.png')
 
 
@@ -774,6 +811,17 @@ dp = sc.pl.DotPlot(adata_mouse,
                             )
 dp.savefig('figures/DotPlot_Notch_Hes1_Tubb3_Soat1_Acat1_Lef1_mouse.png')
 
+########################################################################################################################################
+sc.pl.violin(adata_mouse, ['C1qa', 'C1qb', 'C1qc'], groupby = 'cluster', use_raw=True, save='_C1qa_b_c_mouse.png')
+dp = sc.pl.DotPlot(adata_mouse, var_names = ['C1qa', 'C1qb', 'C1qc'], groupby = 'key', cmap = 'Reds')
+dp.legend(width=2.5).savefig('figures/C1Q_GEMMs.png')
+
+sc.pl.violin(adata_human_new, ['C1QA', 'C1QB', 'C1QC'], groupby = 'cluster', use_raw=True, save='_C1qa_b_c_humanPrimary.png')
+dp = sc.pl.DotPlot(adata_human_new, var_names = ['C1QA', 'C1QB', 'C1QC'], groupby = 'key', cmap = 'Reds')
+dp.legend(width=2.5).savefig('figures/human_primary_per_sample.png')
+
+dp = sc.pl.DotPlot(adata_human_new, var_names = ['C1QA', 'C1QB', 'C1QC'], groupby = 'case', cmap = 'Reds')
+dp.legend(width=2.5).savefig('figures/human_primary_per_case.png')
 ####################################################################
 ## get cluster markers
 
@@ -1207,7 +1255,7 @@ adata_mouse.obs.condition.value_counts()
 sc.pl.umap(
     adata_mouse[adata_mouse.obs["condition"] == "mutant"],
     color="key", size = 10,
-    save = '_mouse_models_mutant.png'
+    save = '_mouse_models_mutant_transparent.png'
 )
 # Wildtype
 sc.pl.umap(
@@ -1217,7 +1265,7 @@ sc.pl.umap(
 )
 
 #####################################
-# umapo by n_genes
+# umap by n_genes
 sc.pl.umap(
     adata_mouse,
     color="n_genes", size = 10,

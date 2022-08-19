@@ -142,3 +142,69 @@ fig.update_layout(
     autosize=False, width=500, height=1000, font=dict(size=22), margin=dict(r=180)
 )
 fig.write_image(f"figs_new/parallel_categories_5_6_7.png")
+
+
+##############################
+## human
+adata_human_new = sc.read_h5ad('human/erg_fibroblasts_scvi_v6_regulons_annot_new.h5ad', chunk_size=100000)
+
+adata_human_new.obs['erg'].replace('0', 'ERG+', inplace=True)
+adata_human_new.obs['erg'].replace('1', 'ERG-', inplace=True)
+
+pd.crosstab(adata_human_new.obs['case'], adata_human_new.obs['erg'])
+
+# re-cap the gene symbols
+adata_human_new.var_names = [gene.upper() for gene in adata_human_new.var_names]
+# subset also the adata_human.raw
+tempAdata = adata_human_new.raw.to_adata()
+tempAdata.var_names = [gene.upper() for gene in tempAdata.var_names]
+adata_human_new.raw = tempAdata
+
+adata_human_new.obs['cluster'] = adata_human_new.obs['cluster'].astype('category')
+adata_human_new.obs.sort_values(by = ['cluster'], inplace=True)
+
+color_map = dict(
+    zip(adata_human_new.obs['cluster'].cat.categories.tolist(), sc.pl.palettes.vega_20_scanpy)
+)
+adata_human_new.obs["color"] = adata_human_new.obs['cluster'].map(color_map)
+
+fig = px.parallel_categories(
+    adata_human_new.obs,
+    dimensions=['cluster', 'erg'],
+    color="color",
+    labels={'key': "erg", 'cluster': "cluster"},
+)
+fig.update_layout(autosize=False, width=500, height=1000, font_size = 18)
+fig.write_image("figs_new/human_parallel_categories_cluster.png")
+
+
+##############################
+## human bone metastasis
+adata_BoneMet_stroma = sc.read('data/kfoury/adata_BoneMet_stroma.h5ad')
+
+pd.crosstab(adata_BoneMet_stroma.obs['cluster'], adata_BoneMet_stroma.obs['cells'])
+
+# re-cap the gene symbols
+adata_human_new.var_names = [gene.upper() for gene in adata_human_new.var_names]
+# subset also the adata_human.raw
+tempAdata = adata_human_new.raw.to_adata()
+tempAdata.var_names = [gene.upper() for gene in tempAdata.var_names]
+adata_human_new.raw = tempAdata
+
+adata_human_new.obs['cluster'] = adata_human_new.obs['cluster'].astype('category')
+adata_human_new.obs.sort_values(by = ['cluster'], inplace=True)
+
+color_map = dict(
+    zip(adata_human_new.obs['cluster'].cat.categories.tolist(), sc.pl.palettes.vega_20_scanpy)
+)
+adata_human_new.obs["color"] = adata_human_new.obs['cluster'].map(color_map)
+
+fig = px.parallel_categories(
+    adata_human_new.obs,
+    dimensions=['cluster', 'erg'],
+    color="color",
+    labels={'key': "erg", 'cluster': "cluster"},
+)
+fig.update_layout(autosize=False, width=500, height=1000, font_size = 18)
+fig.write_image("figs_new/human_parallel_categories_cluster.png")
+

@@ -338,14 +338,51 @@ intersection_c6 = pd.merge(top100_mouse_c6, top100_human_c6, how='inner', on=['n
 intersection_c7 = pd.merge(top100_mouse_c7, top100_human_c7, how='inner', on=['names'])
 
 adata_BoneMet_stroma.var_names_make_unique()
-adata_BoneMet_stroma.raw.var_names_make_unique()
+
+adata_BoneMet_stroma_raw = adata_BoneMet_stroma.raw.to_adata()
+adata_BoneMet_stroma_raw.var_names_make_unique()
+adata_BoneMet_stroma.raw = adata_BoneMet_stroma_raw
 
 sc.pl.violin(adata_BoneMet_stroma, ['POSTN'], groupby = 'cluster', use_raw=False, save='_kfoury_POSTN.png')
 sc.pl.umap(adata_BoneMet_stroma, color=['cluster', 'POSTN', 'MKI67'], use_raw=False, color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_Kfoury_POSTN_MKI67.png')
 
 sc.pl.violin(adata_BoneMet_stroma, ['MKI67'], groupby = 'cluster', use_raw=False, save='_kfoury_MKI67.png')
 
-sc.pl.violin(adata_BoneMet_stroma, ['CD63'], groupby = 'cluster', use_raw=False)
+sc.pl.violin(adata_BoneMet_stroma, ['ACTA2', 'MYL9', 'MYH11', 'TAGLN'], groupby = 'cluster', use_raw=True, save='_Kfoury_c0_myofibroblasts.png')
+
+sc.pl.violin(adata_BoneMet_stroma, ['SFRP1', 'GPX3', 'C3', 'C7'], groupby = 'cluster', use_raw=True, save='_Kfoury_c1.png')
+
+sc.pl.violin(adata_BoneMet_stroma, ['JUN', 'JUNB', 'JUND', 'FOS', 'FOSB', 'FOSL2'], groupby = 'cluster', use_raw=True, save='_Kfoury_c2_AP1.png')
+
+sc.pl.violin(adata_BoneMet_stroma, ['RUNX2'], groupby = 'cluster', use_raw=True, save='_kfoury_RUNX2.png')
+sc.pl.violin(adata_BoneMet_stroma, ['BMP2'], groupby = 'cluster', use_raw=True, save='_kfoury_BMP2.png')
+sc.pl.violin(adata_BoneMet_stroma, ['IGF1'], groupby = 'cluster', use_raw=True, save='_kfoury_IGF1.png')
+sc.pl.violin(adata_BoneMet_stroma, ['IGFBP3'], groupby = 'cluster', use_raw=True, save='_kfoury_IGFBP3.png')
+sc.pl.violin(adata_BoneMet_stroma, ['CDH11'], groupby = 'cluster', use_raw=True, save='_kfoury_CDH11.png')
+sc.pl.violin(adata_BoneMet_stroma, ['ASPN'], groupby = 'cluster', use_raw=True, save='_kfoury_ASPN.png')
+
+###########################################
+adata_BoneMet_stroma_myo = adata_BoneMet_stroma[adata_BoneMet_stroma.obs['cluster'] == '0']
+
+sc.pl.umap(
+    adata_BoneMet_stroma,
+    color=[
+        "ACTA2",
+        "MYL9",
+        "MYH11",
+        "TAGLN",
+    ],
+    groups = '0', add_outline = True,
+    cmap="RdBu_r",
+    vmax=5,
+    save="_kfoury_myo_markers.png"
+)
+
+
+####################
+## C1Qs
+adata_BoneMet_stroma.var_names_make_unique()
+sc.pl.violin(adata_BoneMet_stroma, ['C1Qa', 'C1Qb', 'C1Qc'], groupby = 'cluster', use_raw=True, save='_C1Q_kfouryBoneMets.png')
 
 ###############################
 # re-cap the gene symbols

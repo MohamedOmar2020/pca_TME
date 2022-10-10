@@ -181,14 +181,122 @@ adata_human_all.obs['tn'].value_counts()
 ## annotation
 
 sc.pl.umap(
-    adata_mouse_all,
+    adata_human_all,
     color="leiden",
     frameon=False,
     legend_loc="on data",
     size=5,
     legend_fontsize=6,
-    save="leiden.png"
+    save="_human_leiden.png"
 )
+
+sc.pl.umap(adata_human_all, color = ['endothelial'])
+sc.pl.umap(adata_human_all, color = ['fibroblast', 'myofibroblast'])
+sc.pl.umap(adata_human_all, color = ['dendritic', 'pDC', 'cCDs', 'langherhans_like', 'b', 't_nk', 'myeloid', 'mast', 'macrophages'])
+sc.pl.umap(adata_human_all, color = ['luminal', 'basal', 'notbasal', 'neuroendocrine', 'seminal_vesicle_basal', 'seminal_vesicle_luminal', 'seminal_vesicle_ionocyte'])
+
+
+adata_human_all.obs["epithelium"] = (
+    adata_human_all.obs["leiden"].isin(['27', '5', '23', '20', '31', '28', '29', '40', '8', '36', '12', '39', '55', '26', '48', '61', '66']).astype("category")
+)
+
+adata_human_all.obs["stroma"] = (
+    adata_human_all.obs["leiden"].isin(['16', '10', '9', '62']).astype("category")
+)
+
+adata_human_all.obs["immune"] = (
+    adata_human_all.obs["leiden"].isin(['1', '2', '13', '3', '14', '22', '21', '18', '19', '24', '15', '7', '17', '32', '35', '37', '25']).astype("category")
+)
+
+adata_human_all.obs["endothelium"] = (
+     adata_human_all.obs["leiden"].isin(['0', '44', '11', '30']).astype("category")
+ )
+#adata.obs["basal"] = adata.obs["leiden"].isin(["2", "29"]).astype("category")
+
+
+adata_human_all.obs["compartments"] = "Other"
+adata_human_all.obs.loc[adata_human_all.obs.stroma == True, "compartments"] = "stroma"
+adata_human_all.obs.loc[adata_human_all.obs.epithelium == True, "compartments"] = "epithelium"
+adata_human_all.obs.loc[adata_human_all.obs.immune == True, "compartments"] = "immune"
+adata_human_all.obs.loc[adata_human_all.obs.endothelium == True, "compartments"] = "endothelium"
+
+
+adata_human_all.obs['compartments'].value_counts()
+pd.crosstab(adata_human_all.obs['leiden'], adata_human_all.obs['compartments'])
+pd.crosstab(adata_human_all.obs['leiden'][adata_human_all.obs['leiden']=='Other'], adata_human_all.obs['compartments'])
+
+
+
+#adata.obs.loc[adata.obs.basal == True, "phenotypes"] = "basal"
+sc.pl.umap(
+    adata_human_all,
+    color="leiden",
+    frameon=False,
+    legend_loc="on data",
+    size=5,
+    legend_fontsize=6,
+    save="_human_leiden.png"
+)
+
+sc.pl.umap(
+    adata_human_all,
+    color="compartments",
+    frameon=False,
+    legend_loc="on data",
+    size=5,
+    legend_fontsize=6,
+    save="_human_compartments.png"
+)
+
+sc.pl.umap(
+    adata_human_all,
+    color=['compartments', 'dendritic', 'cCDs', 'langherhans_like', 'b', 't_nk', 'myeloid', 'mast', 'macrophages'],
+    cmap="Reds",
+    vmax=3,
+    frameon=False,
+    legend_loc="on data",
+    size=5,
+    legend_fontsize=6,
+    save="_human_immune.png"
+)
+
+sc.pl.umap(
+    adata_human_all,
+    color=['compartments', 'endothelial'],
+    cmap="Reds",
+    vmax=3,
+    frameon=False,
+    legend_loc="on data",
+    size=5,
+    legend_fontsize=6,
+    save="_human_endothelial.png"
+)
+
+sc.pl.umap(
+    adata_human_all,
+    color=['compartments', 'fibroblast', 'myofibroblast'],
+    cmap="Reds",
+    vmax=3,
+    frameon=False,
+    legend_loc="on data",
+    size=5,
+    legend_fontsize=6,
+    save="_human_stroma.png"
+)
+
+sc.pl.umap(
+    adata_human_all,
+    color=['compartments', 'luminal', 'basal', 'neuroendocrine', 'seminal_vesicle_basal', 'seminal_vesicle_luminal', 'seminal_vesicle_ionocyte'],
+    cmap="Reds",
+    vmax=3,
+    frameon=False,
+    legend_loc="on data",
+    size=5,
+    legend_fontsize=6,
+    save="_human_epithelium.png"
+)
+
+
 
 #################################################################
 # adenosine related genes
@@ -215,14 +323,14 @@ dp.legend(width=2.5).savefig('figures/dotplot_adenosine_mouse_all.png')
 
 ################
 # dotplot for adenosine related genes per erg status
-dp = sc.pl.DotPlot(adata_human_all, var_names = ['PPARG', 'CYBB', 'COL3A1', 'FOXP3', 'LAG3', 'APP', 'CD81', 'GPI', 'PTGS2', 'CASP1', 'FOS', 'MAPK1', 'MAPK3', 'CREB1'], groupby = 'erg', cmap = 'Reds', use_raw=True)
+dp = sc.pl.DotPlot(adata_human_all, var_names = ['PPARG', 'CYBB', 'COL3A1', 'FOXP3', 'LAG3', 'APP', 'CD81', 'GPI', 'PTGS2', 'CASP1', 'FOS', 'MAPK1', 'MAPK3', 'CREB1'], groupby = ['erg', 'compartments'], cmap = 'Reds', use_raw=True)
 dp.legend(width=2.5).savefig('figures/dotplot_adenosine_human_all_erg.png')
 
 # dotplot for adenosine related genes per case
-dp = sc.pl.DotPlot(adata_human_all, var_names = ['PPARG', 'CYBB', 'COL3A1', 'FOXP3', 'LAG3', 'APP', 'CD81', 'GPI', 'PTGS2', 'CASP1', 'FOS', 'MAPK1', 'MAPK3', 'CREB1'], groupby = 'case', cmap = 'Reds', use_raw=True)
+dp = sc.pl.DotPlot(adata_human_all, var_names = ['PPARG', 'CYBB', 'COL3A1', 'FOXP3', 'LAG3', 'APP', 'CD81', 'GPI', 'PTGS2', 'CASP1', 'FOS', 'MAPK1', 'MAPK3', 'CREB1'], groupby = ['case', 'compartments'], cmap = 'Reds', use_raw=True)
 dp.legend(width=2.5).savefig('figures/dotplot_adenosine_human_all_case.png')
 
 # dotplot for adenosine related genes per case
-dp = sc.pl.DotPlot(adata_human_all, var_names = ['PPARG', 'CYBB', 'COL3A1', 'FOXP3', 'LAG3', 'APP', 'CD81', 'GPI', 'PTGS2', 'CASP1', 'FOS', 'MAPK1', 'MAPK3', 'CREB1'], groupby = 'condition', cmap = 'Reds', use_raw=True)
+dp = sc.pl.DotPlot(adata_human_all, var_names = ['PPARG', 'CYBB', 'COL3A1', 'FOXP3', 'LAG3', 'APP', 'CD81', 'GPI', 'PTGS2', 'CASP1', 'FOS', 'MAPK1', 'MAPK3', 'CREB1'], groupby = ['condition', 'compartments'], cmap = 'Reds', use_raw=True)
 dp.legend(width=2.5).savefig('figures/dotplot_adenosine_human_all_site.png')
 

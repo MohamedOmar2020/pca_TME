@@ -53,7 +53,7 @@ stroma = adata[adata.obs["halo_label"] == "STROMA"]
 adata.obs["pheno"] = adata.obs["pheno"].astype("category")
 
 
-
+adata.var_names
 
 
 for model in [
@@ -290,3 +290,7 @@ for model in [
             _utils.savefig_or_show(
                 "violin", show=show, save=f"_{model[0]}_{marker}.png"
             )
+
+
+adata.write('vectra/panel1.h5ad')
+adata_panel2.write('vectra/panel2.h5ad')

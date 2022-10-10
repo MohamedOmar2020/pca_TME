@@ -651,20 +651,20 @@ def ligandreceptor_permutation_test(adata):
     Takes all cells, separated into fibroblast, luminal, basal compartments.
     """
     ion()
-    adata.obs["fibroblasts"] = (
+    adata.obs["Stroma"] = (
         adata.obs["leiden"].isin(["8", "13", "15", "26"]).astype("category")
     )
-    adata.obs["luminal"] = (
+    adata.obs["Epithelium"] = (
         adata.obs["leiden"]
-        .isin(["27", "24", "19", "18", "31", "11", "16", "21", "22", "6", "33", "23"])
+        .isin(["2", "29", "27", "24", "19", "18", "31", "11", "16", "21", "22", "6", "33", "23"])
         .astype("category")
     )
-    adata.obs["basal"] = adata.obs["leiden"].isin(["2", "29"]).astype("category")
+    #adata.obs["basal"] = adata.obs["leiden"].isin(["2", "29"]).astype("category")
     adata.obs["phenotypes"] = "Other"
-    adata.obs.loc[adata.obs.fibroblasts == True, "phenotypes"] = "fibroblasts"
-    adata.obs.loc[adata.obs.luminal == True, "phenotypes"] = "luminal"
-    adata.obs.loc[adata.obs.basal == True, "phenotypes"] = "basal"
-    sc.pl.umap(adata, color="phenotypes", save="checkcompartments.png")
+    adata.obs.loc[adata.obs.Stroma == True, "phenotypes"] = "Stroma"
+    adata.obs.loc[adata.obs.Epithelium == True, "phenotypes"] = "Epithelium"
+    #adata.obs.loc[adata.obs.basal == True, "phenotypes"] = "basal"
+    sc.pl.umap(adata, color="phenotypes", save="checkcompartments_new.png")
 
     # instead could look at unprocessed layer
     rawadata = sc.read_h5ad(
@@ -692,12 +692,13 @@ def ligandreceptor_permutation_test(adata):
         sq.pl.ligrec(
             lradata,
             cluster_key="phenotypes",
-            source_groups=["fibroblasts", "luminal", "basal"],
-            target_groups=["fibroblasts", "luminal", "basal"],
+            source_groups=["Stroma", "Epithelium"],
+            target_groups=["Stroma", "Epithelium"],
+            remove_nonsig_interactions = True,
             means_range=(0.3, np.inf),
             alpha=0.05, pvalue_threshold=0.05,
             swap_axes=True,
-            save=f"_{key}_lr_interactions.pdf",
+            save=f"_{key}_lr_interactions_new.pdf",
         )
 
 

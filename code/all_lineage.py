@@ -84,7 +84,6 @@ adata_mouse_all.obs.loc[adata_mouse_all.obs.epithelium == True, "compartments"] 
 adata_mouse_all.obs.loc[adata_mouse_all.obs.immune == True, "compartments"] = "immune"
 adata_mouse_all.obs.loc[adata_mouse_all.obs.endothelium == True, "compartments"] = "endothelium"
 
-
 adata_mouse_all.obs['compartments'].value_counts()
 pd.crosstab( adata_mouse_all.obs['leiden'], adata_mouse_all.obs['compartments'])
 
@@ -168,6 +167,9 @@ sc.pl.umap(
     save="_epithelium.png"
 )
 
+
+# save
+adata_mouse_all.write_loom('outs/h5ads/fapcm_all_v6_compartments_MO.loom', write_obsm_varm=True)
 
 ##########################################################################################
 ##########################################################################################
@@ -334,3 +336,6 @@ dp.legend(width=2.5).savefig('figures/dotplot_adenosine_human_all_case.png')
 dp = sc.pl.DotPlot(adata_human_all, var_names = ['PPARG', 'CYBB', 'COL3A1', 'FOXP3', 'LAG3', 'APP', 'CD81', 'GPI', 'PTGS2', 'CASP1', 'FOS', 'MAPK1', 'MAPK3', 'CREB1'], groupby = ['condition', 'compartments'], cmap = 'Reds', use_raw=True)
 dp.legend(width=2.5).savefig('figures/dotplot_adenosine_human_all_site.png')
 
+## ############
+# save
+adata_human_all.write_loom('outs_human/h5ads/erg_scvi_v6_compartments.loom', write_obsm_varm=True)

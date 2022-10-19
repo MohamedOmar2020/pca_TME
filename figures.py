@@ -697,7 +697,7 @@ def ligandreceptor_permutation_test(adata):
             remove_nonsig_interactions = True,
             means_range=(0.3, np.inf),
             alpha=0.05, pvalue_threshold=0.05,
-            swap_axes=True,
+            swap_axes=False,
             save=f"_{key}_lr_interactions_new.pdf",
         )
 

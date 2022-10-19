@@ -1,5 +1,6 @@
 import pandas as pd
 import squidpy as sq
+import scanpy as sc
 
 adata = sc.read("outs/h5ads/fapcm_unfiltered_v6.h5ad")
 

@@ -27,13 +27,26 @@ adata_mouse = sc.read_h5ad('outs/h5ads/fapcm_fibroblasts_v6_clean_regulons_5.h5a
 adata_mouse.obs['cluster'] = adata_mouse.obs['cluster'].astype('str')
 adata_mouse.obs['cluster'].value_counts()
 
+
+#############################
 # filter the na
 adata_mouse = adata_mouse[adata_mouse.obs['cluster'] != 'nan', :]
 adata_mouse.obs['cluster'].value_counts()
 
+#######################################################################################
+###################################################################################
+# for use in R
+sc.pl.umap(adata_mouse, color = 'cluster')
+adata_mouse.write('outs/h5ads/adata_mouse.h5ad')
+
+
+#######################################################################################
+#######################################################################################
 # Process the human data using ingest
 # load the human data
 adata_human = sc.read_h5ad('human/erg_fibroblasts_scvi_v6_regulons.h5ad', chunk_size=100000)
+
+adata_human.obs['key'].value_counts()
 
 pd.crosstab(adata_human.obs['case'], adata_human.obs['erg'])
 

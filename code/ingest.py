@@ -39,6 +39,11 @@ adata_mouse.obs['cluster'].value_counts()
 sc.pl.umap(adata_mouse, color = 'cluster')
 adata_mouse.write('outs/h5ads/adata_mouse.h5ad')
 
+# cell chat
+adata_mouse = adata_mouse.raw.to_adata()
+adata_mouse.X = sp.csr_matrix.todense(adata_mouse.X)
+adata_mouse.X = adata_mouse.to_df()
+adata_mouse.write('forCellChat/adata_mouse_raw.h5ad')
 
 #######################################################################################
 #######################################################################################
@@ -157,6 +162,13 @@ adata_human_new.raw = tempAdata
 adata_human_new.obs['erg'].replace('0', 'ERG+', inplace=True)
 adata_human_new.obs['erg'].replace('1', 'ERG-', inplace=True)
 
+# cell chat
+adata_human_new = adata_human_new.raw.to_adata()
+adata_human_new.X = sp.csr_matrix.todense(adata_human_new.X)
+adata_human_new.X = adata_human_new.to_df()
+adata_human_new.write('forCellChat/adata_human_stroma_raw.h5ad')
+
+###################
 human_tab_Ar = sc.get.obs_df(adata_human_new, keys = ['cluster', 'erg', 'SFRP2', 'WNT5A', 'LGR5', 'APC',
                                                           'WNT4', 'NOTUM', 'WIF1', 'WNT6', 'RORB', 'PTN'], layer = None, use_raw = True)
 

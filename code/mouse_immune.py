@@ -329,6 +329,11 @@ fig.write_image("figures/parallel_categories_mouse_immune_byCellType.png")
 mouse_immune.write('outs/h5ads/mouse_immune.h5ad')
 mouse_immune = sc.read_h5ad('outs/h5ads/mouse_immune.h5ad', chunk_size=100000)
 
+# cell chat
+adata_mouse_immune = mouse_immune.raw.to_adata()
+adata_mouse_immune.X = sp.csr_matrix.todense(adata_mouse_immune.X)
+adata_mouse_immune.X = adata_mouse_immune.to_df()
+adata_mouse.write('forCellChat/adata_mouse_immune_raw.h5ad')
 
 
 ##################################################################################
@@ -355,6 +360,23 @@ mouse_immune_stroma.obs['compartment'].replace('1', 'stroma', inplace=True)
 
 mouse_immune_stroma.obs['cluster'].value_counts()
 
+
+#############################################
+# save for cellchat
+mouse_immune_stroma_raw = mouse_immune_stroma.raw.to_adata()
+#%%
+mouse_immune_stroma_raw.X = sp.csr_matrix.todense(mouse_immune_stroma_raw.X)
+mouse_immune_stroma_raw.X = mouse_immune_stroma_raw.to_df()
+#%%
+# to remove
+toRem =  ['_scvi_batch', '_scvi_labels', '_scvi_local_l_mean', '_scvi_local_l_var', 'endothelial', 'fibroblast', 'myofibroblast', 'dendritic', 'cCDs', 'langherhans_like', 'b', 't_nk', 'myeloid', 'mast', 'luminal', 'basal', 'notluminal', 'macrophages', 'neuroendocrine', 'seminal_vesicle_basal', 'seminal_vesicle_luminal', 'seminal_vesicle_ionocyte', 'epithelium', 'stroma', 'immune', 'endothelium', 'compartments', 'leiden_R', 'dendritic cells', 'B cells', 'Treg', 'CD4+ T lymphocytes', 'NK/cytoxic T lymphocytes', 'monocytes/macrophages', 'Regulon(Arid5a)', 'Regulon(Arid5b)', 'Regulon(Ascl1)', 'Regulon(Ascl2)', 'Regulon(Atf3)', 'Regulon(Bach1)', 'Regulon(Batf)', 'Regulon(Bcl3)', 'Regulon(Cebpa)', 'Regulon(Cebpb)', 'Regulon(Cebpd)', 'Regulon(Creb5)', 'Regulon(Crem)', 'Regulon(Dusp26)', 'Regulon(Egr1)', 'Regulon(Egr2)', 'Regulon(Egr3)', 'Regulon(Egr4)', 'Regulon(Eomes)', 'Regulon(Erg)', 'Regulon(Ets1)', 'Regulon(Fezf1)', 'Regulon(Fosb)', 'Regulon(Fosl2)', 'Regulon(Foxa1)', 'Regulon(Foxd3)', 'Regulon(Foxi1)', 'Regulon(Foxo1)', 'Regulon(Foxq1)', 'Regulon(Foxs1)', 'Regulon(Gabpb1)', 'Regulon(Gata2)', 'Regulon(Gata3)', 'Regulon(Gata6)', 'Regulon(Grhl3)', 'Regulon(Hnf4a)', 'Regulon(Hoxb6)', 'Regulon(Ikzf2)', 'Regulon(Irf1)', 'Regulon(Irf4)', 'Regulon(Irf5)', 'Regulon(Irf6)', 'Regulon(Irf7)', 'Regulon(Irf8)', 'Regulon(Junb)', 'Regulon(Jund)', 'Regulon(Klf2)', 'Regulon(Klf4)', 'Regulon(Klf5)', 'Regulon(Lhx6)', 'Regulon(Mafb)', 'Regulon(Maff)', 'Regulon(Mef2c)', 'Regulon(Myc)', 'Regulon(Myod1)', 'Regulon(Nfe2l2)', 'Regulon(Nfia)', 'Regulon(Nfil3)', 'Regulon(Nfix)', 'Regulon(Nfkb1)', 'Regulon(Nkx6-2)', 'Regulon(Onecut2)', 'Regulon(Pax3)', 'Regulon(Peg3)', 'Regulon(Pgr)', 'Regulon(Pou2f3)', 'Regulon(Pparg)', 'Regulon(Prrx2)', 'Regulon(Rel)', 'Regulon(Runx1)', 'Regulon(Runx3)', 'Regulon(Six2)', 'Regulon(Snai3)', 'Regulon(Sox10)', 'Regulon(Sox11)', 'Regulon(Sox18)', 'Regulon(Sox2)', 'Regulon(Sox4)', 'Regulon(Sox7)', 'Regulon(Sox9)', 'Regulon(Spi1)', 'Regulon(Spib)', 'Regulon(Spic)', 'Regulon(Srebf1)', 'Regulon(Stat3)', 'Regulon(Tagln2)', 'Regulon(Tal1)', 'Regulon(Tbx1)', 'Regulon(Tbx21)', 'Regulon(Tcf4)', 'Regulon(Tead1)', 'Regulon(Tff3)', 'Regulon(Trp63)', 'Regulon(Twist1)', 'name', 'name_nosuperscript']
+
+for i in toRem:
+    del mouse_immune_stroma_raw.obs[i]
+
+
+mouse_immune_stroma_raw.obs_names_make_unique()
+mouse_immune_stroma_raw.write('forCellChat/mouse_immune_stroma_raw.h5ad')
 
 ###################################################################
 ## LR

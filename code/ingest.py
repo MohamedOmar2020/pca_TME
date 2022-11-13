@@ -18,8 +18,9 @@ import anndata as ad
 import sc_toolbox as sct
 import seaborn as sb
 
+
 sc.settings.figdir = 'figures'
-sc.set_figure_params(dpi_save = 300, transparent = True)
+sc.set_figure_params(dpi_save = 300, transparent = False)
 #plt.rcParams.update({'xtick.labelsize' : '50'})
 #plt.rcParams.update({'ytick.labelsize' : '50'})
 

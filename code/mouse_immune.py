@@ -15,6 +15,7 @@ import scanpy as sc
 import seaborn as sns
 import anndata as ad
 import sc_toolbox as sct
+import sc_toolbox.api as sct
 import seaborn as sb
 import plotly.express as px
 import squidpy as sq
@@ -434,17 +435,31 @@ sq.pl.ligrec(
         save="lr_interactions_immune_stroma_c5c6c7_Treg.pdf",
 )
 
+########################################################
+sc.pl.umap(
+     mouse_immune_stroma,
+     color=["key"],
+     frameon=False,
+     legend_loc="on data",
+     size=5,
+     legend_fontsize=6)
+
+ax = sc.pl.correlation_matrix(mouse_immune_stroma, groupby='cluster', figsize=(5,3.5), save="_corr.png")
+
+Mki67_relativeFrequency_all = sct.tools.relative_frequency_per_cluster(mouse_immune_stroma, group_by='cluster', xlabel='Mki67_status', condition=None)
+Mki67_relativeFrequency_all['cluster'] = 'c'+Mki67_relativeFrequency_all['cluster']
+sct.plot.cluster_composition_stacked_barplot(Mki67_relativeFrequency_all, xlabel='cluster', figsize=(8, 10), width=0.8, label_size=20, tick_size=16, margins=(0.02, 0.04), colors=adata_mouse.uns['Mki67_status_colors'], save = 'figures/Mki67_status.png')
+
+
+relativeFrequency_all = sct.tools.relative_frequency_per_cluster(mouse_immune_stroma, group_by='cluster', xlabel='key')
+sct.plot.cluster_composition_stacked_barplot(relativeFrequency_all, xlabel='cluster', figsize=(25, 25), width=0.7, margins=(0.02, 0.04), label_size=30, tick_size=20, colors=mouse_immune_stroma.uns['cluster_colors'], save = 'figures/frequency_Per_GEMM.png')
 
 
 
+sct.plot.relative_frequencies_boxplots(relativeFrequency_all, cols = mouse_immune_stroma.uns['cluster_colors'], xlabel='cluster', figsize=(15, 6), width=0.5, order = ['0', '1'], cluster = ['0', '1'])
 
 
 
-
-
-
-
-
-
-
+x = pd.crosstab(mouse_immune_stroma.obs['key'], mouse_immune_stroma.obs['cluster'])
+x2 = relativeFrequency_all.transpose()
 

@@ -1,0 +1,38 @@
+name: Publish sc-toolbox to PyPI
+
+on:
+    release:
+        types: [published]
+    workflow_dispatch:
+
+jobs:
+    release:
+        name: Release
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out the repository
+              uses: actions/checkout@v3
+              with:
+                  fetch-depth: 2
+
+            - name: Set up Python
+              uses: actions/setup-python@v3
+              with:
+                  python-version: "3.9"
+
+            - name: Install Poetry
+              run: |
+                  pip install poetry
+                  poetry --version
+
+            - name: Build package
+              run: |
+                  poetry build --ansi
+
+            - name: Publish package on PyPI
+              uses: pypa/gh-action-pypi-publish@v1.5.0
+              with:
+                  # TODO COOKIETEMPLE: Configure your PyPI Token to enable automatic deployment to PyPi on releases
+                  # https://help.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets
+                  user: __token__
+                  password: ${{ secrets.PYPI_TOKEN }}

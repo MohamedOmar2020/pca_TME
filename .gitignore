@@ -14,11 +14,27 @@ scutils/
 vectra/
 oldscenic/
 r/
+figures_rc/
+illustrator/
+milopy/
+mnnpy/
+schillerlab-sc-toolbox-393fa7a/
+vectra/
+singleR/
+objs/
+code/not_used/
+
+Webex.pkg
+stitch_python.py
+figures.py
+info.txt
+geckodriver.log
+pipe.py
 
 
 *.Rproj
 *.idea
 .Rprofile
 *.txt
-
+*.gitignore
 .Rproj.user

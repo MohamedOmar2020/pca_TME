@@ -235,24 +235,28 @@ ggsurvplot(Fit_sig_tcga_pfs_logReg,
            pval = TRUE,
            pval.size = 10,
            legend.labs = c('prediction: 0', 'prediction: 1'),
-           ggtheme = theme_survminer(base_size = 30, font.x = c(30, 'bold.italic', 'black'), font.y = c(30, 'bold.italic', 'black'), font.tickslab = c(30, 'plain', 'black'), font.legend = c(30, 'bold', 'black')),
+           ggtheme = theme_survminer(base_size = 25, font.x = c(25), font.y = c(25, 'bold.italic', 'black'), font.tickslab = c(25, 'plain', 'black'), font.legend = c(25, 'bold', 'black')),
            palette = 'jco',
            risk.table.y.text.col = FALSE,
-           risk.table.y.text = FALSE, title = 'PRN signature and TCGA PFS')
+           risk.table.y.text = FALSE, 
+           #title = 'PRN signature and TCGA PFS'
+           )
 dev.off()
 
 ########
 # by quartiles
-pdf("./figures/survival/logreg_tcga_RFS_quartiles.pdf", width = 8, height = 8, onefile = F)
+pdf("./figures/survival/logreg_tcga_PFS_quartiles.pdf", width = 8, height = 8, onefile = F)
 ggsurvplot(Fit_sig_tcga_pfs_logReg_quartiles,
            risk.table = FALSE,
            pval = TRUE,
            pval.size = 10,
            legend.labs = c('Q1', 'Q2', 'Q3', 'Q4'),
-           ggtheme = theme_survminer(base_size = 30, font.x = c(30, 'bold.italic', 'black'), font.y = c(30, 'bold.italic', 'black'), font.tickslab = c(30, 'plain', 'black'), font.legend = c(30, 'bold', 'black')),
+           ggtheme = theme_survminer(base_size = 25, font.x = c(25, 'bold.italic', 'black'), font.y = c(25, 'bold.italic', 'black'), font.tickslab = c(25, 'plain', 'black'), font.legend = c(25, 'bold', 'black')),
            palette = 'jco',
            risk.table.y.text.col = FALSE,
-           risk.table.y.text = FALSE, title = 'PRN signature and TCGA PFS: quartiles')
+           risk.table.y.text = FALSE, 
+           #title = 'PRN signature and TCGA PFS: quartiles'
+           )
 dev.off()
 
 ##############################################################################
@@ -277,4 +281,26 @@ levels(CoxData_tcga$quartiles) <- paste0('Q', levels(CoxData_tcga$quartiles))
 Fit_sig_tcga_pfs_coxph_logReg_quartiles <- coxph(Surv(Progress.Free.Survival..Months., Progression.Free.Status) ~ quartiles, data = CoxData_tcga)
 summary_tcga_pfs_coxph_logReg_quartiles <- summary(Fit_sig_tcga_pfs_coxph_logReg_quartiles)
 
+##########################
+## multivariate cox with gleason
+# read another version of the clinical data (Firehose legacy) which contains gleason score
+pheno2 <- read.delim2('data/bulk/TCGA/prad_tcga_clinical_data.tsv')
+pheno2$Patient.ID <- gsub("\\-", "\\.", pheno2$Patient.ID)
+pheno2 <- pheno2[!duplicated(pheno2$Patient.ID), ]
+rownames(pheno2) <- pheno2$Patient.ID
+CommonSamples <- intersect(rownames(Pheno_tcga), rownames(pheno2))
+pheno2 <- pheno2[CommonSamples, ]
+all(rownames(pheno2) == rownames(CoxData_tcga))
 
+# add the gleason score to CoxData_tcga
+CoxData_tcga$gleason <- pheno2$Radical.Prostatectomy.Gleason.Score.for.Prostate.Cancer
+CoxData_tcga$gleason <- as.factor(CoxData_tcga$gleason)
+levels(CoxData_tcga$gleason)
+
+# fit the multivariate COX with gleason as cofactor 
+Fit_sig_tcga_PFS_coxph_logReg_withGS <- coxph(Surv(Progress.Free.Survival..Months., Progression.Free.Status) ~ tcga_prob_logReg + gleason, data = CoxData_tcga)
+summary(Fit_sig_tcga_PFS_coxph_logReg_withGS)
+
+tiff('./figures/survival/multivariateCox.tiff', width = 2000, height = 2000, res = 300)
+ggforest(Fit_sig_tcga_PFS_coxph_logReg_withGS)
+dev.off()

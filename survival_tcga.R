@@ -229,13 +229,14 @@ dev.off()
 ######################################
 # plot PFS
 
-pdf("./figures/survival/logReg_tcga_pfs_all.pdf", width = 8, height = 8, onefile = F)
+tiff("./figures/survival/logReg_tcga_pfs_all.tiff", width = 2000, height = 2000, res = 400)
 ggsurvplot(Fit_sig_tcga_pfs_logReg,
            risk.table = FALSE,
            pval = TRUE,
-           pval.size = 10,
-           legend.labs = c('prediction: 0', 'prediction: 1'),
-           ggtheme = theme_survminer(base_size = 25, font.x = c(25), font.y = c(25, 'bold.italic', 'black'), font.tickslab = c(25, 'plain', 'black'), font.legend = c(25, 'bold', 'black')),
+           pval.size = 8,
+           legend.labs = c('predicted PFS: 0', 'predicted PFS: 1'),
+           legend.title	= '',
+           ggtheme = theme_survminer(base_size = 12, font.x = c(12, 'bold.italic', 'black'), font.y = c(12, 'bold.italic', 'black'), font.tickslab = c(12, 'plain', 'black'), font.legend = c(12, 'bold', 'black')),
            palette = 'jco',
            risk.table.y.text.col = FALSE,
            risk.table.y.text = FALSE, 
@@ -245,13 +246,14 @@ dev.off()
 
 ########
 # by quartiles
-pdf("./figures/survival/logreg_tcga_PFS_quartiles.pdf", width = 8, height = 8, onefile = F)
+tiff("./figures/survival/logreg_tcga_PFS_quartiles.tiff", width = 2000, height = 2000, res = 400)
 ggsurvplot(Fit_sig_tcga_pfs_logReg_quartiles,
            risk.table = FALSE,
            pval = TRUE,
            pval.size = 10,
            legend.labs = c('Q1', 'Q2', 'Q3', 'Q4'),
-           ggtheme = theme_survminer(base_size = 25, font.x = c(25, 'bold.italic', 'black'), font.y = c(25, 'bold.italic', 'black'), font.tickslab = c(25, 'plain', 'black'), font.legend = c(25, 'bold', 'black')),
+           legend.title	= '',
+           ggtheme = theme_survminer(base_size = 12, font.x = c(12), font.y = c(12, 'bold.italic', 'black'), font.tickslab = c(12, 'plain', 'black'), font.legend = c(12, 'bold', 'black')),
            palette = 'jco',
            risk.table.y.text.col = FALSE,
            risk.table.y.text = FALSE, 
@@ -265,7 +267,7 @@ dev.off()
 ########
 ## PFS
 
-# by probaility
+# by probability
 
 Fit_sig_tcga_PFS_coxph_logReg <- coxph(Surv(Progress.Free.Survival..Months., Progression.Free.Status) ~ tcga_prob_logReg, data = CoxData_tcga)
 summary(Fit_sig_tcga_PFS_coxph_logReg)
@@ -297,10 +299,12 @@ CoxData_tcga$gleason <- pheno2$Radical.Prostatectomy.Gleason.Score.for.Prostate.
 CoxData_tcga$gleason <- as.factor(CoxData_tcga$gleason)
 levels(CoxData_tcga$gleason)
 
+colnames(CoxData_tcga)[colnames(CoxData_tcga) == 'tcga_prob_logReg'] <- 'PRN signature'
+
 # fit the multivariate COX with gleason as cofactor 
-Fit_sig_tcga_PFS_coxph_logReg_withGS <- coxph(Surv(Progress.Free.Survival..Months., Progression.Free.Status) ~ tcga_prob_logReg + gleason, data = CoxData_tcga)
+Fit_sig_tcga_PFS_coxph_logReg_withGS <- coxph(Surv(Progress.Free.Survival..Months., Progression.Free.Status) ~ `PRN signature` + gleason, data = CoxData_tcga)
 summary(Fit_sig_tcga_PFS_coxph_logReg_withGS)
 
-tiff('./figures/survival/multivariateCox.tiff', width = 2000, height = 2000, res = 300)
-ggforest(Fit_sig_tcga_PFS_coxph_logReg_withGS)
+tiff('./figures/survival/multivariateCox.tiff', width = 2500, height = 3000, res = 400)
+ggforest(Fit_sig_tcga_PFS_coxph_logReg_withGS, fontsize = 1, main = 'HR')
 dev.off()

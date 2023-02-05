@@ -10,6 +10,104 @@ library(patchwork)
 library(reticulate)
 library(ComplexHeatmap)
 
+netAnalysis_signalingRole_heatmap <- function (object, signaling = NULL, pattern = c("outgoing", "incoming", 
+                                                "all"), slot.name = "netP", color.use = NULL, color.heatmap = "BuGn", 
+          title = NULL, width = 10, height = 8, font.size = 8, font.size.title = 10, 
+          cluster.rows = FALSE, cluster.cols = FALSE) 
+{
+  pattern <- match.arg(pattern)
+  if (length(slot(object, slot.name)$centr) == 0) {
+    stop("Please run `netAnalysis_computeCentrality` to compute the network centrality scores! ")
+  }
+  centr <- slot(object, slot.name)$centr
+  outgoing <- matrix(0, nrow = nlevels(object@idents), ncol = length(centr))
+  incoming <- matrix(0, nrow = nlevels(object@idents), ncol = length(centr))
+  dimnames(outgoing) <- list(levels(object@idents), names(centr))
+  dimnames(incoming) <- dimnames(outgoing)
+  for (i in 1:length(centr)) {
+    outgoing[, i] <- centr[[i]]$outdeg
+    incoming[, i] <- centr[[i]]$indeg
+  }
+  if (pattern == "outgoing") {
+    mat <- t(outgoing)
+    legend.name <- "Outgoing"
+  }
+  else if (pattern == "incoming") {
+    mat <- t(incoming)
+    legend.name <- "Incoming"
+  }
+  else if (pattern == "all") {
+    mat <- t(outgoing + incoming)
+    legend.name <- "Overall"
+  }
+  if (is.null(title)) {
+    title <- paste0(legend.name, " signaling patterns")
+  }
+  else {
+    title <- paste0(paste0(legend.name, " signaling patterns"), 
+                    " - ", title)
+  }
+  if (!is.null(signaling)) {
+    mat1 <- mat[rownames(mat) %in% signaling, , drop = FALSE]
+    mat <- matrix(0, nrow = length(signaling), ncol = ncol(mat))
+    idx <- match(rownames(mat1), signaling)
+    mat[idx[!is.na(idx)], ] <- mat1
+    dimnames(mat) <- list(signaling, colnames(mat1))
+  }
+  mat.ori <- mat
+  mat <- sweep(mat, 1L, apply(mat, 1, max), "/", check.margin = FALSE)
+  mat[mat == 0] <- NA
+  if (is.null(color.use)) {
+    color.use <- scPalette(length(colnames(mat)))
+  }
+  color.heatmap.use = (grDevices::colorRampPalette((RColorBrewer::brewer.pal(n = 9, 
+                                                                             name = color.heatmap))))(100)
+  df <- data.frame(group = colnames(mat))
+  rownames(df) <- colnames(mat)
+  names(color.use) <- colnames(mat)
+  col_annotation <- HeatmapAnnotation(df = df, col = list(group = color.use), 
+                                      which = "column", show_legend = FALSE, show_annotation_name = FALSE, 
+                                      simple_anno_size = grid::unit(0.2, "cm"))
+  ha2 = HeatmapAnnotation(Strength = anno_barplot(colSums(mat.ori), ylim = c(0, 3),   
+                                                  border = FALSE, gp = gpar(fill = color.use, col = color.use)), 
+                          show_annotation_name = FALSE)
+  pSum <- rowSums(mat.ori)
+  pSum.original <- pSum
+  pSum <- -1/log(pSum)
+  pSum[is.na(pSum)] <- 0
+  idx1 <- which(is.infinite(pSum) | pSum < 0)
+  if (length(idx1) > 0) {
+    values.assign <- seq(max(pSum) * 1.1, max(pSum) * 1.5, 
+                         length.out = length(idx1))
+    position <- sort(pSum.original[idx1], index.return = TRUE)$ix
+    pSum[idx1] <- values.assign[match(1:length(idx1), position)]
+  }
+  ha1 = rowAnnotation(Strength = anno_barplot(pSum, border = FALSE), 
+                      show_annotation_name = FALSE)
+  if (min(mat, na.rm = T) == max(mat, na.rm = T)) {
+    legend.break <- max(mat, na.rm = T)
+  }
+  else {
+    legend.break <- c(round(min(mat, na.rm = T), digits = 1), 
+                      round(max(mat, na.rm = T), digits = 1))
+  }
+  ht1 = Heatmap(mat, col = color.heatmap.use, na_col = "white", 
+                name = "Relative strength", bottom_annotation = col_annotation, 
+                top_annotation = ha2, right_annotation = ha1, cluster_rows = cluster.rows, 
+                cluster_columns = cluster.rows, row_names_side = "left", 
+                row_names_rot = 0, row_names_gp = gpar(fontsize = font.size), 
+                column_names_gp = gpar(fontsize = 15), width = unit(width, 
+                                                                           "cm"), height = unit(height, "cm"), column_title = title, 
+                column_title_gp = gpar(fontsize = font.size.title), column_names_rot = 45, 
+                heatmap_legend_param = list(title_gp = gpar(fontsize = 10, 
+                                                            fontface = "plain"), title_position = "leftcenter-rot", 
+                                            border = NA, at = legend.break, legend_height = unit(20, 
+                                                                                                 "mm"), labels_gp = gpar(fontsize = 8), grid_width = unit(4, 
+                                                                                                                                                          "mm")))
+  return(ht1)
+}
+
+
 # set the active conda environment
 use_condaenv(condaenv = "scutils", required = TRUE)
 
@@ -143,11 +241,16 @@ table(df.net_mouse_pathway_mutant$pathway_name)
 cellchat_mouse_all_wt <- netAnalysis_computeCentrality(cellchat_mouse_all_wt, slot.name = "netP") # the slot 'netP' means the inferred intercellular communication network of signaling pathways
 cellchat_mouse_all_mutant <- netAnalysis_computeCentrality(cellchat_mouse_all_mutant, slot.name = "netP") # the slot 'netP' means the inferred intercellular communication network of signaling pathways
 
-######################################
+#####################################
 ## Merge the 2 objects
+
 object.list <- list(WT = cellchat_mouse_all_wt, mutant = cellchat_mouse_all_mutant)
 
+# change the names of different compartments
+
+
 cellchat <- mergeCellChat(object.list, add.names = names(object.list))
+
 
 ##########################################################################################################
 # Compare the total number of interactions and interaction strength
@@ -232,6 +335,7 @@ gg2 <- netVisual_bubble(cellchat, pairLR.use = pairLR.use.down, comparison = c(1
 #> Comparing communications on a merged object
 gg1 + gg2
 
+
 # Chord diagram
 png('./figures/cellchat_mutant_wt/up_mutants.png', width = 4500, height = 4000, res = 300)
 netVisual_chord_gene(object.list[[2]], slot.name = 'net', net = net.up, 
@@ -249,7 +353,7 @@ netVisual_chord_gene(object.list[[1]], slot.name = 'net', net = net.down,
                      title.name = "")
 dev.off()
 
-####################3
+####################
 # pathway level
 png('./figures/cellchat_mutant_wt/up_mutants_pathways.png', width = 3500, height = 3000, res = 300)
 netVisual_chord_gene(object.list[[2]], slot.name = 'netP', net = net.up, 
@@ -267,7 +371,11 @@ netVisual_chord_gene(object.list[[1]], slot.name = 'netP', net = net.down,
                      title.name = "")
 dev.off()
 
-####################################################
+######################################################
+# change the names of different compartments
+levels(object.list$WT@idents) <- c('E', 'I', 'S')
+levels(object.list$mutant@idents) <- c('E', 'I', 'S')
+
 # Compare outgoing (or incoming) signaling associated with each cell population
 i = 1
 # combining all the identified signaling pathways from different datasets 
@@ -276,7 +384,8 @@ pathway.union <- union(object.list[[i]]@netP$pathways, object.list[[i+1]]@netP$p
 ht1 = netAnalysis_signalingRole_heatmap(object.list[[i]], pattern = "outgoing", signaling = pathway.union, title = 'Wild types', width = 10, height = 15, color.heatmap = "OrRd", font.size.title = 12)
 ht2 = netAnalysis_signalingRole_heatmap(object.list[[i+1]], pattern = "outgoing", signaling = pathway.union, title = 'Mutants', width = 10, height = 15, color.heatmap = "OrRd", font.size.title = 12)
 
-png('./figures/cellchat_mutant_wt/Diff_heatmap2.png', width = 4000, height = 3000, res = 300)
+
+tiff('./figures/cellchat_mutant_wt/Diff_heatmap2.tiff', width = 4000, height = 3000, res = 370)
 draw(ht2 + ht1, ht_gap = unit(2, "cm"))
 dev.off()
 

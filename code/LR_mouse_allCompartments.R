@@ -152,28 +152,33 @@ par(mfrow=c(1,1))
 netVisual_aggregate(cellchat_mouse_all, signaling = 'TGFb', targets.use= c('c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'), title.space	= 1, layout = "chord")
 dev.off()
 
-png('./figures/cellchat_allCompartments/CCL_Chord.png', width = 2000, height = 2000, res = 300)
+png('./figures/cellchat_allCompartments/CCL_Chord.png', width = 3500, height = 3000, res = 350)
 netVisual_aggregate(cellchat_mouse_all, 
                     signaling = 'CCL',
                     sources.use = c('c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', "B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages"),
                     targets.use = c('c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', "B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages"),
+                    vertex.label.cex = 1, 
+                    title.space	= 0,
+                    #legend.pos.y = 170, 
+                    #legend.pos.x = 20,
+                    small.gap = 5,
                     layout = "chord")
 dev.off()
 #########################################################
 ## signaling from PRN clusters to epithelium
 
 # pathway level
-tiff('./figures/cellchat_allCompartments/PRN_epith_pathways.tiff', width = 2500, height = 2000, res = 300)
+tiff('./figures/cellchat_allCompartments/PRN_epith_pathways.tiff', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
                      slot = 'netP', 
                      sources.use= c('c5', 'c6', 'c7'), 
                      targets.use = 'epithelium', 
-                     lab.cex = 0.5, 
-                     legend.pos.y = 50, 
-                     legend.pos.x = 20, 
-                     thresh = 0.01, small.gap = 3,
-                     title.name = 'Signaling pathways from the PRN clusters to the epithelium',	
-                     reduce = -1,
+                     lab.cex = 1, 
+                     legend.pos.y = 180, 
+                     legend.pos.x = 50, 
+                     thresh = 0.01, small.gap = 5,
+                     #title.name = 'Signaling pathways from the PRN clusters to the epithelium',	
+                     #reduce = -1,
 )
 dev.off()
 
@@ -195,17 +200,17 @@ dev.off()
 ## signaling from WNT clusters to epithelium
 
 # pathway level
-tiff('./figures/cellchat_allCompartments/C3C4_epith_pathways.tiff', width = 2500, height = 2000, res = 300)
+tiff('./figures/cellchat_allCompartments/C3C4_epith_pathways.tiff', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
                      slot = 'netP', 
                      sources.use= c('c3', 'c4'), 
                      targets.use = 'epithelium', 
-                     lab.cex = 0.5, 
-                     legend.pos.y = 50, 
-                     legend.pos.x = 20, 
-                     thresh = 0.05, small.gap = 3,
-                     title.name = 'Signaling pathways from c3 and c4 to the epithelium',	
-                     reduce = -1,
+                     lab.cex = 1, 
+                     legend.pos.y = 180, 
+                     legend.pos.x = 50, 
+                     thresh = 0.05, small.gap = 5,
+                     #title.name = 'Signaling pathways from c3 and c4 to the epithelium',	
+                     #reduce = -1,
 )
 dev.off()
 
@@ -397,15 +402,15 @@ dev.off()
 # Figure 3: common clusters
 
 # to epithelium
-png('./figures/cellchat_allCompartments/c0c1c2_epithelium.png', width = 2500, height = 3000, res = 300)
+png('./figures/cellchat_allCompartments/c0c1c2_epithelium.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
                     slot.name = "netP",
                     targets.use = 'epithelium', 
                     sources.use = c('c0', 'c1', 'c2'), 
-                    lab.cex = 0.8, 
-                    legend.pos.y = 175, 
-                    legend.pos.x = 10,
-                    reduce = -1,
+                    lab.cex = 1, 
+                    legend.pos.y = 150, 
+                    legend.pos.x = 40,
+                    #reduce = -1,
                     thresh = 0.01, 
                     small.gap = 3,
                     title.name = 'Signling networks from common clusters to the epithelium'	
@@ -429,17 +434,17 @@ dev.off()
 # dev.off()
 
 # to immune
-tiff('./figures/cellchat_allCompartments/c0c1c2_immune.tiff', width = 2500, height = 3000, res = 400)
+tiff('./figures/cellchat_allCompartments/c0c1c2_immune.tiff', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
                      slot.name = "netP",
                      targets.use = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages"), 
                      sources.use = c('c0', 'c1', 'c2'), 
-                     lab.cex = 0.6, 
-                     legend.pos.y = 165, 
-                     legend.pos.x = 8,
-                     reduce = -1,
+                     lab.cex = 1, 
+                     legend.pos.y = 150, 
+                     legend.pos.x = 40,
+                     #reduce = -1,
                      thresh = 0.01, 
-                     small.gap = 2,
+                     small.gap = 4,
                      #directional = 2,
                      title.name = 'Signling networks from common clusters to immune cells'	
 )
@@ -449,20 +454,20 @@ dev.off()
 
 
 ##############################################################
-png('./figures/cellchat_allCompartments/c3c4_immune.png', width = 2500, height = 3000, res = 300)
+png('./figures/cellchat_allCompartments/c3c4_immune.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
                      slot.name = "netP",
                      #signaling = c('COMPLEMENT', 'CCL'),
                      targets.use = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages"), 
                      sources.use = c('c3', 'c4'), 
-                     lab.cex = 0.7, 
-                     legend.pos.y = 175, 
-                     legend.pos.x = 8,
-                     reduce = -1,
+                     lab.cex = 1, 
+                     legend.pos.y = 170, 
+                     legend.pos.x = 20,
+                     #reduce = -1,
                      thresh = 0.01, 
-                     small.gap = 3,
+                     small.gap = 5,
                      #directional = 2,
-                     title.name = 'Signaling Networks from c3 and c4 to immune cells'	
+                     #title.name = 'Signaling Networks from c3 and c4 to immune cells'	
 )
 dev.off()
 
@@ -519,20 +524,20 @@ netVisual_chord_gene(cellchat_mouse_all,
 )
 dev.off()
 ##############################################################
-png('./figures/cellchat_allCompartments/c5c6c7_immune.png', width = 2500, height = 3000, res = 300)
+png('./figures/cellchat_allCompartments/c5c6c7_immune.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
                      slot.name = "netP",
                      #signaling = c('COMPLEMENT', 'CCL'),
                      targets.use = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages"), 
                      sources.use = c('c5', 'c6', 'c7'), 
-                     lab.cex = 0.7, 
-                     legend.pos.y = 170, 
-                     legend.pos.x = 5,
-                     reduce = -1,
+                     lab.cex = 1, 
+                     legend.pos.y = 180, 
+                     legend.pos.x = 50,
+                     #reduce = -1,
                      thresh = 0.01, 
-                     small.gap = 3,
+                     small.gap = 5,
                      #directional = 2,
-                     title.name = 'Signaling Networks from PRN clusters to immune cells'	
+                     #title.name = 'Signaling Networks from PRN clusters to immune cells'	
 )
 dev.off()
 
@@ -652,17 +657,17 @@ dev.off()
 
 #############################
 # THY1 signaling stroma epithelium
-png('./figures/cellchat_allCompartments/Treg_stroma.png', width = 3500, height = 3500, res = 300)
+png('./figures/cellchat_allCompartments/Treg_stroma.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
                      slot.name = "net",
                      sources.use = c('Treg'), 
                      targets.use = c('c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'), 
-                     lab.cex = 0.8, 
-                     legend.pos.y = 180, 
-                     legend.pos.x = 2,
-                     reduce = -1,
+                     lab.cex = 1, 
+                     legend.pos.y = 170, 
+                     legend.pos.x = 40,
+                     #reduce = -1,
                      thresh = 0.01, 
-                     small.gap = 1,
+                     small.gap = 3,
                      #directional = 2,
                      title.name = ''	
 )
@@ -726,14 +731,14 @@ dev.off()
 
 #################################
 # macrophages to stroma
-png('./figures/cellchat_allCompartments/macrophages_stroma.png', width = 2500, height = 3000, res = 300)
+png('./figures/cellchat_allCompartments/macrophages_stroma.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
                      slot.name = "net",
                      targets.use = c('c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'), 
                      sources.use = c('monocytes/macrophages'), 
-                     lab.cex = 0.6, 
+                     lab.cex = 1, 
                      legend.pos.y = 170, 
-                     legend.pos.x = 3,
+                     legend.pos.x = 10,
                      reduce = -1,
                      thresh = 0.01, 
                      small.gap = 3,
@@ -934,4 +939,4 @@ netVisual_embeddingZoomIn(cellchat_mouse_all, type = "structural", nCol = 2)
 ############
 # save
 saveRDS(cellchat_mouse_all, file = "./forCellChat/cellchat_mouse_all_LS.rds")
-
+cellchat_mouse_all <- readRDS('./forCellChat/cellchat_mouse_all_LS.rds')

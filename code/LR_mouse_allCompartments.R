@@ -746,7 +746,7 @@ colMap2 <- c('powderblue', 'plum2', 'violetred4', 'slategray4', 'blue', 'darkora
 png('./figures/cellchat_allCompartments/immuneLegend.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
                      slot.name = 'netP',
-                    signaling = 'CD96',
+                    signaling = 'CD52',
                     sources.use = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages"),
                     targets.use = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages"),
                     lab.cex = 1, 

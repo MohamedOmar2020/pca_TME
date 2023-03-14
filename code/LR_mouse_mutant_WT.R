@@ -44,8 +44,7 @@ netAnalysis_signalingRole_heatmap <- function (object, signaling = NULL, pattern
     title <- paste0(legend.name, " signaling patterns")
   }
   else {
-    title <- paste0(paste0(legend.name, " signaling patterns"), 
-                    " - ", title)
+    title <- title
   }
   if (!is.null(signaling)) {
     mat1 <- mat[rownames(mat) %in% signaling, , drop = FALSE]
@@ -68,7 +67,7 @@ netAnalysis_signalingRole_heatmap <- function (object, signaling = NULL, pattern
   col_annotation <- HeatmapAnnotation(df = df, col = list(group = color.use), 
                                       which = "column", show_legend = FALSE, show_annotation_name = FALSE, 
                                       simple_anno_size = grid::unit(0.2, "cm"))
-  ha2 = HeatmapAnnotation(Strength = anno_barplot(colSums(mat.ori), ylim = c(0, 3),   
+  ha2 = HeatmapAnnotation(Strength = anno_barplot(colSums(mat.ori), ylim = c(0, 0.2),   
                                                   border = FALSE, gp = gpar(fill = color.use, col = color.use)), 
                           show_annotation_name = FALSE)
   pSum <- rowSums(mat.ori)
@@ -95,7 +94,7 @@ netAnalysis_signalingRole_heatmap <- function (object, signaling = NULL, pattern
                 name = "Relative strength", bottom_annotation = col_annotation, 
                 top_annotation = ha2, right_annotation = ha1, cluster_rows = cluster.rows, 
                 cluster_columns = cluster.rows, row_names_side = "left", 
-                row_names_rot = 0, row_names_gp = gpar(fontsize = font.size), 
+                row_names_rot = 0, row_names_gp = gpar(fontsize = 10),   
                 column_names_gp = gpar(fontsize = 15), width = unit(width, 
                                                                            "cm"), height = unit(height, "cm"), column_title = title, 
                 column_title_gp = gpar(fontsize = font.size.title), column_names_rot = 45, 
@@ -106,6 +105,192 @@ netAnalysis_signalingRole_heatmap <- function (object, signaling = NULL, pattern
                                                                                                                                                           "mm")))
   return(ht1)
 }
+
+
+########################
+# 
+netVisual_chord_gene <- function (object, slot.name = "net", color.use = NULL, signaling = NULL, 
+          pairLR.use = NULL, net = NULL, sources.use = NULL, targets.use = NULL, 
+          lab.cex = 0.8, small.gap = 1, big.gap = 10, annotationTrackHeight = c(0.03), 
+          link.visible = TRUE, scale = FALSE, directional = 1, link.target.prop = TRUE, 
+          reduce = -1, transparency = 0.4, link.border = NA, title.name = NULL, 
+          legend.pos.x = 20, legend.pos.y = 20, show.legend = TRUE, 
+          thresh = 0.05, ...) 
+{
+  if (!is.null(pairLR.use)) {
+    if (!is.data.frame(pairLR.use)) {
+      stop("pairLR.use should be a data frame with a signle column named either 'interaction_name' or 'pathway_name' ")
+    }
+    else if ("pathway_name" %in% colnames(pairLR.use)) {
+      message("slot.name is set to be 'netP' when pairLR.use contains signaling pathways")
+      slot.name = "netP"
+    }
+  }
+  if (!is.null(pairLR.use) & !is.null(signaling)) {
+    stop("Please do not assign values to 'signaling' when using 'pairLR.use'")
+  }
+  if (is.null(net)) {
+    prob <- slot(object, "net")$prob
+    pval <- slot(object, "net")$pval
+    prob[pval > thresh] <- 0
+    net <- reshape2::melt(prob, value.name = "prob")
+    colnames(net)[1:3] <- c("source", "target", "interaction_name")
+    pairLR = dplyr::select(object@LR$LRsig, c("interaction_name_2", 
+                                              "pathway_name", "ligand", "receptor", "annotation", 
+                                              "evidence"))
+    idx <- match(net$interaction_name, rownames(pairLR))
+    temp <- pairLR[idx, ]
+    net <- cbind(net, temp)
+  }
+  if (!is.null(signaling)) {
+    pairLR.use <- data.frame()
+    for (i in 1:length(signaling)) {
+      pairLR.use.i <- searchPair(signaling = signaling[i], 
+                                 pairLR.use = object@LR$LRsig, key = "pathway_name", 
+                                 matching.exact = T, pair.only = T)
+      pairLR.use <- rbind(pairLR.use, pairLR.use.i)
+    }
+  }
+  if (!is.null(pairLR.use)) {
+    if ("interaction_name" %in% colnames(pairLR.use)) {
+      net <- subset(net, interaction_name %in% pairLR.use$interaction_name)
+    }
+    else if ("pathway_name" %in% colnames(pairLR.use)) {
+      net <- subset(net, pathway_name %in% as.character(pairLR.use$pathway_name))
+    }
+  }
+  if (slot.name == "netP") {
+    net <- dplyr::select(net, c("source", "target", "pathway_name", 
+                                "prob"))
+    net$source_target <- paste(net$source, net$target, sep = "sourceTotarget")
+    net <- net %>% dplyr::group_by(source_target, pathway_name) %>% 
+      dplyr::summarize(prob = sum(prob))
+    a <- stringr::str_split(net$source_target, "sourceTotarget", 
+                            simplify = T)
+    net$source <- as.character(a[, 1])
+    net$target <- as.character(a[, 2])
+    net$ligand <- net$pathway_name
+    net$receptor <- " "
+  }
+  if (!is.null(sources.use)) {
+    if (is.numeric(sources.use)) {
+      sources.use <- levels(object@idents)[sources.use]
+    }
+    net <- subset(net, source %in% sources.use)
+  }
+  else {
+    sources.use <- levels(object@idents)
+  }
+  if (!is.null(targets.use)) {
+    if (is.numeric(targets.use)) {
+      targets.use <- levels(object@idents)[targets.use]
+    }
+    net <- subset(net, target %in% targets.use)
+  }
+  else {
+    targets.use <- levels(object@idents)
+  }
+  df <- subset(net, prob > 0)
+  if (nrow(df) == 0) {
+    stop("No signaling links are inferred! ")
+  }
+  if (length(unique(net$ligand)) == 1) {
+    message("You may try the function `netVisual_chord_cell` for visualizing individual signaling pathway")
+  }
+  df$id <- 1:nrow(df)
+  ligand.uni <- unique(df$ligand)
+  for (i in 1:length(ligand.uni)) {
+    df.i <- df[df$ligand == ligand.uni[i], ]
+    source.uni <- unique(df.i$source)
+    for (j in 1:length(source.uni)) {
+      df.i.j <- df.i[df.i$source == source.uni[j], ]
+      df.i.j$ligand <- paste0(df.i.j$ligand, paste(rep(" ", 
+                                                       j - 1), collapse = ""))
+      df$ligand[df$id %in% df.i.j$id] <- df.i.j$ligand
+    }
+  }
+  receptor.uni <- unique(df$receptor)
+  for (i in 1:length(receptor.uni)) {
+    df.i <- df[df$receptor == receptor.uni[i], ]
+    target.uni <- unique(df.i$target)
+    for (j in 1:length(target.uni)) {
+      df.i.j <- df.i[df.i$target == target.uni[j], ]
+      df.i.j$receptor <- paste0(df.i.j$receptor, paste(rep(" ", 
+                                                           j - 1), collapse = ""))
+      df$receptor[df$id %in% df.i.j$id] <- df.i.j$receptor
+    }
+  }
+  cell.order.sources <- levels(object@idents)[levels(object@idents) %in% 
+                                                sources.use]
+  cell.order.targets <- levels(object@idents)[levels(object@idents) %in% 
+                                                targets.use]
+  df$source <- factor(df$source, levels = cell.order.sources)
+  df$target <- factor(df$target, levels = cell.order.targets)
+  df.ordered.source <- df[with(df, order(source, -prob)), ]
+  df.ordered.target <- df[with(df, order(target, -prob)), ]
+  order.source <- unique(df.ordered.source[, c("ligand", "source")])
+  order.target <- unique(df.ordered.target[, c("receptor", 
+                                               "target")])
+  order.sector <- c(order.source$ligand, order.target$receptor)
+  if (is.null(color.use)) {
+    color.use = scPalette(nlevels(object@idents))
+    names(color.use) <- levels(object@idents)
+    color.use <- color.use[levels(object@idents) %in% as.character(union(df$source, 
+                                                                         df$target))]
+  }
+  else if (is.null(names(color.use))) {
+    names(color.use) <- levels(object@idents)
+    color.use <- color.use[levels(object@idents) %in% as.character(union(df$source, 
+                                                                         df$target))]
+  }
+  edge.color <- color.use[as.character(df.ordered.source$source)]
+  names(edge.color) <- as.character(df.ordered.source$source)
+  grid.col.ligand <- color.use[as.character(order.source$source)]
+  names(grid.col.ligand) <- as.character(order.source$source)
+  grid.col.receptor <- color.use[as.character(order.target$target)]
+  names(grid.col.receptor) <- as.character(order.target$target)
+  grid.col <- c(as.character(grid.col.ligand), as.character(grid.col.receptor))
+  names(grid.col) <- order.sector
+  df.plot <- df.ordered.source[, c("ligand", "receptor", "prob")]
+  if (directional == 2) {
+    link.arr.type = "triangle"
+  }
+  else {
+    link.arr.type = "big.arrow"
+  }
+  circlize::circos.clear()
+  circlize::chordDiagram(df.plot, order = order.sector, col = edge.color, 
+               grid.col = grid.col, transparency = transparency, link.border = link.border, 
+               directional = directional, direction.type = c("diffHeight", "arrows"), link.arr.type = link.arr.type, link.arr.length = 0.1, annotationTrack = "grid", 
+               annotationTrackHeight = annotationTrackHeight, preAllocateTracks = list(track.height = max(strwidth(order.sector))), 
+               small.gap = small.gap, big.gap = big.gap, link.visible = link.visible, 
+               scale = scale, link.target.prop = link.target.prop, reduce = reduce, 
+               ...)
+  circlize::circos.track(track.index = 1, panel.fun = function(x, y) {
+    xlim = circlize::get.cell.meta.data("xlim")
+    xplot = circlize::get.cell.meta.data("xplot")
+    ylim = circlize::get.cell.meta.data("ylim")
+    sector.name = circlize::get.cell.meta.data("sector.index")
+    circlize::circos.text(mean(xlim), ylim[1], sector.name, facing = "clockwise", 
+                niceFacing = TRUE, adj = c(0, 0.5), cex = lab.cex)
+  }, bg.border = NA)
+  if (show.legend) {
+    lgd <- ComplexHeatmap::Legend(at = names(color.use), 
+                                  type = "grid", legend_gp = grid::gpar(fill = color.use), 
+                                  title = "TME compartments", legend_height = unit(12, "cm"), labels_gp = gpar(fontsize=12), title_gp = gpar(fontsize = 14))
+    ComplexHeatmap::draw(lgd, x = unit(1, "npc") - unit(legend.pos.x, 
+                                                        "mm"), y = unit(legend.pos.y, "mm"), just = c("right", 
+                                                                                                      "bottom"))
+  }
+  circlize::circos.clear()
+  if (!is.null(title.name)) {
+    text(-0, 1.02, title.name, cex = 1)
+  }
+  gg <- recordPlot()
+  return(gg)
+}
+
+##################################################################
 
 
 # set the active conda environment
@@ -207,8 +392,8 @@ cellchat_mouse_all_mutant <- projectData(cellchat_mouse_all_mutant, PPI.mouse)
 options(future.globals.maxSize=20*1024^3)
 
 # Compute the communication probability and infer cellular communication network
-cellchat_mouse_all_wt <- computeCommunProb(cellchat_mouse_all_wt)
-cellchat_mouse_all_mutant <- computeCommunProb(cellchat_mouse_all_mutant)
+cellchat_mouse_all_wt <- computeCommunProb(cellchat_mouse_all_wt, population.size = TRUE)
+cellchat_mouse_all_mutant <- computeCommunProb(cellchat_mouse_all_mutant, population.size = TRUE)
 
 # Filter out the cell-cell communication if there are only few number of cells in certain cell groups
 cellchat_mouse_all_wt <- filterCommunication(cellchat_mouse_all_wt, min.cells = 10)
@@ -355,37 +540,41 @@ dev.off()
 
 ####################
 # pathway level
-png('./figures/cellchat_mutant_wt/up_mutants_pathways.png', width = 3500, height = 3000, res = 300)
+png('./figures/cellchat_mutant_wt/new/up_mutants_pathways.png', width = 3500, height = 3000, res = 370)
 netVisual_chord_gene(object.list[[2]], slot.name = 'netP', net = net.up, 
-                     thresh = 0.05, lab.cex = 0.5, small.gap = 1,
+                     color.use = c('bisque2', 'darkblue', 'darkgreen'),
+                     thresh = 0.05, lab.cex = 1, small.gap = 4,
                      legend.pos.y = 180, 
                      legend.pos.x = 20, 
+                     link.visible	= TRUE,
                      title.name = "")
 dev.off()
 
-png('./figures/cellchat_mutant_wt/up_WT_pathways.png', width = 3500, height = 3000, res = 300)
+png('./figures/cellchat_mutant_wt/new/up_WT_pathways.png', width = 3500, height = 3000, res = 370)
 netVisual_chord_gene(object.list[[1]], slot.name = 'netP', net = net.down, 
-                     thresh = 0.05, lab.cex = 0.8, small.gap = 3, 
+                     thresh = 0.05, lab.cex = 1, small.gap = 4, 
+                     color.use = c('bisque2', 'darkblue', 'darkgreen'),
                      legend.pos.y = 180, 
                      legend.pos.x = 20, 
+                     link.visible = T,
                      title.name = "")
 dev.off()
 
 ######################################################
 # change the names of different compartments
-levels(object.list$WT@idents) <- c('E', 'I', 'S')
-levels(object.list$mutant@idents) <- c('E', 'I', 'S')
+#levels(object.list$WT@idents) <- c('E', 'I', 'S')
+#levels(object.list$mutant@idents) <- c('E', 'I', 'S')
 
 # Compare outgoing (or incoming) signaling associated with each cell population
 i = 1
 # combining all the identified signaling pathways from different datasets 
 pathway.union <- union(object.list[[i]]@netP$pathways, object.list[[i+1]]@netP$pathways)
 
-ht1 = netAnalysis_signalingRole_heatmap(object.list[[i]], pattern = "outgoing", signaling = pathway.union, title = 'Wild types', width = 10, height = 15, color.heatmap = "OrRd", font.size.title = 12)
-ht2 = netAnalysis_signalingRole_heatmap(object.list[[i+1]], pattern = "outgoing", signaling = pathway.union, title = 'Mutants', width = 10, height = 15, color.heatmap = "OrRd", font.size.title = 12)
+ht1 = netAnalysis_signalingRole_heatmap(object.list[[i]], pattern = "outgoing", signaling = pathway.union, title = 'Wild types', width = 10, height = 15, color.heatmap = "OrRd", font.size.title = 14, color.use = c('bisque2', 'darkblue', 'darkgreen'))
+ht2 = netAnalysis_signalingRole_heatmap(object.list[[i+1]], pattern = "outgoing", signaling = pathway.union, title = 'Mutants', width = 10, height = 15, color.heatmap = "OrRd", font.size.title = 14, color.use = c('bisque2', 'darkblue', 'darkgreen'))
 
 
-tiff('./figures/cellchat_mutant_wt/Diff_heatmap2.tiff', width = 4000, height = 3000, res = 370)
+tiff('./figures/cellchat_mutant_wt/new/Diff_heatmap2.tiff', width = 4000, height = 3000, res = 370)
 draw(ht2 + ht1, ht_gap = unit(2, "cm"))
 dev.off()
 

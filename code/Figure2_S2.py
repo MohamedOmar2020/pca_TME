@@ -55,6 +55,7 @@ adata_mouse_mesenchyme_myo = sc.read_h5ad('data/for_mouse/adata_mouse_myo.h5ad',
 adata_mouse_mesenchyme_myo.obs['cluster'] = adata_mouse_mesenchyme_myo.obs['cluster'].astype('str')
 
 
+
 ###########################
 # 2A
 ###########################
@@ -63,8 +64,8 @@ sc.pl.umap(
     adata_mouse_mesenchyme,
     color="cluster", size = 10,
     groups = ['c0'],
-    title = 'c0',
-    palette = 'turbo',
+    title = '',
+    #palette = 'turbo',
     na_in_legend = False,
     #add_outline = True, outline_width = [0.05,0.005],
     save = '_mouse_smooth_muscle'
@@ -74,8 +75,8 @@ sc.pl.umap(
 sc.pl.umap(
     adata_mouse_mesenchyme_myo,
     color="cluster", size = 50,
-    color_map = 'viridis',
-    title = 'c0 subtypes',
+    #palette = 'Set2',
+    title = '',
     save = '_smoothMuscle_subtypes'
 )
 
@@ -83,7 +84,7 @@ sc.pl.umap(
 sc.pl.umap(
     adata_mouse_mesenchyme_myo,
     color="key_new", size = 50,
-    title = 'Mouse Models',
+    title = '',
     save = '_smoothMuscle_models'
 )
 

@@ -18,13 +18,15 @@ import seaborn as sns
 import anndata as ad
 import sc_toolbox as sct
 import plotly.express as px
+from matplotlib.colors import ListedColormap, LinearSegmentedColormap
+import cmasher as cmr
 
 
 
 #############################################
 # set figure parameters
 sc.settings.figdir = 'figures/figures_cell'
-sc.set_figure_params(dpi_save = 300, transparent = False, fontsize =9, format='tiff')
+sc.set_figure_params(dpi_save = 300, transparent = False, fontsize =9, format='png')
 plt.rcParams["font.family"] = "arial"
 plt.rcParams['font.size'] = 9
 plt.rcParams['font.style'] = 'italic'
@@ -48,23 +50,28 @@ adata_mouse_mesenchyme.obs['cluster'] = adata_mouse_mesenchyme.obs['cluster'].as
 # 1A
 ###########################
 # umap clusters
-sc.pl.umap(adata_mouse_mesenchyme, color = 'cluster', save = '_mouse_clusters')
+sc.pl.umap(adata_mouse_mesenchyme, color = 'cluster', save = '_mouse_clusters', title = '')
 
-# umap by genotype
+
+#############
+## umap by genotype
 adata_mouse_mesenchyme.obs.condition.value_counts()
-# mutant
+
+# plot mutants
 sc.pl.umap(
     adata_mouse_mesenchyme[adata_mouse_mesenchyme.obs["condition"] == "mutant"],
-    color="key_new", size = 10, title = 'Mutants', palette = 'viridis',
+    color="key_new", size = 10, title = '', palette = 'viridis',
     save = '_mouse_models_mutants'
 )
 
-# Wildtype
+# plot Wildtype
+
 sc.pl.umap(
     adata_mouse_mesenchyme[adata_mouse_mesenchyme.obs["condition"] == "wildtype"],
-    color="key_new", size = 10, title = 'Wild types',
+    color="key_new", size = 10, title = '',
     save = '_mouse_models_wildtype'
 )
+
 
 ###########################
 # 1B
@@ -73,7 +80,7 @@ sc.pl.umap(
 sc.pl.umap(
     adata_mouse_mesenchyme,
     color="n_genes", size = 10,
-    title = 'Genes', cmap = 'viridis',
+    title = '', cmap = 'viridis',
     save = '_mouse_genes'
 )
 
@@ -81,7 +88,7 @@ sc.pl.umap(
 sc.pl.umap(
     adata_mouse_mesenchyme,
     color="n_counts", size = 10,
-    title = 'Counts', cmap = 'viridis',
+    title = '', cmap = 'viridis',
     save = '_mouse_counts'
 )
 

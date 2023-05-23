@@ -8,8 +8,7 @@
 rm(list = ls())
 
 # Set work directory
-#setwd("/Volumes/Macintosh/Dropbox (MechPred)/MechPred/User/Mohamed/MechanisticModels/Prostate")
-
+setwd('/Users/mohamedomar/Documents/Research/Projects/Pca_TME')
 ############################################################################
 ### Load library
 require(switchBox)

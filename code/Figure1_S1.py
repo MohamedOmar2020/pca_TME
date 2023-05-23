@@ -45,6 +45,19 @@ plt.rcParams['ytick.labelsize'] = 9
 adata_mouse_mesenchyme = sc.read_h5ad('data/for_mouse/adata_mouse.h5ad', chunk_size=100000)
 adata_mouse_mesenchyme.obs['cluster'] = adata_mouse_mesenchyme.obs['cluster'].astype('str')
 
+##########################################################
+# fix GEMMs names
+adata_mouse_mesenchyme.obs['key_new'] = adata_mouse_mesenchyme.obs['key']
+adata_mouse_mesenchyme.obs['key_new'].value_counts()
+adata_mouse_mesenchyme.obs['key_new'].replace('terg', 'T-ERG', inplace=True)
+adata_mouse_mesenchyme.obs['key_new'].replace('himyc', 'Hi-MYC', inplace=True)
+adata_mouse_mesenchyme.obs['key_new'].replace('fvbn', 'FVBN', inplace=True)
+adata_mouse_mesenchyme.obs['key_new'].replace('pten', 'NP', inplace=True)
+adata_mouse_mesenchyme.obs['key_new'].replace('mycn', 'PRN', inplace=True)
+adata_mouse_mesenchyme.obs['key_new'].replace('129b6', 'B6.129', inplace=True)
+adata_mouse_mesenchyme.obs['key_new'].replace('b6', 'B6', inplace=True)
+adata_mouse_mesenchyme.obs['key_new'].replace('129b6_pten', 'WT for NP', inplace=True)
+adata_mouse_mesenchyme.obs['key_new'].replace('129b6_mycn', 'WT for PRN', inplace=True)
 
 ###########################
 # 1A
@@ -197,7 +210,7 @@ fig = px.parallel_categories(
 )
 fig.update_layout(autosize=False, width=400, height=600, font_size = 9, font_family="Arial Black")
 fig.update_yaxes(tickfont_family="Arial Black")
-fig.write_image("figures/figures_cell/parallel_categories_cluster.svg", scale = 2)
+fig.write_image("figures/figures_cell/parallel_categories_cluster.png", scale = 2)
 
 ###############################
 # 1E

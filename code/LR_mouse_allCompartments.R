@@ -179,7 +179,7 @@ netVisual_chord_gene <- function (object, slot.name = "net", color.use = NULL, s
   if (show.legend) {
     lgd <- ComplexHeatmap::Legend(at = names(color.use), 
                                   type = "grid", legend_gp = grid::gpar(fill = color.use), 
-                                  title = "immune cell types", legend_height = unit(12, "cm"), labels_gp = grid::gpar(fontsize=12), title_gp = grid::gpar(fontsize = 14))
+                                  title = "cell groups", legend_height = unit(12, "cm"), labels_gp = grid::gpar(fontsize=12), title_gp = grid::gpar(fontsize = 14))
     ComplexHeatmap::draw(lgd, x = unit(1, "npc") - unit(legend.pos.x, 
                                                         "mm"), y = unit(legend.pos.y, "mm"), just = c("right", 
                                                                                                       "bottom"))
@@ -483,53 +483,68 @@ levels(cellchat_mouse_all@idents)
 colMap <- c('powderblue', 'plum2', 'violetred4', 'slategray4', 'blue', 'darkorange1', 'forestgreen', 'red2', 'darkorchid', 'saddlebrown', 'hotpink1', 'olivedrab3', 'lemonchiffon4', 'bisque2', 'salmon3')
 
 
-
+##############################################################
 # Figure 3: common clusters
+##############################################################
 
-# to epithelium
-png('./figures/cellchat_allCompartments/c0c1c2_epithelium.png', width = 3500, height = 3000, res = 350)
+# from epithelium
+png('./figures/cellchat_allCompartments/epithelium_c0c1c2.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
-                    slot.name = "netP",
-                    targets.use = 'epithelium', 
-                    sources.use = c('c0', 'c1', 'c2'), 
+                    slot.name = "net",
+                    sources.use = 'epithelium', 
+                    targets.use = c('c0', 'c1', 'c2'), 
                     lab.cex = 1, 
                     legend.pos.y = 165, 
                     legend.pos.x = 25,
                     #reduce = -1,
-                    thresh = 0.01, 
+                    thresh = 0.05, 
                     small.gap = 5,
                     color.use = colMap
                     #title.name = 'Signling networks from common clusters to the epithelium'	
 )
 dev.off()
 
-# opposite
-# tiff('./figures/cellchat_allCompartments/epithelium_c0c1c2.tiff', width = 2500, height = 3000, res = 300)
-# netVisual_chord_gene(cellchat_mouse_all, 
-#                      slot.name = "netP",
-#                      sources.use = 'epithelium', 
-#                      targets.use = c('c0', 'c1', 'c2'), 
-#                      lab.cex = 0.8, 
-#                      legend.pos.y = 100, 
-#                      legend.pos.x = 8,
-#                      reduce = -1,
-#                      thresh = 0.01, 
-#                      small.gap = 3,
-#                      title.name = 'Signling networks from epithelium to common clusters'	
-# )
-# dev.off()
+# plot expression of genes involved in signaling pathways
+png('./figures/cellchat_allCompartments/epithelium_c0c1c2_WNT_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("WNT"), idents = c('epithelium', 'c0', 'c1', 'c2'))
+dev.off()
 
-# to immune
-png('./figures/cellchat_allCompartments/c0c1c2_immune.png', width = 3500, height = 3000, res = 350)
+png('./figures/cellchat_allCompartments/epithelium_c0c1c2_EPHA_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("EPHA"), idents = c('epithelium', 'c0', 'c1', 'c2'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/epithelium_c0c1c2_EPHB_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("EPHB"), idents = c('epithelium', 'c0', 'c1', 'c2'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/epithelium_c0c1c2_PDGF_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("PDGF"), idents = c('epithelium', 'c0', 'c1', 'c2'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/epithelium_c0c1c2_THBS_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("THBS"), idents = c('epithelium', 'c0', 'c1', 'c2'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/epithelium_c0c1c2_MIF_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("MIF"), idents = c('epithelium', 'c0', 'c1', 'c2'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/epithelium_c0c1c2_EGF_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("EGF"), idents = c('epithelium', 'c0', 'c1', 'c2'))
+dev.off()
+
+############################
+# from immune
+png('./figures/cellchat_allCompartments/immune_c0c1c2.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
                      slot.name = "netP",
-                     targets.use = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages"), 
-                     sources.use = c('c0', 'c1', 'c2'), 
+                     sources.use = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages"), 
+                     targets.use = c('c0', 'c1', 'c2'), 
                      lab.cex = 1, 
                      legend.pos.y = 170, 
                      legend.pos.x = 5,
                      #reduce = -1,
-                     thresh = 0.01, 
+                     thresh = 0.05, 
                      small.gap = 4,
                      #directional = 2,
                      color.use = colMap
@@ -543,17 +558,17 @@ dev.off()
 ##############################################################
 ##########
 # Figure 4 : E
-png('./figures/cellchat_allCompartments/new/c3c4_immune.png', width = 3500, height = 3000, res = 350)
+png('./figures/cellchat_allCompartments/new/immune_c3c4.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
                      slot.name = "netP",
                      #signaling = c('COMPLEMENT', 'CCL'),
-                     targets.use = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages"), 
-                     sources.use = c('c3', 'c4'), 
+                     sources.use = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages"), 
+                     targets.use = c('c3', 'c4'), 
                      lab.cex = 1, 
                      legend.pos.y = 175, 
                      legend.pos.x = 5,
                      #reduce = -1,
-                     thresh = 0.01, 
+                     thresh = 0.05, 
                      small.gap = 5,
                      #directional = 2,
                      color.use = colMap
@@ -562,11 +577,11 @@ netVisual_chord_gene(cellchat_mouse_all,
 dev.off()
 
 
-png('./figures/cellchat_allCompartments/new/C3C4_epith_pathways.png', width = 3500, height = 3000, res = 350)
+png('./figures/cellchat_allCompartments/new/epith_c3c4.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
                      slot = 'netP', 
-                     sources.use= c('c3', 'c4'), 
-                     targets.use = 'epithelium', 
+                     targets.use= c('c3', 'c4'), 
+                     sources.use = 'epithelium', 
                      lab.cex = 1, 
                      legend.pos.y = 165, 
                      legend.pos.x = 25, 
@@ -580,17 +595,17 @@ dev.off()
 
 ##############################################################
 # figure 4: F
-png('./figures/cellchat_allCompartments/new/c5c6c7_immune.png', width = 3500, height = 3000, res = 350)
+png('./figures/cellchat_allCompartments/new/immune_c5c6c7.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
                      slot.name = "netP",
                      #signaling = c('COMPLEMENT', 'CCL'),
-                     targets.use = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages"), 
-                     sources.use = c('c5', 'c6', 'c7'), 
+                     sources.use = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages"), 
+                     targets.use = c('c5', 'c6', 'c7'), 
                      lab.cex = 0.9, 
                      legend.pos.y = 170, 
                      legend.pos.x = 5,
                      #reduce = -1,
-                     thresh = 0.01, 
+                     thresh = 0.05, 
                      small.gap = 3.5,
                      #directional = 2,
                      color.use = colMap
@@ -598,17 +613,17 @@ netVisual_chord_gene(cellchat_mouse_all,
 )
 dev.off()
 
-png('./figures/cellchat_allCompartments/new/c5c6c7_epithelium.png', width = 3500, height = 3000, res = 350)
+png('./figures/cellchat_allCompartments/new/epith_c5c6c7.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
                      slot.name = "netP",
                      #signaling = c('COMPLEMENT', 'CCL'),
-                     targets.use = c("epithelium"), 
-                     sources.use = c('c5', 'c6', 'c7'), 
+                     sources.use = c("epithelium"), 
+                     targets.use = c('c5', 'c6', 'c7'), 
                      lab.cex = 1, 
                      legend.pos.y = 165, 
                      legend.pos.x = 5,
                      #reduce = -1,
-                     thresh = 0.01, 
+                     thresh = 0.05, 
                      small.gap = 5,
                      #directional = 2,
                      color.use = colMap
@@ -883,20 +898,20 @@ dev.off()
 
 
 ##############################
-tiff('./figures/cellchat_allCompartments/c0c1c2_immuneSpecific.tiff', width = 3000, height = 3000, res = 300)
+tiff('./figures/cellchat_allCompartments/immuneSpecific_c0c1c2.tiff', width = 3000, height = 3000, res = 300)
 netVisual_chord_gene(cellchat_mouse_all, 
                      slot.name = "net",
                      signaling = c('COMPLEMENT', 'CCL'),
-                     targets.use = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages"), 
-                     sources.use = c('c0', 'c1', 'c2'), 
+                     sources.use = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages"), 
+                     targets.use = c('c0', 'c1', 'c2'), 
                      lab.cex = 0.6, 
                      legend.pos.y = 12, 
                      legend.pos.x = 8,
                      reduce = -1,
-                     thresh = 0.01, 
+                     thresh = 0.05, 
                      small.gap = 5,
                      #directional = 2,
-                     title.name = 'Complement and CCL Signling networks from common clusters to immune cells'	
+                     title.name = 'Complement and CCL Signling networks from immune cells to stromal common clusters'	
 )
 dev.off()
 

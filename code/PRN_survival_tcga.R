@@ -21,6 +21,7 @@ library(patchwork)
 library(survminer)
 library(survival)
 library(tidyverse)
+library(dvmisc)
 library(pheatmap)
 
 #################
@@ -162,20 +163,38 @@ MCC_tcga <- mltools::mcc(pred = tcga_predClasses_logReg, actuals = Data_tcga$lab
 MCC_tcga
 
 ##########################
+# load another TCGA metadata file to get the tumor purity score
+Pheno_tcga2 <- read.delim2('./data/bulk/TCGA/tcga_meta_data_all.csv', sep = ',')
+Pheno_tcga2 <- Pheno_tcga2[!duplicated(Pheno_tcga2$patient_id), ]
+rownames(Pheno_tcga2) <- Pheno_tcga2$patient_id
+CommonSamples <- intersect(rownames(Pheno_tcga), rownames(Pheno_tcga2))
+Pheno_tcga2 <- Pheno_tcga2[CommonSamples, ]
+all(rownames(Pheno_tcga2) == rownames(Pheno_tcga))
+
+# add the gleason score to CoxData_tcga
+Pheno_tcga$purity <- Pheno_tcga2$purity
+Pheno_tcga$purity <- as.numeric(Pheno_tcga$purity)
+
 ## Keep only the relevant information (Metastasis Event and Time)
-Phenotype_tcga <- cbind(Pheno_tcga[, c("Overall.Survival.Status", "Overall.Survival..Months.", "Progression.Free.Status", "Progress.Free.Survival..Months.")], 
+Phenotype_tcga <- cbind(Pheno_tcga[, c("Overall.Survival.Status", "Overall.Survival..Months.", "Progression.Free.Status", "Progress.Free.Survival..Months.", "purity")], 
                         tcga_prob_logReg, tcga_predClasses_logReg)
 
 #Expr_metabric <- Expr_metabric[ClassifierGenes, ]
 #Expr_tcga <- Expr_tcga[ClassifierGenes, ]
 
-
 # create a merged pdata and Z-scores object
 CoxData_tcga <- data.frame(Phenotype_tcga)
 
-# divide the probabilities into quartiles
+# divide the PRN probability into quartiles
 CoxData_tcga <- CoxData_tcga %>%
-  mutate(quartiles = ntile(tcga_prob_logReg, 4))
+  mutate(PRN_quartiles = ntile(tcga_prob_logReg, 4))
+
+# Divide purity into quartiles
+CoxData_tcga$purity_q <- quant_groups(CoxData_tcga$purity, 4) 
+CoxData_tcga_purity_q1 <- CoxData_tcga[CoxData_tcga$purity_q == '[0.16,0.44]', ]
+CoxData_tcga_purity_q2 <- CoxData_tcga[CoxData_tcga$purity_q == '(0.44,0.61]', ]
+CoxData_tcga_purity_q3 <- CoxData_tcga[CoxData_tcga$purity_q == '(0.61,0.78]', ]
+CoxData_tcga_purity_q4 <- CoxData_tcga[CoxData_tcga$purity_q == '(0.78,1]', ]
 
 ########################################################################  
 ## Fit survival curves
@@ -185,16 +204,22 @@ CoxData_tcga <- CoxData_tcga %>%
 Fit_sig_tcga_os_logReg <- survfit(Surv(Overall.Survival..Months., Overall.Survival.Status) ~ tcga_predClasses_logReg, data = CoxData_tcga)
 
 
-## by quartiles
-Fit_sig_tcga_os_logReg_quartiles <- survfit(Surv(Overall.Survival..Months., Overall.Survival.Status) ~ quartiles, data = CoxData_tcga)
+## by PRN quartiles
+Fit_sig_tcga_os_logReg_quartiles <- survfit(Surv(Overall.Survival..Months., Overall.Survival.Status) ~ PRN_quartiles, data = CoxData_tcga)
 
 ################
 # PFS
 ## metabric all genes
 Fit_sig_tcga_pfs_logReg <- survfit(Surv(Progress.Free.Survival..Months., Progression.Free.Status) ~ tcga_predClasses_logReg, data = CoxData_tcga)
 
-## by quartiles
-Fit_sig_tcga_pfs_logReg_quartiles <- survfit(Surv(Progress.Free.Survival..Months., Progression.Free.Status) ~ quartiles, data = CoxData_tcga)
+## by PRN quartiles
+Fit_sig_tcga_pfs_logReg_quartiles <- survfit(Surv(Progress.Free.Survival..Months., Progression.Free.Status) ~ PRN_quartiles, data = CoxData_tcga)
+
+## in samples with highest stromal content/least purity/Q1 
+Fit_sig_tcga_pfs_q1 <- survfit(Surv(Progress.Free.Survival..Months., Progression.Free.Status) ~ tcga_predClasses_logReg, data = CoxData_tcga_purity_q1)
+
+## in samples with lowest stromal content/highest purity/Q4 
+Fit_sig_tcga_pfs_q4 <- survfit(Surv(Progress.Free.Survival..Months., Progression.Free.Status) ~ tcga_predClasses_logReg, data = CoxData_tcga_purity_q4)
 
 ############################################################################
 ############################################################################
@@ -261,6 +286,39 @@ ggsurvplot(Fit_sig_tcga_pfs_logReg_quartiles,
            )
 dev.off()
 
+########
+# PFS in least pure samples/q1
+tiff("./figures/survival/logreg_tcga_PFS_leastPureQ1.tiff", width = 2000, height = 2000, res = 400)
+ggsurvplot(Fit_sig_tcga_pfs_q1,
+           risk.table = FALSE,
+           pval = TRUE,
+           pval.size = 10,
+           legend.labs = c('predicted PFS: 0', 'predicted PFS: 1'),
+           legend.title	= '',
+           ggtheme = theme_survminer(base_size = 12, font.x = c(12), font.y = c(12, 'bold.italic', 'black'), font.tickslab = c(12, 'plain', 'black'), font.legend = c(12, 'bold', 'black')),
+           palette = 'jco',
+           risk.table.y.text.col = FALSE,
+           risk.table.y.text = FALSE, 
+           title = 'PRN signature and TCGA PFS in samples with lowest purity: 145 samples'
+)
+dev.off()
+
+########
+# PFS in most pure samples/q4
+tiff("./figures/survival/logreg_tcga_PFS_MostPureQ4.tiff", width = 2000, height = 2000, res = 400)
+ggsurvplot(Fit_sig_tcga_pfs_q4,
+           risk.table = FALSE,
+           pval = TRUE,
+           pval.size = 10,
+           legend.labs = c('predicted PFS: 0', 'predicted PFS: 1'),
+           legend.title	= '',
+           ggtheme = theme_survminer(base_size = 12, font.x = c(12), font.y = c(12, 'bold.italic', 'black'), font.tickslab = c(12, 'plain', 'black'), font.legend = c(12, 'bold', 'black')),
+           palette = 'jco',
+           risk.table.y.text.col = FALSE,
+           risk.table.y.text = FALSE, 
+           title = 'PRN signature and TCGA PFS in samples with highest purity: 139 samples'
+)
+dev.off()
 ##############################################################################
 ## fit coxph model:
 
@@ -308,3 +366,13 @@ summary(Fit_sig_tcga_PFS_coxph_logReg_withGS)
 tiff('./figures/survival/multivariateCox.tiff', width = 2500, height = 3000, res = 400)
 ggforest(Fit_sig_tcga_PFS_coxph_logReg_withGS, fontsize = 1, main = 'HR')
 dev.off()
+
+###################
+# fit multivariate COX with gleason and tumor purity as cofactor 
+Fit_sig_tcga_PFS_coxph_logReg_withGS_purity <- coxph(Surv(Progress.Free.Survival..Months., Progression.Free.Status) ~ `PRN signature` + gleason + purity, data = CoxData_tcga)
+summary(Fit_sig_tcga_PFS_coxph_logReg_withGS_purity)
+
+tiff('./figures/survival/multivariateCox_gleason_purity.tiff', width = 2500, height = 3000, res = 400)
+ggforest(Fit_sig_tcga_PFS_coxph_logReg_withGS_purity, fontsize = 1, main = 'HR')
+dev.off()
+

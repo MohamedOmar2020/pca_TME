@@ -552,12 +552,42 @@ netVisual_chord_gene(cellchat_mouse_all,
 )
 dev.off()
 
+# plot expression of genes involved in signaling pathways
+png('./figures/cellchat_allCompartments/immune_c0c1c2_THBS_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("THBS"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c0', 'c1', 'c2'))
+dev.off()
 
+png('./figures/cellchat_allCompartments/immune_c0c1c2_MIF_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("MIF"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c0', 'c1', 'c2'))
+dev.off()
 
+png('./figures/cellchat_allCompartments/immune_c0c1c2_TGFb_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("TGFb"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c0', 'c1', 'c2'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/immune_c0c1c2_CD96_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("CD96"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c0', 'c1', 'c2'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/immune_c0c1c2_CD226_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("CD226"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c0', 'c1', 'c2'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/immune_c0c1c2_EGF_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("EGF"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c0', 'c1', 'c2'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/immune_c0c1c2_SPP1_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("SPP1"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c0', 'c1', 'c2'))
+dev.off()
 
 ##############################################################
 ##########
 # Figure 4 : E
+##############################################################
+
+############################
+# from immune
 png('./figures/cellchat_allCompartments/new/immune_c3c4.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
                      slot.name = "netP",
@@ -576,7 +606,30 @@ netVisual_chord_gene(cellchat_mouse_all,
 )
 dev.off()
 
+# plot expression of genes involved in signaling pathways
+png('./figures/cellchat_allCompartments/immune_c3c4_TGFb_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("TGFb"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c3', 'c4'))
+dev.off()
 
+png('./figures/cellchat_allCompartments/immune_c3c4_PARs_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("PARs"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c3', 'c4'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/immune_c3c4_THBS_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("THBS"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c3', 'c4'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/immune_c3c4_ITGAL_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("ITGAL-ITGB2"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c3', 'c4'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/immune_c3c4_GALECTIN_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("GALECTIN"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c3', 'c4'))
+dev.off()
+
+
+############################
+# from epithelium
 png('./figures/cellchat_allCompartments/new/epith_c3c4.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
                      slot = 'netP', 
@@ -593,8 +646,30 @@ netVisual_chord_gene(cellchat_mouse_all,
 dev.off()
 
 
+# plot expression of genes involved in signaling pathways
+png('./figures/cellchat_allCompartments/epithelium_c3c4_THBS_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("THBS"), idents = c("epithelium", 'c3', 'c4'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/epithelium_c3c4_MIF_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("MIF"), idents = c("epithelium", 'c3', 'c4'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/epithelium_c3c4_PDGF_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("PDGF"), idents = c("epithelium", 'c3', 'c4'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/epithelium_c3c4_GAS_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("GAS"), idents = c("epithelium", 'c3', 'c4'))
+dev.off()
+
+
 ##############################################################
 # figure 4: F
+##############################################################
+
+############################
+# from immune
 png('./figures/cellchat_allCompartments/new/immune_c5c6c7.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
                      slot.name = "netP",
@@ -613,6 +688,45 @@ netVisual_chord_gene(cellchat_mouse_all,
 )
 dev.off()
 
+# plot expression of genes involved in signaling pathways
+png('./figures/cellchat_allCompartments/immune_c5c6c7_TGFb_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("TGFb"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c5', 'c6', 'c7'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/immune_c5c6c7_PARs_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("PARs"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c5', 'c6', 'c7'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/immune_c5c6c7_VCAM_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("VCAM"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c5', 'c6', 'c7'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/immune_c5c6c7_SPP1_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("SPP1"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c5', 'c6', 'c7'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/immune_c5c6c7_THBS_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("THBS"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c5', 'c6', 'c7'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/immune_c5c6c7_EGF_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("EGF"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c5', 'c6', 'c7'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/immune_c5c6c7_THY1_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("THY1"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c5', 'c6', 'c7'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/immune_c5c6c7_IL1_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("IL1"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c5', 'c6', 'c7'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/immune_c5c6c7_CD39_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("CD39"), idents = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages", 'c5', 'c6', 'c7'))
+dev.off()
+
+############################
+# from epithelium
 png('./figures/cellchat_allCompartments/new/epith_c5c6c7.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
                      slot.name = "netP",
@@ -631,6 +745,35 @@ netVisual_chord_gene(cellchat_mouse_all,
 )
 dev.off()
 
+
+# plot expression of genes involved in signaling pathways
+png('./figures/cellchat_allCompartments/epithelium_c5c6c7_THBS_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("THBS"), idents = c("epithelium", 'c5', 'c6', 'c7'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/epithelium_c5c6c7_LAMININ_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("LAMININ"), idents = c("epithelium", 'c5', 'c6', 'c7'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/epithelium_c5c6c7_EGF_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("EGF"), idents = c("epithelium", 'c5', 'c6', 'c7'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/epithelium_c5c6c7_GAS_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("GAS"), idents = c("epithelium", 'c5', 'c6', 'c7'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/epithelium_c5c6c7_MIF_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("MIF"), idents = c("epithelium", 'c5', 'c6', 'c7'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/epithelium_c5c6c7_WNT_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("WNT"), idents = c("epithelium", 'c5', 'c6', 'c7'))
+dev.off()
+
+png('./figures/cellchat_allCompartments/epithelium_c5c6c7_PDGF_geneExpression.png', width = 2000, height = 2000, res = 300)
+plotGeneExpression(cellchat_mouse_all, signaling = c("PDGF"), idents = c("epithelium", 'c5', 'c6', 'c7'))
+dev.off()
 
 ##############################################################
 ##############################################################

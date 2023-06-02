@@ -135,3 +135,28 @@ predClasses_test_GCP <- ifelse(prob_test_GCP >= thr_GCP$threshold, 'No_Mets', 'M
 table(predClasses_test_GCP)
 predClasses_test_GCP <- factor(predClasses_test_GCP, levels = c('No_Mets', 'Mets'))
 
+############################################################################
+## ROC curve comparing PRN to GCP
+
+scores <- join_scores(prob_test_PRN, prob_test_GCP, chklen = F)
+
+labels <- join_labels(usedTrainGroup, usedTestGroup, chklen = F)
+
+ROC_data <- mmdata(scores = scores, labels = usedTestGroup, dsids = c(1,2), modnames = c('PRN','GCP'), expd_first = "dsids")
+
+sscurves <- evalmod(ROC_data, modnames = c('PRN','GCP'), raw_curves = T, expd_first = "mids")
+sscurves
+
+
+tiff("./figures/PRN_GCP_comparison.tiff", width=2000, height=2000, res=400)
+autoplot(sscurves, curvetype = c("ROC"), raw_curves = TRUE, show_legend = TRUE, show_cb = FALSE, ret_grob = TRUE) + 
+  labs(title = "") + 
+  annotate("text", x = .65, y = .25, label = "PRN Testing AUC = 0.69", size = 4) + 
+  annotate("text", x = .65, y = .18, label = "CCP Testing AUC = 0.62", size = 4) +
+  theme(axis.title.y = element_text(family = 'Arial', face = 'bold.italic', size = 12, angle = 90), 
+        axis.title.x = element_text(family = 'Arial', face = 'bold.italic', size = 12, angle = 0),
+        axis.text.x = element_text(family = 'Arial', size = 10), 
+        axis.text.y = element_text(family = 'Arial', size = 10), 
+        legend.text = element_text(family = 'Arial', face = 'bold', size = 12), 
+  )
+dev.off()

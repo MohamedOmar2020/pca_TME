@@ -288,7 +288,7 @@ dev.off()
 
 ########
 # PFS in least pure samples/q1
-tiff("./figures/survival/logreg_tcga_PFS_leastPureQ1.tiff", width = 2000, height = 2000, res = 400)
+tiff("./figures/survival/logreg_tcga_PFS_leastPureQ1.tiff", width = 2500, height = 2500, res = 300)
 ggsurvplot(Fit_sig_tcga_pfs_q1,
            risk.table = FALSE,
            pval = TRUE,
@@ -305,7 +305,7 @@ dev.off()
 
 ########
 # PFS in most pure samples/q4
-tiff("./figures/survival/logreg_tcga_PFS_MostPureQ4.tiff", width = 2000, height = 2000, res = 400)
+tiff("./figures/survival/logreg_tcga_PFS_MostPureQ4.tiff", width = 2500, height = 2500, res = 300)
 ggsurvplot(Fit_sig_tcga_pfs_q4,
            risk.table = FALSE,
            pval = TRUE,
@@ -375,4 +375,14 @@ summary(Fit_sig_tcga_PFS_coxph_logReg_withGS_purity)
 tiff('./figures/survival/multivariateCox_gleason_purity.tiff', width = 2500, height = 3000, res = 400)
 ggforest(Fit_sig_tcga_PFS_coxph_logReg_withGS_purity, fontsize = 1, main = 'HR')
 dev.off()
+
+###################
+# fit multivariate COX with tumor purity as cofactor 
+Fit_sig_tcga_PFS_coxph_logReg_withPurity <- coxph(Surv(Progress.Free.Survival..Months., Progression.Free.Status) ~ `PRN signature` + purity, data = CoxData_tcga)
+summary(Fit_sig_tcga_PFS_coxph_logReg_withPurity)
+
+tiff('./figures/survival/multivariateCox_purity.tiff', width = 2500, height = 3000, res = 400)
+ggforest(Fit_sig_tcga_PFS_coxph_logReg_withPurity, fontsize = 1, main = 'HR')
+dev.off()
+
 

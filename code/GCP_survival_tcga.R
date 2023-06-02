@@ -182,13 +182,13 @@ Fit_sig_tcga_pfs_logReg_quartiles <- survfit(Surv(Progress.Free.Survival..Months
 ############################################################################
 # plot OS
 
-pdf("./figures/survival/LogReg_tcga_os_GCP.pdf", width = 8, height = 8, onefile = F)
+png("./figures/survival/LogReg_tcga_os_GCP.png", width = 2000, height = 2000, res = 300)
 ggsurvplot(Fit_sig_tcga_os_logReg,
            risk.table = FALSE,
            pval = TRUE,
            pval.size = 10,
            legend.labs = c('prediction: 0', 'prediction: 1'),
-           ggtheme = theme_survminer(base_size = 30, font.x = c(30, 'bold.italic', 'black'), font.y = c(30, 'bold.italic', 'black'), font.tickslab = c(30, 'plain', 'black'), font.legend = c(30, 'bold', 'black')),
+           ggtheme = theme_survminer(base_size = 20, font.x = c(20, 'bold.italic', 'black'), font.y = c(20, 'bold.italic', 'black'), font.tickslab = c(20, 'plain', 'black'), font.legend = c(20, 'bold', 'black')),
            palette = 'jco',
            risk.table.y.text.col = FALSE,
            risk.table.y.text = FALSE, title = 'GCP signature and TCGA OS')
@@ -281,10 +281,10 @@ CoxData_tcga$gleason <- pheno2$Radical.Prostatectomy.Gleason.Score.for.Prostate.
 CoxData_tcga$gleason <- as.factor(CoxData_tcga$gleason)
 levels(CoxData_tcga$gleason)
 
-colnames(CoxData_tcga)[colnames(CoxData_tcga) == 'tcga_prob_logReg'] <- 'GCP signature'
+colnames(CoxData_tcga)[colnames(CoxData_tcga) == 'tcga_prob_logReg'] <- 'CCP signature'
 
 # fit the multivariate COX with gleason as cofactor 
-Fit_sig_tcga_PFS_coxph_logReg_withGS <- coxph(Surv(Progress.Free.Survival..Months., Progression.Free.Status) ~ `GCP signature` + gleason, data = CoxData_tcga)
+Fit_sig_tcga_PFS_coxph_logReg_withGS <- coxph(Surv(Progress.Free.Survival..Months., Progression.Free.Status) ~ `CCP signature` + gleason, data = CoxData_tcga)
 summary(Fit_sig_tcga_PFS_coxph_logReg_withGS)
 
 tiff('./figures/survival/multivariateCox_GCP.tiff', width = 2500, height = 3000, res = 400)

@@ -488,7 +488,7 @@ colMap <- c('powderblue', 'plum2', 'violetred4', 'slategray4', 'blue', 'darkoran
 ##############################################################
 
 # from epithelium
-png('./figures/cellchat_allCompartments/epithelium_c0c1c2.png', width = 3500, height = 3000, res = 350)
+png('./figures/cellchat_allCompartments/new/epithelium_c0c1c2.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
                     slot.name = "net",
                     sources.use = 'epithelium', 
@@ -498,22 +498,28 @@ netVisual_chord_gene(cellchat_mouse_all,
                     legend.pos.x = 25,
                     #reduce = -1,
                     thresh = 0.05, 
-                    small.gap = 5,
+                    small.gap = 3,
                     color.use = colMap
                     #title.name = 'Signling networks from common clusters to the epithelium'	
 )
 dev.off()
 
+
+#netAnalysis_contribution(cellchat_mouse_all, signaling = pathways.show)
+png('./figures/cellchat_allCompartments/new/epithelium_c0c1c2_bubble.png', width = 2000, height = 2000, res = 350)
+netVisual_bubble(cellchat_mouse_all, sources.use = 'epithelium', c('c0', 'c1', 'c2'), remove.isolate = FALSE)
+dev.off()
+
 # plot expression of genes involved in signaling pathways
-png('./figures/cellchat_allCompartments/epithelium_c0c1c2_WNT_geneExpression.png', width = 2000, height = 2000, res = 300)
+png('./figures/cellchat_allCompartments/new/epithelium_c0c1c2_WNT_geneExpression.png', width = 2000, height = 2000, res = 300)
 plotGeneExpression(cellchat_mouse_all, signaling = c("WNT"), idents = c('epithelium', 'c0', 'c1', 'c2'))
 dev.off()
 
-png('./figures/cellchat_allCompartments/epithelium_c0c1c2_EPHA_geneExpression.png', width = 2000, height = 2000, res = 300)
+png('./figures/new/cellchat_allCompartments/epithelium_c0c1c2_EPHA_geneExpression.png', width = 2000, height = 2000, res = 300)
 plotGeneExpression(cellchat_mouse_all, signaling = c("EPHA"), idents = c('epithelium', 'c0', 'c1', 'c2'))
 dev.off()
 
-png('./figures/cellchat_allCompartments/epithelium_c0c1c2_EPHB_geneExpression.png', width = 2000, height = 2000, res = 300)
+png('./figures/cellchat_allCompartments/new/epithelium_c0c1c2_EPHB_geneExpression.png', width = 2000, height = 2000, res = 300)
 plotGeneExpression(cellchat_mouse_all, signaling = c("EPHB"), idents = c('epithelium', 'c0', 'c1', 'c2'))
 dev.off()
 
@@ -535,9 +541,9 @@ dev.off()
 
 ############################
 # from immune
-png('./figures/cellchat_allCompartments/immune_c0c1c2.png', width = 3500, height = 3000, res = 350)
+png('./figures/cellchat_allCompartments/new/immune_c0c1c2.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
-                     slot.name = "netP",
+                     slot.name = "net",
                      sources.use = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages"), 
                      targets.use = c('c0', 'c1', 'c2'), 
                      lab.cex = 1, 
@@ -545,7 +551,7 @@ netVisual_chord_gene(cellchat_mouse_all,
                      legend.pos.x = 5,
                      #reduce = -1,
                      thresh = 0.05, 
-                     small.gap = 4,
+                     small.gap = 3,
                      #directional = 2,
                      color.use = colMap
                      #title.name = 'Signling networks from common clusters to immune cells'	
@@ -590,7 +596,7 @@ dev.off()
 # from immune
 png('./figures/cellchat_allCompartments/new/immune_c3c4.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
-                     slot.name = "netP",
+                     slot.name = "net",
                      #signaling = c('COMPLEMENT', 'CCL'),
                      sources.use = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages"), 
                      targets.use = c('c3', 'c4'), 
@@ -599,7 +605,7 @@ netVisual_chord_gene(cellchat_mouse_all,
                      legend.pos.x = 5,
                      #reduce = -1,
                      thresh = 0.05, 
-                     small.gap = 5,
+                     small.gap = 3,
                      #directional = 2,
                      color.use = colMap
                      #title.name = 'Signaling Networks from c3 and c4 to immune cells'	
@@ -632,13 +638,13 @@ dev.off()
 # from epithelium
 png('./figures/cellchat_allCompartments/new/epith_c3c4.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
-                     slot = 'netP', 
+                     slot = 'net', 
                      targets.use= c('c3', 'c4'), 
                      sources.use = 'epithelium', 
                      lab.cex = 1, 
                      legend.pos.y = 165, 
                      legend.pos.x = 25, 
-                     thresh = 0.05, small.gap = 5,
+                     thresh = 0.05, small.gap = 3,
                      color.use = colMap,
                      #title.name = 'Signaling pathways from c3 and c4 to the epithelium',	
                      #reduce = -1,
@@ -676,7 +682,7 @@ netVisual_chord_gene(cellchat_mouse_all,
                      #signaling = c('COMPLEMENT', 'CCL'),
                      sources.use = c("B cells", "CD4+ T lymphocytes", "NK/cytoxic T lymphocytes", "Treg", "dendritic cells", "monocytes/macrophages"), 
                      targets.use = c('c5', 'c6', 'c7'), 
-                     lab.cex = 0.9, 
+                     lab.cex = 0.7, 
                      legend.pos.y = 170, 
                      legend.pos.x = 5,
                      #reduce = -1,
@@ -729,16 +735,16 @@ dev.off()
 # from epithelium
 png('./figures/cellchat_allCompartments/new/epith_c5c6c7.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 
-                     slot.name = "netP",
+                     slot.name = "net",
                      #signaling = c('COMPLEMENT', 'CCL'),
                      sources.use = c("epithelium"), 
                      targets.use = c('c5', 'c6', 'c7'), 
-                     lab.cex = 1, 
+                     lab.cex = 0.7, 
                      legend.pos.y = 165, 
                      legend.pos.x = 5,
                      #reduce = -1,
                      thresh = 0.05, 
-                     small.gap = 5,
+                     small.gap = 4,
                      #directional = 2,
                      color.use = colMap
                      #title.name = 'Signaling Networks from PRN clusters to epithelium'	

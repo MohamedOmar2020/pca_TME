@@ -340,7 +340,7 @@ mouse_all_dataInput_mutant <- mouse_all_dataInput_mutant[, rownames(mouse_all_me
 cellchat_mouse_all_wt <- createCellChat(object = mouse_all_dataInput_wt, meta = mouse_all_meta_wt, group.by = "compartment")
 cellchat_mouse_all_mutant <- createCellChat(object = mouse_all_dataInput_mutant, meta = mouse_all_meta_mutant, group.by = "compartment")
 
-# Add cell information into meta slot of the object (Optional)
+# Add cell information into meta slot of the object
 cellchat_mouse_all_wt <- addMeta(cellchat_mouse_all_wt, meta = mouse_all_meta_wt)
 cellchat_mouse_all_wt <- setIdent(cellchat_mouse_all_wt, ident.use = "compartment") # set "labels" as default cell identity
 levels(cellchat_mouse_all_wt@idents) # show factor levels of the cell labels

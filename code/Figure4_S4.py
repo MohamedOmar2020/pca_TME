@@ -57,7 +57,7 @@ dp2 = sc.pl.DotPlot(adata_mouse_mesenchyme, var_names = ['Sfrp2', 'Wnt5a', 'Lgr5
                                                           'Ptn', 'Mdk', 'Tubb3', 'Mrc2', 'Fn1',
                                                           'Tnc', 'Col12a1', 'Col14a1', 'Col16a1',
                                                           'Mmp19', 'Cthrc1', 'Wisp1', 'Fzd1', 'Fzd2',
-                                                          'Sfrp4', 'Bmp1', 'Tle3', 'Tgfb1', 'Tgfb1', 'Postn'],
+                                                          'Sfrp4', 'Bmp1', 'Tle3', 'Tgfb1', 'Postn'],
                                 categories_order = ['c0','c1','c2','c3','c4','c5','c6','c7'],
                                 groupby='cluster', cmap = 'Reds', figsize=[15, 3],
                                 )

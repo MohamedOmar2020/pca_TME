@@ -126,6 +126,15 @@ sc.tl.leiden(adata_all, key_added="leiden", resolution=0.5)
 adata_all.obs['leiden'].value_counts()
 
 ################################################
+# save
+################################################
+adata_all.write('objs/visium_adata_all.h5ad')
+
+# load
+adata_all = sc.read_h5ad('objs/visium_adata_all.h5ad', chunk_size=100000)
+adata_all.obs_names_make_unique()
+
+################################################
 # plots
 ################################################
 
@@ -158,15 +167,23 @@ sc.pl.spatial(adata_all[adata_all.obs['model'].isin(['WT'])], img_key="hires", c
 sc.pl.spatial(adata_all[adata_all.obs['model'].isin(['WT'])], img_key="hires", color=["Bgn"], library_id = 'PRN1_wt', alpha=0.8, cmap = 'viridis', save = 'PRN1_wt_Bgn')
 
 ################
-# Violin plots
+# Violin plots for c5:c7 markers
 sc.pl.violin(adata_all, ['Postn', 'Ar'], groupby = 'model', use_raw=True)
 sc.pl.violin(adata_all, ['Bgn'], groupby = 'model', use_raw=True, save='_Bgn')
 
+sc.pl.violin(adata_all, ['Sfrp4', 'Mki67', 'Fn1', 'Tnc', 'Col12a1', 'Fzd1', 'Tgfb1'], groupby = 'model', use_raw=True, save='_PRNclusterMarkers_comparison')
+
+# same but spatial
+sc.pl.spatial(adata_all[adata_all.obs['model'].isin(['WT'])], img_key="hires", color=['Sfrp4', 'Mki67', 'Fn1', 'Tnc', 'Col12a1', 'Fzd1', 'Tgfb1'], library_id = 'PRN1_wt', alpha=0.8, cmap = 'viridis', save = 'PRN1_wt_PRNclustersMarkers')
+sc.pl.spatial(adata_all[adata_all.obs['model'].isin(['PRN'])], img_key="hires", color=['Sfrp4', 'Mki67', 'Fn1', 'Tnc', 'Col12a1', 'Fzd1', 'Tgfb1'], library_id = 'PRN1', alpha=0.8, cmap = 'viridis', save = 'PRN1_PRNclustersMarkers')
 
 
 ##################################################
 ## marker genes
 ##################################################
+# clusters by geneotype
+pd.crosstab(adata_all.obs['leiden'], adata_all.obs['model'])
+
 # by clusters
 sc.tl.rank_genes_groups(adata_all, "leiden", method="t-test", pts=True, use_raw = True)
 sc.pl.rank_genes_groups(adata_all, groups=None, n_genes=25, groupby="leiden", sharey=False, save='_topGenes_leiden')
@@ -179,66 +196,114 @@ sc.pl.rank_genes_groups_dotplot(adata_all, groupby='model', n_genes=15, save='to
 ##################################################
 ## Cell types annotation
 ##################################################
+# For myofibroblasts
+# ACTA2
+# DES
+# MYH11
+# TAGLN
 
-adata_PRN1.obs["Fn1+Tnc+Postn+ cells"] = (
-    adata_PRN1.obs["Cluster"].isin(['c1']).astype("category")
+# For CAFs
+# FAP
+# PDGFRB
+# S100A4
+# ACTA2
+# COL1A1
+
+
+adata_all.obs["normal smooth muscles"] = (
+    adata_all.obs["leiden"].isin(['0']).astype("category")
 )
 
-adata_PRN1.obs["immune-reactive stroma"] = (
-    adata_PRN1.obs["Cluster"].isin(['c2']).astype("category")
+adata_all.obs["fibroblasts"] = (
+    adata_all.obs["leiden"].isin(['11']).astype("category")
 )
 
-adata_PRN1.obs["NE epithelium"] = (
-    adata_PRN1.obs["Cluster"].isin(['c3']).astype("category")
+adata_all.obs["tumor epithelium"] = (
+    adata_all.obs["leiden"].isin(['1', '2', '3']).astype("category")
 )
 
-adata_PRN1.obs["Wnt+ stroma"] = (
-    adata_PRN1.obs["Cluster"].isin(['c4']).astype("category")
+adata_all.obs["normal epithelium"] = (
+    adata_all.obs["leiden"].isin(['4', '9', '13', '15']).astype("category")
 )
 
-adata_PRN1.obs["tumor"] = (
-    adata_PRN1.obs["Cluster"].isin(['c5']).astype("category")
+adata_all.obs["CAFs"] = (
+    adata_all.obs["leiden"].isin(['5', '7', '14']).astype("category")
 )
 
-adata_PRN1.obs["stroma/vessels"] = (
-    adata_PRN1.obs["Cluster"].isin(['c6']).astype("category")
+adata_all.obs["myofibroblasts"] = (
+    adata_all.obs["leiden"].isin(['6']).astype("category")
 )
 
-adata_PRN1.obs["other"] = (
-    adata_PRN1.obs["Cluster"].isin(['c7']).astype("category")
+adata_all.obs["macrophages"] = (
+    adata_all.obs["leiden"].isin(['8']).astype("category")
 )
 
-adata_PRN1.obs["vessels"] = (
-    adata_PRN1.obs["Cluster"].isin(['c8']).astype("category")
+adata_all.obs["seminal vesicle"] = (
+    adata_all.obs["leiden"].isin(['10', '12']).astype("category")
 )
 
-adata_PRN1.obs["myofibroblasts"] = (
-    adata_PRN1.obs["Cluster"].isin(['c9']).astype("category")
+
+
+adata_all.obs["cell types"] = "Other"
+adata_all.obs.loc[adata_all.obs["normal smooth muscles"] == True, "cell types"] = "normal smooth muscles"
+adata_all.obs.loc[adata_all.obs['fibroblasts'] == True, "cell types"] = "fibroblasts"
+adata_all.obs.loc[adata_all.obs['tumor epithelium'] == True, "cell types"] = "tumor epithelium"
+adata_all.obs.loc[adata_all.obs['normal epithelium'] == True, "cell types"] = "normal epithelium"
+adata_all.obs.loc[adata_all.obs['CAFs'] == True, "cell types"] = "CAFs"
+adata_all.obs.loc[adata_all.obs['myofibroblasts'] == True, "cell types"] = "myofibroblasts"
+adata_all.obs.loc[adata_all.obs['macrophages'] == True, "cell types"] = "macrophages"
+adata_all.obs.loc[adata_all.obs['seminal vesicle'] == True, "cell types"] = "seminal vesicle"
+
+
+adata_all.obs['cell types'] = adata_all.obs['cell types'].astype('category')
+adata_all.obs['cell types'].value_counts()
+
+# add a key for the compartment
+adata_all.obs["stroma"] = (
+    adata_all.obs["cell types"].isin(['CAFs', 'myofibroblasts', 'fibroblasts', 'normal smooth muscles']).astype("category")
 )
 
-adata_PRN1.obs["endothelial/immune"] = (
-    adata_PRN1.obs["Cluster"].isin(['c10']).astype("category")
+adata_all.obs["epithelium"] = (
+    adata_all.obs["cell types"].isin(['normal epithelium', 'tumor epithelium']).astype("category")
 )
 
-adata_PRN1.obs["seminal vesicle"] = (
-    adata_PRN1.obs["Cluster"].isin(['c11']).astype("category")
-)
+adata_all.obs["compartment"] = "Other"
+adata_all.obs.loc[adata_all.obs["stroma"] == True, "compartment"] = "stroma"
+adata_all.obs.loc[adata_all.obs['epithelium'] == True, "compartment"] = "epithelium"
 
-adata_PRN1.obs["cell types"] = "Other"
-adata_PRN1.obs.loc[adata_PRN1.obs['Fn1+Tnc+Postn+ cells'] == True, "cell types"] = "Fn1+Tnc+Postn+ cells"
-adata_PRN1.obs.loc[adata_PRN1.obs['immune-reactive stroma'] == True, "cell types"] = "immune-reactive stroma"
-adata_PRN1.obs.loc[adata_PRN1.obs['NE epithelium'] == True, "cell types"] = "NE epithelium"
-adata_PRN1.obs.loc[adata_PRN1.obs['Wnt+ stroma'] == True, "cell types"] = "Wnt+ stroma"
-adata_PRN1.obs.loc[adata_PRN1.obs['tumor'] == True, "cell types"] = "tumor"
-adata_PRN1.obs.loc[adata_PRN1.obs['stroma/vessels'] == True, "cell types"] = "stroma/vessels"
-adata_PRN1.obs.loc[adata_PRN1.obs['other'] == True, "cell types"] = "Other"
-adata_PRN1.obs.loc[adata_PRN1.obs['vessels'] == True, "cell types"] = "vessels"
-adata_PRN1.obs.loc[adata_PRN1.obs['myofibroblasts'] == True, "cell types"] = "myofibroblasts"
-adata_PRN1.obs.loc[adata_PRN1.obs['endothelial/immune'] == True, "cell types"] = "endothelial/immune"
-adata_PRN1.obs.loc[adata_PRN1.obs['seminal vesicle'] == True, "cell types"] = "seminal vesicle"
+adata_all.obs['compartment'] = adata_all.obs['compartment'].astype('category')
+adata_all.obs['compartment'].value_counts()
 
-adata_PRN1.obs['cell types'] = adata_PRN1.obs['cell types'].astype('category')
-adata_PRN1.obs['cell types'].value_counts()
+##################################################
+# some plots for the annotated cell types
+##################################################
+## spatial plots for annotated cell types
+# PRN
+sc.pl.spatial(adata_all[adata_all.obs['model'].isin(['PRN'])], img_key="hires", color=["cell types"], library_id = 'PRN1', size=1, save = '_PRN1_celltypes')
+# WT
+sc.pl.spatial(adata_all[adata_all.obs['model'].isin(['WT'])], img_key="hires", color=["cell types"], library_id = 'PRN1_wt', size=1, save = '_WT_celltypes')
+
+## spatial plots for compartment
+# PRN
+sc.pl.spatial(adata_all[adata_all.obs['model'].isin(['PRN'])], img_key="hires", color=["compartment"], library_id = 'PRN1', size=1, save = '_PRN1_compartment')
+# WT
+sc.pl.spatial(adata_all[adata_all.obs['model'].isin(['WT'])], img_key="hires", color=["compartment"], library_id = 'PRN1_wt', size=1, save = '_WT_compartment')
+
+
+##################################################
+# plots for c5:c7 markers in the stroma
+##################################################
+sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])], ['Postn', 'Ar'], groupby = 'model', use_raw=True, save='_Postn_Ar_stroma')
+sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])], ['Bgn'], groupby = 'model', use_raw=True, save='_Bgn_stroma')
+
+sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])],
+             ['Sfrp4', 'Mki67', 'Fn1', 'Tnc', 'Col12a1', 'Fzd1', 'Tgfb1', 'Top2a', 'Col12a1', 'Col14a1', 'Col16a1'],
+             groupby = 'model',
+             use_raw=True,
+             save='_PRNclusterMarkers_comparison_stroma')
+
+
+
 
 ##################################################
 ## Spatially variable genes

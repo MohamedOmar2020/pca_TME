@@ -296,11 +296,20 @@ sc.pl.spatial(adata_all[adata_all.obs['model'].isin(['WT'])], img_key="hires", c
 sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])], ['Postn', 'Ar'], groupby = 'model', use_raw=True, save='_Postn_Ar_stroma')
 sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])], ['Bgn'], groupby = 'model', use_raw=True, save='_Bgn_stroma')
 
+# PRN vs wildtype
 sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])],
              ['Sfrp4', 'Mki67', 'Fn1', 'Tnc', 'Col12a1', 'Fzd1', 'Tgfb1', 'Top2a', 'Col12a1', 'Col14a1', 'Col16a1'],
              groupby = 'model',
              use_raw=True,
              save='_PRNclusterMarkers_comparison_stroma')
+
+# PRN stroma vs PRN epithelium
+sc.pl.violin(adata_all[adata_all.obs['model'].isin(['PRN'])],
+             ['Sfrp4', 'Mki67', 'Fn1', 'Tnc', 'Col12a1', 'Fzd1', 'Tgfb1', 'Top2a', 'Col12a1', 'Col14a1', 'Col16a1'],
+             groupby = 'compartment',
+             use_raw=True,
+             save='_PRNclusterMarkers_CompartmentComparison_inPRN')
+
 
 
 

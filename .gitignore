@@ -27,6 +27,8 @@ renv/
 coculture/
 
 *.csv
+t-test_overestim_var.csv
+wilcoxon.csv
 
 Webex.pkg
 stitch_python.py

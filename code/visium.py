@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import csr_matrix
 import SpatialDE
+import seaborn as sns
 
 #############################################
 # set figure parameters
@@ -133,6 +134,7 @@ adata_all.write('objs/visium_adata_all.h5ad')
 # load
 adata_all = sc.read_h5ad('objs/visium_adata_all.h5ad', chunk_size=100000)
 adata_all.obs_names_make_unique()
+adata_all.uns['log1p']["base"] = None
 
 ################################################
 # plots
@@ -210,8 +212,8 @@ sc.pl.rank_genes_groups_dotplot(adata_all, groupby='model', n_genes=15, save='to
 # COL1A1
 
 
-adata_all.obs["normal smooth muscles"] = (
-    adata_all.obs["leiden"].isin(['0']).astype("category")
+adata_all.obs["myofibroblasts"] = (
+    adata_all.obs["leiden"].isin(['0', '6']).astype("category")
 )
 
 adata_all.obs["fibroblasts"] = (
@@ -230,9 +232,9 @@ adata_all.obs["CAFs"] = (
     adata_all.obs["leiden"].isin(['5', '7', '14']).astype("category")
 )
 
-adata_all.obs["myofibroblasts"] = (
-    adata_all.obs["leiden"].isin(['6']).astype("category")
-)
+# adata_all.obs["myofibroblasts"] = (
+#     adata_all.obs["leiden"].isin(['6']).astype("category")
+# )
 
 adata_all.obs["macrophages"] = (
     adata_all.obs["leiden"].isin(['8']).astype("category")
@@ -245,7 +247,7 @@ adata_all.obs["seminal vesicle"] = (
 
 
 adata_all.obs["cell types"] = "Other"
-adata_all.obs.loc[adata_all.obs["normal smooth muscles"] == True, "cell types"] = "normal smooth muscles"
+#adata_all.obs.loc[adata_all.obs["normal smooth muscles"] == True, "cell types"] = "normal smooth muscles"
 adata_all.obs.loc[adata_all.obs['fibroblasts'] == True, "cell types"] = "fibroblasts"
 adata_all.obs.loc[adata_all.obs['tumor epithelium'] == True, "cell types"] = "tumor epithelium"
 adata_all.obs.loc[adata_all.obs['normal epithelium'] == True, "cell types"] = "normal epithelium"
@@ -274,14 +276,31 @@ adata_all.obs.loc[adata_all.obs['epithelium'] == True, "compartment"] = "epithel
 adata_all.obs['compartment'] = adata_all.obs['compartment'].astype('category')
 adata_all.obs['compartment'].value_counts()
 
+# plot top genes by cell type
+sc.tl.rank_genes_groups(adata_all, "cell types", method="t-test", pts=True, use_raw = True)
+sc.pl.rank_genes_groups(adata_all, groups=None, n_genes=25, groupby="cell types", sharey=False, save='_topGenes_celltypes')
+
 ##################################################
 # some plots for the annotated cell types
 ##################################################
 ## spatial plots for annotated cell types
-# PRN
-sc.pl.spatial(adata_all[adata_all.obs['model'].isin(['PRN'])], img_key="hires", color=["cell types"], library_id = 'PRN1', size=1, save = '_PRN1_celltypes')
-# WT
-sc.pl.spatial(adata_all[adata_all.obs['model'].isin(['WT'])], img_key="hires", color=["cell types"], library_id = 'PRN1_wt', size=1, save = '_WT_celltypes')
+
+def generate_distinct_colors(n):
+    return plt.cm.get_cmap('tab20b', n)
+
+# Get the unique cell types across all data
+all_cell_types = np.unique(adata_all.obs['cell types'])
+
+# Generate a color palette with the same number of colors as cell types
+cmap = generate_distinct_colors(len(all_cell_types))
+color_palette = [cmap(i) for i in range(len(all_cell_types))]
+
+# Create a dictionary mapping cell types to colors
+cell_type_colors = dict(zip(all_cell_types, color_palette))
+
+# Now, when we plot, the colors should be consistent
+sc.pl.spatial(adata_all[adata_all.obs['model'].isin(['PRN'])], img_key="hires", color=["cell types"], library_id = 'PRN1', palette = cell_type_colors, size=1, save = '_PRN1_celltypes')
+sc.pl.spatial(adata_all[adata_all.obs['model'].isin(['WT'])], img_key="hires", color=["cell types"], library_id = 'PRN1_wt', palette = cell_type_colors, size=1, save = '_WT_celltypes')
 
 ## spatial plots for compartment
 # PRN
@@ -303,14 +322,203 @@ sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])],
              use_raw=True,
              save='_PRNclusterMarkers_comparison_stroma')
 
+# individual plots
+sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])],
+             ['Mki67'],
+             groupby = 'model',
+             use_raw=True,
+             save='_PRNclusterMarkers_comparison_stroma_Mki67')
+
+sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])],
+             ['Postn'],
+             groupby = 'model',
+             use_raw=True,
+             save='_PRNclusterMarkers_comparison_stroma_Postn')
+
+sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])],
+             ['Fn1'],
+             groupby = 'model',
+             use_raw=True,
+             save='_PRNclusterMarkers_comparison_stroma_Fn1')
+
+
+sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])],
+             ['Bgn'],
+             groupby = 'model',
+             use_raw=True,
+             save='_PRNclusterMarkers_comparison_stroma_Bgn')
+
+sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])],
+             ['Tnc'],
+             groupby = 'model',
+             use_raw=True,
+             save='_PRNclusterMarkers_comparison_stroma_Tnc')
+
+sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])],
+             ['Col12a1'],
+             groupby = 'model',
+             use_raw=True,
+             save='_PRNclusterMarkers_comparison_stroma_Col12a1')
+
+sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])],
+             ['Fzd1'],
+             groupby = 'model',
+             use_raw=True,
+             save='_PRNclusterMarkers_comparison_stroma_Fzd1')
+
+sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])],
+             ['Tgfb1'],
+             groupby = 'model',
+             use_raw=True,
+             save='_PRNclusterMarkers_comparison_stroma_Tgfb1')
+
+sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])],
+             ['Top2a'],
+             groupby = 'model',
+             use_raw=True,
+             save='_PRNclusterMarkers_comparison_stroma_Top2a')
+
+sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])],
+             ['Col16a1'],
+             groupby = 'model',
+             use_raw=True,
+             save='_PRNclusterMarkers_comparison_stroma_Col16a1')
+
+sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])],
+             ['Vim'],
+             groupby = 'model',
+             use_raw=True,
+             save='_PRNclusterMarkers_comparison_stroma_Vim')
+
+sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])],
+             ['Ar'],
+             groupby = 'model',
+             use_raw=True,
+             save='_PRNclusterMarkers_comparison_stroma_Ar')
+
+
+sc.pl.violin(adata_all[adata_all.obs['model'].isin(['PRN']) & adata_all.obs['compartment'].isin(['stroma'])],
+             ['Ar', 'Postn'],
+             groupby = 'model',
+             use_raw=True,
+             save='_Ar_Postn_PRN_stroma')
+
+sc.pl.violin(adata_all[adata_all.obs['model'].isin(['PRN']) & adata_all.obs['compartment'].isin(['stroma'])],
+             ['Ar'],
+             groupby = 'model',
+             use_raw=True,
+             save='_Ar_PRN_stroma')
+
+sc.pl.violin(adata_all[adata_all.obs['model'].isin(['PRN']) & adata_all.obs['compartment'].isin(['stroma'])],
+             ['Postn'],
+             groupby = 'model',
+             use_raw=True,
+             save='_Postn_PRN_stroma')
+
+########################################
+## compare Ar and Postn in PRN
+PRN_stroma = adata_all[adata_all.obs['model'].isin(['PRN']) & adata_all.obs['compartment'].isin(['stroma'])]
+
+##########
+# p-value
+
+ar_expression_PRN = PRN_stroma.raw[:, 'Ar'].X
+postn_expression_PRN = PRN_stroma.raw[:, 'Postn'].X
+ar_expression_PRN_dense = np.array(ar_expression_PRN.todense())
+postn_expression_PRN_dense = np.array(postn_expression_PRN.todense())
+
+# Then, perform a statistical test. Here's an example using a t-test from scipy:
+t_stat, p_value = stats.ttest_ind(ar_expression_PRN_dense, postn_expression_PRN_dense)
+
+#########
+# Create a DataFrame from the expression data
+df = pd.DataFrame({
+    'Ar': np.array(PRN_stroma.raw[:, 'Ar'].X.todense()).ravel(),
+    'Postn': np.array(PRN_stroma.raw[:, 'Postn'].X.todense()).ravel(),
+})
+
+# "Melt" the dataset to have genes and their values in two separate columns
+df_melted = df.melt(var_name='Gene', value_name='Expression')
+
+# Create the violin plot
+plt.figure(figsize=(10, 6))
+sns.violinplot(x='Gene', y='Expression', data=df_melted, scale='width')
+# Add significance line
+y_max = df_melted['Expression'].max()  # find maximum y value
+plt.plot([0, 1], [y_max + 0.45, y_max + 0.45], lw=1.5, color='black')  # draw horizontal line
+p_value_scalar = p_value[0] if isinstance(p_value, np.ndarray) else p_value
+plt.text(0.5, y_max + 0.5, f"p-value = {p_value_scalar:.2e}", ha='center')  # add p-value text
+
+# Add title and labels with larger font size
+plt.xlabel('Gene', size=15)
+plt.ylabel('Expression', size=15)
+
+# Increase the size of the tick labels
+plt.xticks(fontsize=12)
+plt.yticks(fontsize=12)
+
+# save the plot
+plt.savefig('figures/Visium/violin_Ar_Postn_PRN_stroma.png')
+
+########################################
+## compare Ar and Postn in WT
+WT_stroma = adata_all[adata_all.obs['model'].isin(['WT']) & adata_all.obs['compartment'].isin(['stroma'])]
+
+##########
+# p-value
+
+ar_expression_WT = WT_stroma.raw[:, 'Ar'].X
+postn_expression_WT = WT_stroma.raw[:, 'Postn'].X
+ar_expression_WT_dense = np.array(ar_expression_WT.todense())
+postn_expression_WT_dense = np.array(postn_expression_WT.todense())
+
+# Then, perform a statistical test. Here's an example using a t-test from scipy:
+t_stat_WT, p_value_WT = stats.ttest_ind(ar_expression_WT_dense, postn_expression_WT_dense)
+
+######
+# Create a DataFrame from the expression data
+df_WT = pd.DataFrame({
+    'Ar': np.array(WT_stroma.raw[:, 'Ar'].X.todense()).ravel(),
+    'Postn': np.array(WT_stroma.raw[:, 'Postn'].X.todense()).ravel(),
+})
+
+# "Melt" the dataset to have genes and their values in two separate columns
+df_WT_melted = df_WT.melt(var_name='Gene', value_name='Expression')
+
+# Create the violin plot
+plt.figure(figsize=(10, 6))
+sns.violinplot(x='Gene', y='Expression', data=df_WT_melted, scale='width')
+# Add significance line
+y_max = df_WT_melted['Expression'].max()  # find maximum y value
+plt.plot([0, 1], [y_max + 0.45, y_max + 0.45], lw=1.5, color='black')  # draw horizontal line
+p_value_WT_scalar = p_value_WT[0] if isinstance(p_value_WT, np.ndarray) else p_value_WT
+plt.text(0.5, y_max + 0.5, f"p-value = {p_value_WT_scalar:.2e}", ha='center')  # add p-value text
+
+# Add title and labels with larger font size
+plt.xlabel('Gene', size=15)
+plt.ylabel('Expression', size=15)
+
+# Increase the size of the tick labels
+plt.xticks(fontsize=12)
+plt.yticks(fontsize=12)
+
+# save the plot
+plt.savefig('figures/Visium/violin_Ar_Postn_WT_stroma.png')
+
+
+
+
+
+sc.pl.spatial(adata_all[adata_all.obs['model'].isin(['PRN'])], img_key="hires", color=["Ar", 'Postn'], library_id = 'PRN1', size=1, alpha=0.7, cmap = 'viridis',  save = '_PRN1_Ar_Postn')
+
+
+
 # PRN stroma vs PRN epithelium
 sc.pl.violin(adata_all[adata_all.obs['model'].isin(['PRN'])],
              ['Sfrp4', 'Mki67', 'Fn1', 'Tnc', 'Col12a1', 'Fzd1', 'Tgfb1', 'Top2a', 'Col12a1', 'Col14a1', 'Col16a1'],
              groupby = 'compartment',
              use_raw=True,
              save='_PRNclusterMarkers_CompartmentComparison_inPRN')
-
-
 
 
 
@@ -369,10 +577,19 @@ sc.pl.violin(adata_all[adata_all.obs['model'].isin(['PRN'])],
 #####################################################
 # Neighborhood enrichment
 #####################################################
-sq.gr.spatial_neighbors(adata_PRN1)
-sq.gr.nhood_enrichment(adata_PRN1, cluster_key="cell types")
-sq.pl.nhood_enrichment(adata_PRN1, cluster_key="cell types", figsize = [10,6])
-plt.savefig('figures/visium/PRN1_neighborhoods.png', dpi=200)
+adata_all[adata_all.obs['model'].isin(['PRN'])] = adata_all[~adata_all.obs['cell types'].isin(['normal epithelium'])]
+
+
+
+sq.gr.spatial_neighbors(adata_all[adata_all.obs['model'].isin(['PRN'])])
+sq.gr.nhood_enrichment(adata_all[adata_all.obs['model'].isin(['PRN'])], cluster_key="cell types")
+sq.pl.nhood_enrichment(adata_all[adata_all.obs['model'].isin(['PRN'])], cluster_key="cell types", figsize = [10,6])
+plt.savefig('figures/visium/PRN_neighborhoods.png', dpi=200)
+
+sq.gr.spatial_neighbors(adata_all)
+sq.gr.nhood_enrichment(adata_all, cluster_key="cell types")
+sq.pl.nhood_enrichment(adata_all[adata_all.obs['model'].isin(['PRN'])], cluster_key="cell types", figsize = [10,6])
+plt.savefig('figures/visium/PRN_neighborhoods.png', dpi=200)
 
 
 #####################################################

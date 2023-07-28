@@ -47,7 +47,7 @@ adata_human_bone = sc.read_h5ad('data/for_human/adata_human_BoneMet_stroma.h5ad'
 adata_human_bone.obs['cluster'] = adata_human_bone.obs['cluster'].astype('str')
 
 ###########################
-# 6A
+# 7A
 ###########################
 # parallel categories plot for clusters per ERG status
 adata_human_mesenchyme.obs['cluster'] = adata_human_mesenchyme.obs['cluster'].astype('category')
@@ -75,7 +75,7 @@ sc.pl.umap(adata_human_mesenchyme, color=['cluster'], save = '_human_clusters')
 sc.pl.umap(adata_human_mesenchyme, color='AR', color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_AR')
 
 ###########################
-# 6B
+# 7B
 ###########################
 # dotplot common clusters in human
 dp = sc.pl.DotPlot(adata_human_mesenchyme, var_names = ['ACTA2', 'MYL9', 'MYH11', 'TAGLN',
@@ -93,21 +93,42 @@ dp = sc.pl.DotPlot(adata_human_mesenchyme, var_names = ['ACTA2', 'MYL9', 'MYH11'
 
 dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).legend(width = 1.2).savefig('figures/figures_cell/human_dotplot_common.tiff')
 
+# violin plots
+markers = ['ACTA2', 'MYL9', 'MYH11', 'TAGLN',
+           'PDGFRA', 'MUSTN1', 'ANGPT2', 'NOTCH3',
+           'SFRP1', 'GPX3', 'C3', 'C7', 'CFH', 'CCL11',
+           'CD55', 'PTX3', 'THBD', 'IFI16', 'JUN', 'JUNB',
+           'JUND', 'FOS', 'FOSB', 'FOSL2', 'ATF3','MAFB',
+           'MAFF', 'NEK2', 'ID1', 'ID3', 'BTG2',
+           'GADD45A', 'HES1', 'BCL3', 'SOCS1', 'SOCS3',
+           'IL6', 'IRF1', 'MAP3K8', 'GADD45B', 'GADD45G',
+           'DUSP1', 'DUSP6', 'KLF4', 'POSTN', 'SFRP2',
+           'WNT5A', 'WNT6', 'RORB', 'WIF1', 'MKI67', 'FN1', 'TNC', 'MDK',
+           'NOTUM', 'LGR5', 'MYC', 'PTN', 'COL12A1', 'TUBB3', 'FZD1', 'FZD2', 'SFRP4']
+
+for i in markers:
+    sc.pl.violin(adata_human_mesenchyme, i, groupby='cluster', use_raw=True, save=f'_human_common_{i}')
+
+
 ###########################
-# 6C
+# 7C
 ###########################
 ## umap of transferred clusters and original cell types
 sc.pl.umap(adata_human_bone, color='cluster', save = '_kfoury_projectedClusters')
 sc.pl.umap(adata_human_bone, color='cells',  save = '_kfoury_originalCells')
 
 ## umap of BGN expression
-sc.pl.umap(adata_human_bone, color='BGN', color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_kfoury_BGN')
+#sc.pl.umap(adata_human_bone, color='BGN', color_map = 'RdBu_r', vmin='p1', vmax='p99', save = '_kfoury_BGN')
 
 ###########################
-# 6D
+# 7D
 ###########################
-# violin plot of MKI67
-sc.pl.violin(adata_human_bone, ['MKI67'], groupby = 'cluster', use_raw=False, save='_kfoury_MKI67')
+# Violin plots of marker genes in the kfoury dataset
+Bone_markers = ['MKI67', 'POSTN', 'BGN', 'SFRP4', 'TNFSF11',
+                'BMP6', 'BMP7', 'RUNX2', 'PTHLH', 'EDN1',
+                'CXCR4', 'CXCL12', 'TGFB1', 'SPP1',
+                'WNT1', 'WNT3A', 'WNT5A', 'WNT7B',
+                'ITGAV', 'ITGB3', 'VEGFA', 'CDH1', 'CDH2']
 
-# violin plot of POSTN
-sc.pl.violin(adata_human_bone, ['POSTN'], groupby = 'cluster', use_raw=False, save='_kfoury_POSTN')
+for i in Bone_markers:
+    sc.pl.violin(adata_human_bone, i, groupby='cluster', use_raw=True, save=f'_kfoury_{i}')

@@ -300,8 +300,8 @@ use_condaenv(condaenv = "scutils", required = TRUE)
 ad <- import("anndata", convert = FALSE)
 
 # load the mouse h5ad object
-adata_mouse_all_wt <- ad$read_h5ad("./forCellChat/mouse_all_raw_wt.h5ad")
-adata_mouse_all_mutant <- ad$read_h5ad("./forCellChat/mouse_all_raw_mutant.h5ad")
+adata_mouse_all_wt <- ad$read_h5ad("./forCellChat/mouse_all_raw_wt2.h5ad")
+adata_mouse_all_mutant <- ad$read_h5ad("./forCellChat/mouse_all_raw_mutant2.h5ad")
 
 ##########################
 # access normalized data matrix
@@ -420,6 +420,14 @@ df.net_mouse_pathway_mutant <- subsetCommunication(cellchat_mouse_all_mutant, sl
 table(df.net_mouse_pathway_wt$pathway_name)
 table(df.net_mouse_pathway_mutant$pathway_name)
 
+################################
+save(cellchat_mouse_all_wt, 
+     cellchat_mouse_all_mutant,
+     file = './objs/LR_genotypes_WTvsMutants.rda'
+)
+
+
+load('./objs/LR_genotypes_WTvsMutants.rda')
 
 #####################################3
 # compute centrality
@@ -510,6 +518,11 @@ net.down <- subsetCommunication(cellchat, net = net, datasets = "WT",ligand.logF
 # do further deconvolution to obtain the individual signaling genes.
 gene.up <- extractGeneSubsetFromPair(net.up, cellchat)
 gene.down <- extractGeneSubsetFromPair(net.down, cellchat)
+
+#############
+# save
+write.xlsx(net.up, file = 'tables/upregulated_LR_mutants_vs_wt.xlsx', row.names = F)
+
 
 # visualize the upgulated and down-regulated signaling ligand-receptor pairs using bubble plot or chord diagram.
 pairLR.use.up = net.up[, "interaction_name", drop = F]

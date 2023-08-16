@@ -17,7 +17,7 @@ import seaborn as sns
 import anndata as ad
 import sc_toolbox as sct
 import plotly.express as px
-
+from scipy import stats
 
 
 #############################################
@@ -78,37 +78,296 @@ sc.pl.umap(adata_human_mesenchyme, color='AR', color_map = 'RdBu_r', vmin='p1', 
 # 7B
 ###########################
 # dotplot common clusters in human
-dp = sc.pl.DotPlot(adata_human_mesenchyme, var_names = ['ACTA2', 'MYL9', 'MYH11', 'TAGLN',
-                                                              'PDGFRA', 'MUSTN1', 'ANGPT2', 'NOTCH3',
-                                                              'SFRP1', 'GPX3', 'C3', 'C7', 'CFH', 'CCL11',
-                                                              'CD55', 'PTX3', 'THBD', 'IFI16', 'JUN', 'JUNB',
-                                                              'JUND', 'FOS', 'FOSB', 'FOSL2', 'ATF3',
-                                                              'MAFB', 'MAFF', 'NEK2', 'ID1', 'ID3', 'BTG2',
-                                                              'GADD45A', 'HES1', 'BCL3', 'SOCS1', 'SOCS3',
-                                                              'IL6', 'IRF1', 'MAP3K8', 'GADD45B', 'GADD45G',
-                                                              'DUSP1', 'DUSP6', 'KLF4'],
+dp = sc.pl.DotPlot(adata_human_mesenchyme, var_names = ['ACTA2', 'MYL9', 'JUN', 'JUNB', 'FOS', 'DUSP1',
+                                                        'SFRP2', 'RORB', 'TCF4', 'WNT6',
+                                                        'POSTN', 'FN1', 'SFRP4', 'TNC', 'CTHRC1'
+                                                        ],
                                 categories_order = ['c0','c1','c2','c3','c4','c5','c6','c7'],
-                                groupby='cluster', cmap = 'Reds', figsize = [15, 3]
+                                groupby='cluster', cmap = 'Reds', figsize = [15, 3],
+                                #log=True,
+                                standard_scale = 'var',
+                                #vmin = 0.15, vmax = 0.9,
+                                expression_cutoff = 0.5,
+                                layer = 'denoised',
+                                use_raw=True,
                                 )
 
-dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).legend(width = 1.2).savefig('figures/figures_cell/human_dotplot_common.tiff')
+dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5, dot_max = 1).legend(width = 1.2).savefig('figures/figures_cell/human_dotplot_common2.tiff')
 
+
+markers = ['ACTA2', 'MYL9', 'JUN', 'JUNB', 'FOS', 'DUSP1',
+            'SFRP2', 'RORB', 'TCF4', 'WNT6', 'POSTN', 'FN1', 'SFRP4', 'TNC', 'CTHRC1']
+
+sc.pl.matrixplot(adata_human_mesenchyme,
+                 markers,
+                 groupby='cluster',
+                 dendrogram=False,
+                 categories_order=['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'],
+                 standard_scale = 'var',
+                 layer = 'denoised',
+                 save = 'humanMarkers')
+
+
+##################
 # violin plots
-markers = ['ACTA2', 'MYL9', 'MYH11', 'TAGLN',
-           'PDGFRA', 'MUSTN1', 'ANGPT2', 'NOTCH3',
-           'SFRP1', 'GPX3', 'C3', 'C7', 'CFH', 'CCL11',
-           'CD55', 'PTX3', 'THBD', 'IFI16', 'JUN', 'JUNB',
-           'JUND', 'FOS', 'FOSB', 'FOSL2', 'ATF3','MAFB',
-           'MAFF', 'NEK2', 'ID1', 'ID3', 'BTG2',
-           'GADD45A', 'HES1', 'BCL3', 'SOCS1', 'SOCS3',
-           'IL6', 'IRF1', 'MAP3K8', 'GADD45B', 'GADD45G',
-           'DUSP1', 'DUSP6', 'KLF4', 'POSTN', 'SFRP2',
-           'WNT5A', 'WNT6', 'RORB', 'WIF1', 'MKI67', 'FN1', 'TNC', 'MDK',
-           'NOTUM', 'LGR5', 'MYC', 'PTN', 'COL12A1', 'TUBB3', 'FZD1', 'FZD2', 'SFRP4']
+human_markers = ['ACTA2', 'MYL9', 'GPX3', 'C7', 'JUN', 'FOS',
+           'WNT5A', 'RORB', 'POSTN', 'SFRP4']
 
-for i in markers:
+for i in human_markers:
     sc.pl.violin(adata_human_mesenchyme, i, groupby='cluster', use_raw=True, save=f'_human_common_{i}')
 
+##################
+# violin plots with p-value
+c0_markers = ['ACTA2', 'MYL9']
+c1_markers = ['GPX3', 'C7']
+c2_markers = ['JUN', 'FOS']
+c3c4_markers = ['WNT4', 'RORB']
+c5c6c7_markers = ['POSTN', 'SFRP4']
+
+#######
+## c0
+# Create a figure and axes objects
+fig, axs = plt.subplots(1, len(c0_markers), figsize=(7, 4))
+
+# Loop over the genes
+for i, (ax, gene) in enumerate(zip(axs, c0_markers)):
+    # Get the expression data for the gene and add it to the data frame
+    gene_expression = pd.DataFrame(adata_human_mesenchyme.raw[:, gene].X.toarray(),
+                                   index=adata_human_mesenchyme.obs_names,
+                                   columns=[gene])
+
+    df = gene_expression.join(adata_human_mesenchyme.obs)
+
+    # Perform a statistical test (e.g., t-test)
+    c0_expression = df[df['cluster'].isin(['c0'])][gene]
+    other_expression = df[~df['cluster'].isin(['c0'])][gene]
+    t_stat, p_value = stats.ttest_ind(c0_expression, other_expression)
+
+    # Create the violin plot for this gene
+    sns.violinplot(x='cluster', y=gene, order=['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'], data=df, ax=ax, cut=0.1, scale='width')
+
+    # Add the p-value to the plot
+    x_c0 = df['cluster'].unique().tolist().index('c0')
+    y_max = df[gene].max()
+    # Add the p-value to the plot
+    if p_value < 0.0001:
+        ax.text(0.5, y_max+0.1, "p < 0.0001", ha='center', fontsize = 8)
+    else:
+        ax.text(0.5, y_max+0.1, f"p = {p_value:.4f}", ha='center', fontsize = 8)
+
+    # Adjust the y-axis limit to accommodate the p-value text
+    ax.set_ylim([df[gene].min(), y_max + 0.5])
+
+    # Set the title for this subplot
+    #ax.set_title(gene, fontsize=16)
+
+    # Set the label for the x and y axes
+    ax.set_xlabel('cluster', fontsize=9)
+    ax.set_ylabel(gene, fontsize=9)
+
+    # Increase the size of the tick labels
+    ax.tick_params(axis='x', labelsize=8)
+    ax.tick_params(axis='y', labelsize=8)
+
+# Save the figure
+plt.tight_layout()
+plt.savefig('figures/figures_cell/human_violin_c0Markers.png')
+
+############
+## c1
+# Create a figure and axes objects
+fig, axs = plt.subplots(1, len(c1_markers), figsize=(7, 4))
+
+# Loop over the genes
+for i, (ax, gene) in enumerate(zip(axs, c1_markers)):
+    # Get the expression data for the gene and add it to the data frame
+    gene_expression = pd.DataFrame(adata_human_mesenchyme.raw[:, gene].X.toarray(),
+                                   index=adata_human_mesenchyme.obs_names,
+                                   columns=[gene])
+
+    df = gene_expression.join(adata_human_mesenchyme.obs)
+
+    # Perform a statistical test (e.g., t-test)
+    c1_expression = df[df['cluster'].isin(['c1'])][gene]
+    other_expression = df[~df['cluster'].isin(['c1'])][gene]
+    t_stat, p_value = stats.ttest_ind(c1_expression, other_expression)
+
+    # Create the violin plot for this gene
+    sns.violinplot(x='cluster', y=gene, order=['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'], data=df, ax=ax, cut=0.1, scale='width')
+
+    # Add the p-value to the plot
+    x_c1 = df['cluster'].unique().tolist().index('c1')
+    y_max = df[gene].max()
+    # Add the p-value to the plot
+    if p_value < 0.0001:
+        ax.text(1, y_max+0.1, "p < 0.0001", ha='center', fontsize = 8)
+    else:
+        ax.text(1, y_max+0.1, f"p = {p_value:.4f}", ha='center', fontsize = 8)
+
+    # Adjust the y-axis limit to accommodate the p-value text
+    ax.set_ylim([df[gene].min(), y_max + 0.5])
+
+    # Set the title for this subplot
+    #ax.set_title(gene, fontsize=16)
+
+    # Set the label for the x and y axes
+    ax.set_xlabel('cluster', fontsize=9)
+    ax.set_ylabel(gene, fontsize=9)
+
+    # Increase the size of the tick labels
+    ax.tick_params(axis='x', labelsize=8)
+    ax.tick_params(axis='y', labelsize=8)
+
+# Save the figure
+plt.tight_layout()
+plt.savefig('figures/figures_cell/human_violin_c1Markers.png')
+
+############
+## c2
+# Create a figure and axes objects
+fig, axs = plt.subplots(1, len(c2_markers), figsize=(7, 4))
+
+# Loop over the genes
+for i, (ax, gene) in enumerate(zip(axs, c2_markers)):
+    # Get the expression data for the gene and add it to the data frame
+    gene_expression = pd.DataFrame(adata_human_mesenchyme.raw[:, gene].X.toarray(),
+                                   index=adata_human_mesenchyme.obs_names,
+                                   columns=[gene])
+
+    df = gene_expression.join(adata_human_mesenchyme.obs)
+
+    # Perform a statistical test (e.g., t-test)
+    c2_expression = df[df['cluster'].isin(['c2'])][gene]
+    other_expression = df[~df['cluster'].isin(['c2'])][gene]
+    t_stat, p_value = stats.ttest_ind(c2_expression, other_expression)
+
+    # Create the violin plot for this gene
+    sns.violinplot(x='cluster', y=gene, order=['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'], data=df, ax=ax, cut=0.1, scale='width')
+
+    # Add the p-value to the plot
+    x_c2 = df['cluster'].unique().tolist().index('c2')
+    y_max = df[gene].max()
+    # Add the p-value to the plot
+    if p_value < 0.0001:
+        ax.text(2, y_max+0.1, "p < 0.0001", ha='center', fontsize = 8)
+    else:
+        ax.text(2, y_max+0.1, f"p = {p_value:.4f}", ha='center', fontsize = 8)
+
+    # Adjust the y-axis limit to accommodate the p-value text
+    ax.set_ylim([df[gene].min(), y_max + 0.5])
+
+    # Set the title for this subplot
+    #ax.set_title(gene, fontsize=16)
+
+    # Set the label for the x and y axes
+    ax.set_xlabel('cluster', fontsize=9)
+    ax.set_ylabel(gene, fontsize=9)
+
+    # Increase the size of the tick labels
+    ax.tick_params(axis='x', labelsize=8)
+    ax.tick_params(axis='y', labelsize=8)
+
+# Save the figure
+plt.tight_layout()
+plt.savefig('figures/figures_cell/human_violin_c2Markers.png')
+
+############
+## c3-c4
+# Create a figure and axes objects
+fig, axs = plt.subplots(1, len(c3c4_markers), figsize=(7, 4))
+
+# Loop over the genes
+for i, (ax, gene) in enumerate(zip(axs, c3c4_markers)):
+    # Get the expression data for the gene and add it to the data frame
+    gene_expression = pd.DataFrame(adata_human_mesenchyme.raw[:, gene].X.toarray(),
+                                   index=adata_human_mesenchyme.obs_names,
+                                   columns=[gene])
+
+    df = gene_expression.join(adata_human_mesenchyme.obs)
+
+    # Perform a statistical test (e.g., t-test)
+    c3c4_expression = df[df['cluster'].isin(['c3', 'c4'])][gene]
+    other_expression = df[~df['cluster'].isin(['c3', 'c4'])][gene]
+    t_stat, p_value = stats.ttest_ind(c3c4_expression, other_expression)
+
+    # Create the violin plot for this gene
+    sns.violinplot(x='cluster', y=gene, order=['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'], data=df, ax=ax, cut=0.1, scale='width')
+
+    # Add the p-value to the plot
+    x_c3 = df['cluster'].unique().tolist().index('c3')
+    y_max = df[gene].max()
+    # Add the p-value to the plot
+    if p_value < 0.0001:
+        ax.text(4, y_max+0.1, "p < 0.0001", ha='center', fontsize = 8)
+    else:
+        ax.text(4, y_max+0.1, f"p = {p_value:.4f}", ha='center', fontsize = 8)
+
+    # Adjust the y-axis limit to accommodate the p-value text
+    ax.set_ylim([df[gene].min(), y_max + 0.5])
+
+    # Set the title for this subplot
+    #ax.set_title(gene, fontsize=16)
+
+    # Set the label for the x and y axes
+    ax.set_xlabel('cluster', fontsize=9)
+    ax.set_ylabel(gene, fontsize=9)
+
+    # Increase the size of the tick labels
+    ax.tick_params(axis='x', labelsize=8)
+    ax.tick_params(axis='y', labelsize=8)
+
+# Save the figure
+plt.tight_layout()
+plt.savefig('figures/figures_cell/human_violin_c3c4Markers.png')
+
+############
+## c5-c7
+# Create a figure and axes objects
+fig, axs = plt.subplots(1, len(c5c6c7_markers), figsize=(7, 4))
+
+# Loop over the genes
+for i, (ax, gene) in enumerate(zip(axs, c5c6c7_markers)):
+    # Get the expression data for the gene and add it to the data frame
+    gene_expression = pd.DataFrame(adata_human_mesenchyme.raw[:, gene].X.toarray(),
+                                   index=adata_human_mesenchyme.obs_names,
+                                   columns=[gene])
+
+    df = gene_expression.join(adata_human_mesenchyme.obs)
+
+    # Perform a statistical test (e.g., t-test)
+    c5c6c7_expression = df[df['cluster'].isin(['c5', 'c6', 'c7'])][gene]
+    other_expression = df[~df['cluster'].isin(['c5', 'c6', 'c7'])][gene]
+    t_stat, p_value = stats.ttest_ind(c5c6c7_expression, other_expression)
+
+    # Create the violin plot for this gene
+    sns.violinplot(x='cluster', y=gene, order=['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'], data=df, ax=ax, cut=0.1, scale='width')
+
+    # Add the p-value to the plot
+    x_c5 = df['cluster'].unique().tolist().index('c5')
+    y_max = df[gene].max()
+    # Add the p-value to the plot
+    if p_value < 0.0001:
+        ax.text(6, y_max+0.1, "p < 0.0001", ha='center', fontsize = 8)
+    else:
+        ax.text(6, y_max+0.1, f"p = {p_value:.4f}", ha='center', fontsize = 8)
+
+    # Adjust the y-axis limit to accommodate the p-value text
+    ax.set_ylim([df[gene].min(), y_max + 0.5])
+
+    # Set the title for this subplot
+    #ax.set_title(gene, fontsize=16)
+
+    # Set the label for the x and y axes
+    ax.set_xlabel('cluster', fontsize=9)
+    ax.set_ylabel(gene, fontsize=9)
+
+    # Increase the size of the tick labels
+    ax.tick_params(axis='x', labelsize=8)
+    ax.tick_params(axis='y', labelsize=8)
+
+# Save the figure
+plt.tight_layout()
+plt.savefig('figures/figures_cell/human_violin_c5c6c7Markers.png')
 
 ###########################
 # 7C
@@ -130,5 +389,57 @@ Bone_markers = ['MKI67', 'POSTN', 'BGN', 'SFRP4', 'TNFSF11',
                 'WNT1', 'WNT3A', 'WNT5A', 'WNT7B',
                 'ITGAV', 'ITGB3', 'VEGFA', 'CDH1', 'CDH2']
 
+Bone_markers_small = ['POSTN', 'BGN', 'RUNX2', 'SPP1']
+
 for i in Bone_markers:
     sc.pl.violin(adata_human_bone, i, groupby='cluster', use_raw=True, save=f'_kfoury_{i}')
+
+
+
+
+# Create a figure and axes objects
+fig, axs = plt.subplots(1, len(Bone_markers_small), figsize=(20, 6))
+
+# Loop over the genes
+for i, (ax, gene) in enumerate(zip(axs, Bone_markers_small)):
+    # Get the expression data for the gene and add it to the data frame
+    gene_expression = pd.DataFrame(adata_human_bone.raw[:, gene].X,
+                                   index=adata_human_bone.obs_names,
+                                   columns=[gene])
+
+    df = gene_expression.join(adata_human_bone.obs)
+
+    # Perform a statistical test (e.g., t-test)
+    c5c6c7_expression = df[df['cluster'].isin(['c5','c6', 'c7'])][gene]
+    other_expression = df[~df['cluster'].isin(['c5','c6', 'c7'])][gene]
+    t_stat, p_value = stats.ttest_ind(c5c6c7_expression, other_expression)
+
+    # Create the violin plot for this gene
+    sns.violinplot(x='cluster', y=gene, order=['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'], data=df, ax=ax, cut=0.1, scale='width')
+
+    # Add the p-value to the plot
+    x_c5 = df['cluster'].unique().tolist().index('c5')
+    y_max = df[gene].max()
+    # Add the p-value to the plot
+    if p_value < 0.0001:
+        ax.text(3.5, y_max+0.1, "p < 0.0001", ha='center', fontsize = 13)
+    else:
+        ax.text(3.5, y_max+0.1, f"p = {p_value:.4f}", ha='center', fontsize = 13)
+
+    # Adjust the y-axis limit to accommodate the p-value text
+    ax.set_ylim([df[gene].min(), y_max + 0.5])
+
+    # Set the title for this subplot
+    #ax.set_title(gene, fontsize=16)
+
+    # Set the label for the x and y axes
+    ax.set_xlabel('cluster', fontsize=13)
+    ax.set_ylabel(gene, fontsize=13)
+
+    # Increase the size of the tick labels
+    ax.tick_params(axis='x', labelsize=13)
+    ax.tick_params(axis='y', labelsize=13)
+
+# Save the figure
+plt.tight_layout()
+plt.savefig('figures/figures_cell/human_violin_bone_markers.png')

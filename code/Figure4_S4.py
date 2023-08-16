@@ -94,12 +94,13 @@ import numpy as np
 # for c3 and c4
 
 c3c4 = ['Sfrp2', 'Lgr5', 'Wnt2', 'Wnt4', 'Wnt5a', 'Wnt6', 'Notum', 'Wif1']
+c3c4_small = ['Sfrp2', 'Wif1']
 
 # Create a figure and axes objects
-fig, axs = plt.subplots(1, len(c3c4), figsize=(35, 5))
+fig, axs = plt.subplots(1, len(c3c4_small), figsize=(12, 6))
 
 # Loop over the genes
-for i, (ax, gene) in enumerate(zip(axs, c3c4)):
+for i, (ax, gene) in enumerate(zip(axs, c3c4_small)):
     # Get the expression data for the gene and add it to the data frame
     gene_expression = pd.DataFrame(adata_mouse_mesenchyme.raw[:, gene].X.todense(),
                                    index=adata_mouse_mesenchyme.obs_names,
@@ -118,25 +119,25 @@ for i, (ax, gene) in enumerate(zip(axs, c3c4)):
     # Add the p-value to the plot
     x_c3c4 = df['cluster'].unique().tolist().index('c3')
     y_max = df[gene].max()
-    # Add the p-value to the plot
+    #Add the p-value to the plot
     if p_value < 0.0001:
-        ax.text(3.5, y_max+0.2, "p < 0.0001", ha='center', fontsize = 14)
+       ax.text(3.5, y_max+0.2, "p < 0.0001", ha='center', fontsize = 14)
     else:
-        ax.text(3.5, y_max+0.2, f"p = {p_value:.4f}", ha='center', fontsize = 14)
+       ax.text(3.5, y_max+0.2, f"p = {p_value:.4f}", ha='center', fontsize = 14)
 
-    # Adjust the y-axis limit to accommodate the p-value text
+    #Adjust the y-axis limit to accommodate the p-value text
     ax.set_ylim([df[gene].min(), y_max + 0.5])
 
     # Set the title for this subplot
     #ax.set_title(gene, fontsize=16)
 
     # Set the label for the x and y axes
-    ax.set_xlabel('cluster', fontsize=14)
-    ax.set_ylabel(gene, fontsize=14)
+    ax.set_xlabel('cluster', fontsize=16)
+    ax.set_ylabel(gene, fontsize=16)
 
     # Increase the size of the tick labels
-    ax.tick_params(axis='x', labelsize=12)
-    ax.tick_params(axis='y', labelsize=12)
+    ax.tick_params(axis='x', labelsize=15)
+    ax.tick_params(axis='y', labelsize=15)
 
 # Save the figure
 plt.tight_layout()
@@ -146,10 +147,10 @@ plt.savefig('figures/figures_cell/mouse_violin_c3c4_small.png')
 ################
 # for c5-c7
 
-c5c6c7 = ['Mki67', 'Top2a', 'Mdk', 'Fn1', 'Fzd1', 'Sfrp4', 'Tgfb1', 'Postn']
+c5c6c7 = ['Tgfb1', 'Postn']
 
 # Create a figure and axes objects
-fig, axs = plt.subplots(1, len(c5c6c7), figsize=(35, 5))
+fig, axs = plt.subplots(1, len(c5c6c7), figsize=(12, 6))
 
 # Loop over the genes
 for i, (ax, gene) in enumerate(zip(axs, c5c6c7)):
@@ -184,12 +185,12 @@ for i, (ax, gene) in enumerate(zip(axs, c5c6c7)):
     #ax.set_title(gene, fontsize=16)
 
     # Set the label for the x and y axes
-    ax.set_xlabel('cluster', fontsize=14)
-    ax.set_ylabel(gene, fontsize=14)
+    ax.set_xlabel('cluster', fontsize=16)
+    ax.set_ylabel(gene, fontsize=16)
 
     # Increase the size of the tick labels
-    ax.tick_params(axis='x', labelsize=12)
-    ax.tick_params(axis='y', labelsize=12)
+    ax.tick_params(axis='x', labelsize=15)
+    ax.tick_params(axis='y', labelsize=15)
 
 # Save the figure
 plt.tight_layout()
@@ -233,3 +234,4 @@ plt.savefig('figures/figures_cell/mouse_violin_c5c6c7_small.png')
 # Mki67_relativeFrequency_all = sct.tools.relative_frequency_per_cluster(adata_mouse_mesenchyme, group_by='cluster', xlabel='Mki67_status', condition=None)
 # sct.plot.cluster_composition_stacked_barplot(Mki67_relativeFrequency_all, xlabel='cluster', figsize=(8, 10), width=0.8, label_size=20, tick_size=16, margins=(0.02, 0.04), colors=adata_mouse_mesenchyme.uns['Mki67_status_colors'], save = 'figures/figures_cell/Mki67_status.png')
 
+############################

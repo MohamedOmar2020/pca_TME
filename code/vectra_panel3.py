@@ -16,7 +16,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-sc.settings.figdir = 'figures/vectra_panel3'
+sc.settings.figdir = 'figures/Vectra_NEPC'
 sc.set_figure_params(dpi_save = 400, transparent = False, fontsize =12, format='tiff')
 plt.rcParams["font.family"] = "arial"
 plt.rcParams['font.size'] = 14
@@ -866,39 +866,6 @@ adata_PRN.obs["slideID"] = adata_PRN.obs["name"].map(slide_dict)
 adata_PRN.obs["slideID"].value_counts()
 adata_PRN.obs["name"].value_counts()
 
-#######################################
-# check the range
-#adata_PRN.X.min()
-#adata_PRN.X.max()
-
-# log-scaling and z score transformation
-#sc.pp.log1p(adata_PRN)
-#adata_PRN.raw = adata_PRN
-#sc.pp.scale(adata_PRN, max_value=10)
-
-############################################
-# plot the spatial plots
-adata_PRN.obs['slideID'].value_counts()
-sq.pl.spatial_scatter(adata_PRN[adata_PRN.obs['slideID'] == 'MISI3542i_NB100_M2861'], shape=None, color="halo_label", size=1, cmap = 'inferno')
-plt.savefig('figures/vectra_panel3/MISI3542i_NB100_M2861.tiff', dpi = 400)
-
-sq.pl.spatial_scatter(adata_PRN[adata_PRN.obs['slideID'] == 'MISI3542i_M3056_3'], shape=None, color="halo_label", size=1)
-plt.savefig('figures/vectra_panel3/MISI3542i_M3056_3.tiff', dpi = 400)
-
-# sc.pl.spatial(adata_PRN[adata_PRN.obs['slideID'] == 'MISI3542i_NB100_M2861'], color="halo_label", spot_size=20,)
-# plt.show()
-
-
-sq.pl.spatial_scatter(adata_PRN[adata_PRN.obs['slideID'] == 'MISI3542i_NB100_M2861'], shape=None, color=['halo_label', "Periostin", 'AR'], size=1)
-plt.savefig('figures/vectra_panel3/MISI3542i_NB100_M2861_AR_POSTN.tiff', dpi = 400)
-sc.pl.spatial(adata_PRN[adata_PRN.obs['slideID'] == 'MISI3542i_NB100_M2861'], color = ['halo_label', "Periostin", 'AR'], spot_size=20, size=5, color_map = 'magma', save='MISI3542i_NB100_M2861_AR_POSTN2')
-
-
-sq.pl.spatial_scatter(adata_PRN[adata_PRN.obs['slideID'] == 'MISI3542i_M3056_3'], shape=None, color=['halo_label', "Periostin", 'AR'], size=1)
-plt.savefig('figures/vectra_panel3/MISI3542i_M3056_3_AR_POSTN.tiff', dpi = 400)
-sc.pl.spatial(adata_PRN[adata_PRN.obs['slideID'] == 'MISI3542i_M3056_3'], color = ['halo_label', "Periostin", 'AR'], spot_size=20, size = 5, color_map = 'magma', save='MISI3542i_M3056_3_AR_POSTN')
-
-
 ##################################################################################################
 # cell type annotation: PRN
 ##################################################################################################
@@ -1033,41 +1000,31 @@ adata_TRAMP_annot2.obs['cell_types'] = adata_TRAMP_annot2.obs['cell_types'].asty
 
 ###############################################################
 ## plot spatial location of cell types:
+cellTypes_colors = ['blue', 'deeppink', 'green', 'cyan', 'white', 'black']
 
-# for MISI3542i_NB100_M2861:
-sq.pl.spatial_scatter(adata_MISI3542i_NB100_M2861_annot, color = ['cell_types'], shape=None, size=1)
-plt.savefig('figures/vectra_panel3/MISI3542i_NB100_M2861_cellTypes.tiff', dpi = 400)
-sc.pl.spatial(adata_MISI3542i_NB100_M2861_annot, color = ['cell_types'], groups = ['AR+ stroma', 'AR+ epithelium', 'Periostin+ stroma', 'Periostin+ epithelium', 'Synaptophysin+ stroma', 'Synaptophysin+ epithelium'], alpha_img = 1.2, spot_size=20, size = 5, color_map = 'magma', save='MISI3542i_NB100_M2861_cellTypes')
+sc.set_figure_params(dpi_save = 400, transparent = False, figsize = [5,5], fontsize =12, format='tiff')
+plt.rcParams["font.family"] = "arial"
+plt.rcParams['font.size'] = 14
+plt.rcParams['font.style'] = 'italic'
+plt.rcParams['font.weight'] = 'bold'
+plt.rcParams['legend.fontsize'] = 14
+plt.rcParams['figure.titleweight'] = 'bold'
+plt.rcParams['axes.labelweight'] = 'bold'
+plt.rcParams['axes.labelsize'] = 14
+plt.rcParams['xtick.labelsize'] = 14
+plt.rcParams['ytick.labelsize'] = 18
 
-sq.pl.spatial_scatter(adata_MISI3542i_NB100_M2861_annot, color = ["Periostin", 'AR', 'cell_types'], groups = ['AR+ stroma', 'AR+ epithelium'], shape=None, size=1)
-plt.savefig('figures/vectra_panel3/MISI3542i_NB100_M2861_ARpositive_Cells.tiff', dpi = 400)
-sc.pl.spatial(adata_MISI3542i_NB100_M2861_annot, color = ["Periostin", 'AR', 'cell_types'], groups = ['AR+ stroma', 'AR+ epithelium'], na_in_legend = False, alpha_img = 1.2, spot_size=20, size = 5, color_map = 'magma', save='MISI3542i_NB100_M2861_ARpositive_Cells')
+# PRN
+sc.pl.spatial(adata_MISI3542i_NB100_M2861_annot2, color = ['cell_types'], groups = ['AR+ stroma', 'Periostin+ stroma'], alpha_img = 1.2, spot_size=20, size = 4, palette =cellTypes_colors, title = '', na_in_legend = False, save='_PRN_spatial_celltypes')
 
-sq.pl.spatial_scatter(adata_MISI3542i_NB100_M2861_annot, color = ["Periostin", 'AR', 'cell_types'], groups = ['Periostin+ stroma', 'Periostin+ epithelium'], shape=None, size=1)
-plt.savefig('figures/vectra_panel3/MISI3542i_NB100_M2861_POSTNpositive_Cells.tiff', dpi = 400)
-sc.pl.spatial(adata_MISI3542i_NB100_M2861_annot, color = ["Periostin", 'AR', 'cell_types'], groups = ['Periostin+ stroma', 'Periostin+ epithelium'], na_in_legend = False, alpha_img = 1.2, spot_size=20, size = 5, color_map = 'magma', save='MISI3542i_NB100_M2861_POSTNpositive_Cells')
+# DKO
+sc.pl.spatial(adata_DKO_annot2, color = ['cell_types'], groups = ['AR+ stroma', 'Periostin+ stroma'], alpha_img = 1.2, spot_size=20, size = 7, palette =cellTypes_colors, title = '', na_in_legend = False, save='_DKO_spatial_celltypes')
 
-sq.pl.spatial_scatter(adata_MISI3542i_NB100_M2861_annot, color = ["Periostin", 'AR', 'cell_types'], groups = ['Periostin+ stroma', 'AR+ stroma'], shape=None, size=1)
-plt.savefig('figures/vectra_panel3/MISI3542i_NB100_M2861_AR_POSTN_stroma.tiff', dpi = 400)
-sc.pl.spatial(adata_MISI3542i_NB100_M2861_annot, color = ["Periostin", 'AR'], groups = ['Periostin+ stroma', 'AR+ stroma'], ncols =1, na_in_legend = False, alpha_img = 1.2, spot_size=20, size = 5, color_map = 'magma', save='MISI3542i_NB100_M2861_AR_POSTN_stroma')
-sc.pl.spatial(adata_MISI3542i_NB100_M2861_annot, color = ['cell_types'], groups = ['Periostin+ stroma', 'AR+ stroma'], palette = ['yellow', 'darkred', 'yellow', 'green', 'yellow', 'yellow'], na_color=None, na_in_legend = False, alpha_img = 1.2, spot_size=20, size = 5, color_map = 'magma', save='MISI3542i_NB100_M2861_AR_POSTN_stroma2')
+# TKO
+sc.pl.spatial(adata_TKO_annot2, color = ['cell_types'], groups = ['AR+ stroma', 'Periostin+ stroma'], alpha_img = 1.2, spot_size=20, size = 3, palette =cellTypes_colors, title = '', na_in_legend = False, save='_TKO_spatial_celltypes')
 
-sq.pl.spatial_scatter(adata_MISI3542i_NB100_M2861_annot, color = ["Synaptophysin", 'Chromogranin', 'cell_types'], groups = ['Synaptophysin+ stroma', 'Synaptophysin+ epithelium'], shape=None, size=1)
-plt.savefig('figures/vectra_panel3/MISI3542i_NB100_M2861_NEPC.tiff', dpi = 400)
-
-# for MISI3542i_M3056_3:
-# sq.pl.spatial_scatter(adata_MISI3542i_M3056_3_annot, color = ["Periostin", 'AR', 'cell_types'], groups = ['AR+ stroma', 'AR+ epithelium'], shape=None, size=1)
-# plt.savefig('figures/vectra_panel3/MISI3542i_M3056_3_ARpositive_Cells.tiff', dpi = 400)
-# sc.pl.spatial(adata_MISI3542i_M3056_3_annot, color = ['cell_types'], groups = ['AR+ stroma', 'AR+ epithelium', 'Periostin+ stroma', 'Periostin+ epithelium', 'Synaptophysin+ stroma', 'Synaptophysin+ epithelium'], alpha_img = 1.2, spot_size=20, size = 5, color_map = 'magma', save='MISI3542i_M3056_3_cellTypes')
-#
-# sq.pl.spatial_scatter(adata_MISI3542i_M3056_3_annot, color = ["Periostin", 'AR', 'cell_types'], groups = ['Periostin+ stroma', 'Periostin+ epithelium'], shape=None, size=1)
-# plt.savefig('figures/vectra_panel3/MISI3542i_M3056_3_POSTNpositive_Cells.tiff', dpi = 400)
-#
-# sq.pl.spatial_scatter(adata_MISI3542i_M3056_3_annot, color = ["Periostin", 'AR', 'cell_types'], groups = ['Periostin+ stroma', 'AR+ stroma'], shape=None, size=1)
-# plt.savefig('figures/vectra_panel3/MISI3542i_M3056_3_annot_AR_POSTN_stroma.tiff', dpi = 400)
-#
-# sq.pl.spatial_scatter(adata_MISI3542i_M3056_3_annot, color = ["Synaptophysin", 'Chromogranin', 'cell_types'], groups = ['Synaptophysin+ stroma', 'Synaptophysin+ epithelium'], shape=None, size=1)
-# plt.savefig('figures/vectra_panel3/MISI3542i_M3056_3_NEPC.tiff', dpi = 400)
+# TRAMP
+sc.pl.spatial(adata_TRAMP_annot2, color = ['cell_types'], groups = ['AR+ stroma', 'Periostin+ stroma'], alpha_img = 1.2, spot_size=20, size = 8, palette =cellTypes_colors, title = '', na_in_legend = False, save='_TRAMP_spatial_celltypes')
 
 ##############################################################
 # Violin plots
@@ -1097,7 +1054,7 @@ axs[0].set_xlabel('', fontsize=14, fontweight='bold')  # Set x-axis title
 axs[0].set_ylabel('normalized intensity', fontsize=12, fontweight='bold')  # Set y-axis label
 
 # Plot the Periostin
-sns.violinplot(x=adata_MISI3542i_NB100_M2861_annot_stroma2.obs['cell_types'], y=Postn_stroma2, ax=axs[1], color='limegreen', scale='width')
+sns.violinplot(x=adata_MISI3542i_NB100_M2861_annot_stroma2.obs['cell_types'], y=Postn_stroma2, ax=axs[1], color='orange', scale='width')
 sns.stripplot(x=adata_MISI3542i_NB100_M2861_annot_stroma2.obs['cell_types'], y=Postn_stroma2, ax=axs[1], color='black', jitter=True, size=2)
 axs[1].set_title('Periostin', fontsize=16, fontweight='bold')
 axs[1].tick_params(axis='x', labelsize=12, rotation=35)  # Increase x-axis tick labels size
@@ -1134,7 +1091,7 @@ df_melted = df.melt(var_name='Protein', value_name='Expression')
 
 # Create the violin plot
 plt.figure(figsize=(5, 5))
-sns.violinplot(x='Protein', y='Expression', data=df_melted, scale='width')
+sns.violinplot(x='Protein', y='Expression', palette =['deeppink', 'orange'], data=df_melted, scale='width')
 
 # Add significance line
 y_max = df_melted['Expression'].max()  # find maximum y value
@@ -1167,7 +1124,6 @@ plt.savefig('figures/vectra_panel3/violin_Ar_Postn_PRN_stroma.png')
 
 ###########################
 ## DKO
-sc.pl.violin(adata_DKO_annot2_stroma, keys = ['AR', 'Periostin'], groupby = 'cell_types')
 
 # Subset the data
 adata_DKO_annot2_stroma = adata_DKO_annot2[adata_DKO_annot2.obs['cell_types'].isin(['AR+ stroma', 'Periostin+ stroma'])]
@@ -1188,7 +1144,7 @@ axs[0].set_xlabel('', fontsize=14)  # Set x-axis title
 axs[0].set_ylabel('normalized intensity', fontsize=14)  # Set y-axis label
 
 # Plot the Periostin
-sns.violinplot(x=adata_DKO_annot2_stroma.obs['cell_types'], y=Postn_stroma_DKO, order=['AR+ stroma', 'Periostin+ stroma'], cut = 0.1, ax=axs[1], color='limegreen', scale='width')
+sns.violinplot(x=adata_DKO_annot2_stroma.obs['cell_types'], y=Postn_stroma_DKO, order=['AR+ stroma', 'Periostin+ stroma'], cut = 0.1, ax=axs[1], color='cyan', scale='width')
 sns.stripplot(x=adata_DKO_annot2_stroma.obs['cell_types'], y=Postn_stroma_DKO, order=['AR+ stroma', 'Periostin+ stroma'], ax=axs[1], color='black', jitter=True, size=2)
 axs[1].set_title('Periostin', fontsize=16, fontweight='bold')
 axs[1].tick_params(axis='x', labelsize=12, rotation=35)  # Increase x-axis tick labels size
@@ -1235,7 +1191,7 @@ postn_avg = postn_expression_DKO.mean()
 
 # Create the violin plot
 plt.figure(figsize=(5, 5))
-sns.violinplot(x='Protein', y='Expression', data=df_DKO_melted, scale='width')
+sns.violinplot(x='Protein', y='Expression', data=df_DKO_melted, palette =['deeppink', 'orange'], scale='width')
 #sns.boxplot(x='Protein', y='Expression', data=df_DKO_melted)
 
 # Add significance line
@@ -1287,7 +1243,7 @@ axs[0].set_xlabel('', fontsize=12)  # Set x-axis title
 axs[0].set_ylabel('normalized intensity', fontsize=14)  # Set y-axis label
 
 # Plot the Periostin
-sns.violinplot(x=adata_TKO_annot2_stroma.obs['cell_types'], y=Postn_stroma_TKO, ax=axs[1], color='limegreen', scale='width')
+sns.violinplot(x=adata_TKO_annot2_stroma.obs['cell_types'], y=Postn_stroma_TKO, ax=axs[1], color='cyan', scale='width')
 sns.stripplot(x=adata_TKO_annot2_stroma.obs['cell_types'], y=Postn_stroma_TKO, ax=axs[1], color='black', jitter=True, size=2)
 axs[1].set_title('Periostin', fontsize=16, fontweight='bold')
 axs[1].tick_params(axis='x', labelsize=12, rotation=35)  # Increase x-axis tick labels size
@@ -1324,7 +1280,7 @@ df_TKO_melted = df_TKO.melt(var_name='Protein', value_name='Expression')
 
 # Create the violin plot
 plt.figure(figsize=(5, 5))
-sns.violinplot(x='Protein', y='Expression', data=df_TKO_melted, scale='width')
+sns.violinplot(x='Protein', y='Expression', data=df_TKO_melted, palette =['deeppink', 'orange'], scale='width')
 
 # Add significance line
 y_max = df_TKO_melted['Expression'].max()  # find maximum y value
@@ -1378,7 +1334,7 @@ axs[0].set_xlabel('', fontsize=12)  # Set x-axis title
 axs[0].set_ylabel('normalized intensity', fontsize=14)  # Set y-axis label
 
 # Plot the Periostin
-sns.violinplot(x=adata_TRAMP_annot2_stroma.obs['cell_types'], y=Postn_stroma_TRAMP, ax=axs[1], color='limegreen', scale='width')
+sns.violinplot(x=adata_TRAMP_annot2_stroma.obs['cell_types'], y=Postn_stroma_TRAMP, ax=axs[1], color='orange', scale='width')
 sns.stripplot(x=adata_TRAMP_annot2_stroma.obs['cell_types'], y=Postn_stroma_TRAMP, ax=axs[1], color='black', jitter=True, size=2)
 axs[1].set_title('Periostin', fontsize=16, fontweight='bold')
 axs[1].tick_params(axis='x', labelsize=12, rotation=35)  # Increase x-axis tick labels size
@@ -1415,7 +1371,7 @@ df_TRAMP_melted = df_TRAMP.melt(var_name='Protein', value_name='Expression')
 
 # Create the violin plot
 plt.figure(figsize=(5, 5))
-sns.violinplot(x='Protein', y='Expression', data=df_TRAMP_melted, scale='width')
+sns.violinplot(x='Protein', y='Expression', data=df_TRAMP_melted, palette =['deeppink', 'orange'], scale='width')
 
 # Add significance line
 y_max = df_TRAMP_melted['Expression'].max()  # find maximum y value
@@ -1444,10 +1400,6 @@ plt.yticks(fontsize=15, fontweight = 'bold')
 # Save the plot
 plt.tight_layout()
 plt.savefig('figures/Vectra_NEPC/violin_Ar_Postn_TRAMP_stroma.png')
-
-
-
-
 
 
 #############################

@@ -155,7 +155,113 @@ sc.pl.dotplot(
 # Figure S2
 ###############################
 
-# scenic heatmap
+###########################
+# S2A
+###########################
+# umap by n_genes
+sc.pl.umap(
+    adata_mouse_mesenchyme,
+    color="n_genes", size = 10,
+    title = '', cmap = 'viridis',
+    save = '_mouse_genes'
+)
+
+# umap by n_counts
+sc.pl.umap(
+    adata_mouse_mesenchyme,
+    color="n_counts", size = 10,
+    title = '', cmap = 'viridis',
+    save = '_mouse_counts'
+)
+
+
+###########################
+# S2B
+###########################
+## heatmap of fraction of cells of each stromal cluster by mouse models
+def distribution(
+    adata,
+    partition="cluster",
+    labels="key_new",
+    modelorder=['B6', 'B6.129', 'FVBN', 'WT for NP', 'WT for PRN', 'T-ERG', 'NP', 'Hi-MYC', 'PRN'],
+    partitionorder=None,
+    figsize=(10, 7),
+):
+    """
+    plots for distribution of cells by key labels
+    """
+
+    models = []
+    for name in adata.obs[labels].cat.categories.tolist():
+        model = adata[adata.obs[labels] == name]
+        models.append((name, model))
+
+    # generate percentage dict by model
+    bymodeldict = {}
+    for name, model in models:
+        total = len(model.obs)
+        modeldict = {}
+        for j in adata.obs[partition].values.categories:
+            modeldict[j] = np.sum(model.obs[partition] == j) / total
+        bymodeldict[name] = modeldict
+
+    # subset wt and mut
+    mutant = adata[adata.obs["condition"] == "mutant"]
+    wildtype = adata[adata.obs["condition"] == "wildtype"]
+    mutwt = [("mutant", mutant), ("wildtype", wildtype)]
+
+    # compute composition of partition by keys
+    byclusterdict = {}
+    for cluster in adata.obs[partition].cat.categories:
+        clusterdata = adata[adata.obs[partition] == cluster]
+        total = np.sum(adata.obs[partition] == cluster)
+        clusterdict = {}
+        for key in adata.obs[labels].cat.categories.tolist():
+            clusterdict[key] = np.sum(clusterdata.obs[labels] == key) / total
+        byclusterdict[cluster] = clusterdict
+    byclusterdf = pd.DataFrame.from_dict(byclusterdict, orient="index")
+    byclusterdf.to_csv("modelcellcomposition2.csv")
+
+    # generate percentage dict by mutwt
+    bymutwtdict = {}
+    for name, model in mutwt:
+        total = len(model.obs)
+        modeldict = {}
+        for j in adata.obs[partition].values.categories:
+            modeldict[j] = np.sum(model.obs[partition] == j) / total
+        bymutwtdict[name] = modeldict
+
+    # generate df wildtype/mutant
+    lollipopdict = {}
+    for i in adata.obs[partition].values.categories:
+        lollipopdict[i] = bymutwtdict["wildtype"][i] / bymutwtdict["mutant"][i]
+    lollipopdf = pd.DataFrame.from_dict(lollipopdict, orient="index")
+    lollipopdf = lollipopdf.rename(columns={0: "ratio of percentage (wt/mut)"})
+    if partitionorder:
+        lollipopdf = lollipopdf.reindex(partitionorder)
+
+    # plot heatmapall
+    import seaborn as sns
+
+    sns.set(rc={"figure.figsize": figsize})
+    bymodeldf = pd.DataFrame.from_dict(bymodeldict, orient="index")
+    if modelorder:
+        bymodeldf = bymodeldf.reindex(modelorder)
+    if partitionorder:
+        bymodeldf = bymodeldf[partitionorder]
+    bymodeldf.to_csv("modelcellcomposition.csv")
+    ax = sns.heatmap(
+        bymodeldf, cmap="RdBu_r", center=0.05, annot=True, fmt=".1%", cbar=False
+    )
+    ax.set_yticklabels(ax.get_yticklabels(), rotation = 0)
+    ax.get_figure().savefig(f"percentages.png", dpi=500, bbox_inches="tight")
+
+
+distribution(adata_mouse_mesenchyme)
+
+###########################
+# S2C: scenic heatmap
+###########################
 # load the scenic output
 auc_mtx = pd.read_csv('data/for_mouse/scenic_mesenchyme_auc.csv', index_col=0)
 bin_mtx = pd.read_csv('data/for_mouse/scenic_mesenchyme_binary.csv', index_col=0)

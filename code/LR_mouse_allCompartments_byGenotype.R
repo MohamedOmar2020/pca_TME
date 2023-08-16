@@ -8,6 +8,7 @@ library(SeuratDisk)
 library(CellChat)
 library(patchwork)
 library(reticulate)
+library(xlsx)
 
 ########################
 netAnalysis_signalingRole_heatmap <- function (object, signaling = NULL, pattern = c("outgoing", "incoming", 
@@ -1328,60 +1329,6 @@ pairLR.use.down_mutants_vs_WT = net.down_mutants_vs_WT[, "interaction_name", dro
 ######################################################################
 colMap <- c('powderblue', 'plum2', 'violetred4', 'slategray4', 'blue', 'darkorange1', 'forestgreen', 'red2', 'darkorchid', 'saddlebrown', 'hotpink1', 'olivedrab3', 'lemonchiffon4', 'CadetBlue3', 'salmon3', 'mediumvioletred', 'cyan4')
 
-# png('./figures/LR_byGenotype/up_epith_commonClusters_mutants_vs_wt.png',  width = 3500, height = 3000, res = 350)
-# netVisual_chord_gene(object.list_mutants_WT[[1]], 
-#                      slot.name = 'net', 
-#                      net = net.up_mutants_vs_WT, 
-#                      sources.use = 'epithelium', 
-#                      targets.use = c('c0', 'c1', 'c2'), 
-#                      thresh = 0.05, 
-#                      lab.cex = 1,
-#                      small.gap = 5, 
-#                      #big.gap = 20,
-#                      legend.pos.y = 165, 
-#                      legend.pos.x = 25, 
-#                      color.use = colMap,
-#                      title.name = "")
-# dev.off()
-
-######################################################################
-# from epith to c3,c4 in PN, Terg, HiMYC  VS wt
-######################################################################
-# png('./figures/LR_byGenotype/up_epith_c3c4_vs_wt.png',  width = 3500, height = 3000, res = 350)
-# netVisual_chord_gene(object.list_c3c4[[1]], 
-#                      slot.name = 'net', 
-#                      net = net.up_c3c4_vs_wt, 
-#                      sources.use = 'epithelium', 
-#                      targets.use = c('c3', 'c4'), 
-#                      thresh = 0.05, 
-#                      lab.cex = 1,
-#                      small.gap = 5, 
-#                      #big.gap = 20,
-#                      legend.pos.y = 165, 
-#                      legend.pos.x = 25, 
-#                      color.use = colMap,
-#                      title.name = "")
-# dev.off()
-
-
-######################################################################
-# from epith to c3,c4 in HiMYC vs Terg
-######################################################################
-# png('./figures/LR_byGenotype/up_epith_HiMYC_vs_Terg.png',  width = 3500, height = 3000, res = 350)
-# netVisual_chord_gene(object.list_HiMYC_Terg[[1]], 
-#                      slot.name = 'net',
-#                      net = net.up_HiMYC_vs_Terg,
-#                      sources.use = 'epithelium',
-#                      targets.use = c('c3', 'c4'),
-#                      thresh = 0.05,
-#                      lab.cex = 1,
-#                      small.gap = 5,
-#                      #big.gap = 20,
-#                      legend.pos.y = 165,
-#                      legend.pos.x = 25,
-#                      title.name = "")
-# dev.off()
-
 ######################################################################
 # from epith to c3,c4 in Terg vs HiMYC
 ######################################################################
@@ -1874,3 +1821,38 @@ netVisual_chord_gene(cellchat_mouse_all_WT,
                      #title.name = 'Signling networks from common clusters to immune cells'	
 )
 dev.off()
+
+#############
+# save tables
+write.xlsx(net.up_Terg_vs_HiMYC, 
+           file = 'tables/Table_S3.xlsx', 
+           sheetName = 'LR_TRG_vs_HiMYC',
+           row.names = F, append = TRUE
+           )
+
+write.xlsx(net.up_HiMYC_vs_Terg, 
+           file = 'tables/Table_S3.xlsx', 
+           sheetName = 'LR_HiMYC_vs_TRG',
+           row.names = F,  append = TRUE
+           )
+
+write.xlsx(net.up_NP_vs_HiMYC, 
+           file = 'tables/Table_S3.xlsx', 
+           sheetName = 'LR_PN_vs_HiMYC',
+           row.names = F,  append = TRUE
+)
+
+write.xlsx(net.up_Terg_vs_PN, 
+           file = 'tables/Table_S3.xlsx', 
+           sheetName = 'LR_TRG_vs_PN',
+           row.names = F,  append = TRUE
+)
+
+write.xlsx(net.up_PRN_vs_wt, 
+           file = 'tables/Table_S3.xlsx', 
+           sheetName = 'LR_PRN_vs_WT',
+           row.names = F,  append = TRUE
+)
+
+
+

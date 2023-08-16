@@ -416,6 +416,8 @@ sc.pl.violin(adata_all[adata_all.obs['model'].isin(['PRN']) & adata_all.obs['com
              save='_Postn_PRN_stroma')
 
 ########################################
+from scipy import stats
+
 ## compare Ar and Postn in PRN
 PRN_stroma = adata_all[adata_all.obs['model'].isin(['PRN']) & adata_all.obs['compartment'].isin(['stroma'])]
 
@@ -444,18 +446,18 @@ df_melted = df.melt(var_name='Gene', value_name='Expression')
 plt.figure(figsize=(10, 6))
 sns.violinplot(x='Gene', y='Expression', data=df_melted, scale='width')
 # Add significance line
-y_max = df_melted['Expression'].max()  # find maximum y value
-plt.plot([0, 1], [y_max + 0.45, y_max + 0.45], lw=1.5, color='black')  # draw horizontal line
-p_value_scalar = p_value[0] if isinstance(p_value, np.ndarray) else p_value
-plt.text(0.5, y_max + 0.5, f"p-value = {p_value_scalar:.2e}", ha='center')  # add p-value text
+#y_max = df_melted['Expression'].max()  # find maximum y value
+#plt.plot([0, 1], [y_max + 0.45, y_max + 0.45], lw=1.5, color='black')  # draw horizontal line
+#p_value_scalar = p_value[0] if isinstance(p_value, np.ndarray) else p_value
+#plt.text(0.5, y_max + 0.5, f"p-value = {p_value_scalar:.2e}", ha='center')  # add p-value text
 
 # Add title and labels with larger font size
-plt.xlabel('Gene', size=15)
-plt.ylabel('Expression', size=15)
+plt.xlabel('Gene', size=16)
+plt.ylabel('Expression', size=16)
 
 # Increase the size of the tick labels
-plt.xticks(fontsize=12)
-plt.yticks(fontsize=12)
+plt.xticks(fontsize=15)
+plt.yticks(fontsize=15)
 
 # save the plot
 plt.savefig('figures/Visium/violin_Ar_Postn_PRN_stroma.png')
@@ -472,7 +474,7 @@ postn_expression_WT = WT_stroma.raw[:, 'Postn'].X
 ar_expression_WT_dense = np.array(ar_expression_WT.todense())
 postn_expression_WT_dense = np.array(postn_expression_WT.todense())
 
-# Then, perform a statistical test. Here's an example using a t-test from scipy:
+# t-test
 t_stat_WT, p_value_WT = stats.ttest_ind(ar_expression_WT_dense, postn_expression_WT_dense)
 
 ######
@@ -489,18 +491,18 @@ df_WT_melted = df_WT.melt(var_name='Gene', value_name='Expression')
 plt.figure(figsize=(10, 6))
 sns.violinplot(x='Gene', y='Expression', data=df_WT_melted, scale='width')
 # Add significance line
-y_max = df_WT_melted['Expression'].max()  # find maximum y value
-plt.plot([0, 1], [y_max + 0.45, y_max + 0.45], lw=1.5, color='black')  # draw horizontal line
-p_value_WT_scalar = p_value_WT[0] if isinstance(p_value_WT, np.ndarray) else p_value_WT
-plt.text(0.5, y_max + 0.5, f"p-value = {p_value_WT_scalar:.2e}", ha='center')  # add p-value text
+#y_max = df_WT_melted['Expression'].max()  # find maximum y value
+#plt.plot([0, 1], [y_max + 0.45, y_max + 0.45], lw=1.5, color='black')  # draw horizontal line
+#p_value_WT_scalar = p_value_WT[0] if isinstance(p_value_WT, np.ndarray) else p_value_WT
+#plt.text(0.5, y_max + 0.5, f"p-value = {p_value_WT_scalar:.2e}", ha='center')  # add p-value text
 
 # Add title and labels with larger font size
-plt.xlabel('Gene', size=15)
-plt.ylabel('Expression', size=15)
+plt.xlabel('Gene', size=16)
+plt.ylabel('Expression', size=16)
 
 # Increase the size of the tick labels
-plt.xticks(fontsize=12)
-plt.yticks(fontsize=12)
+plt.xticks(fontsize=15)
+plt.yticks(fontsize=15)
 
 # save the plot
 plt.savefig('figures/Visium/violin_Ar_Postn_WT_stroma.png')

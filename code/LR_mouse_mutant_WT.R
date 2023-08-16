@@ -521,7 +521,7 @@ gene.down <- extractGeneSubsetFromPair(net.down, cellchat)
 
 #############
 # save
-write.xlsx(net.up, file = 'tables/upregulated_LR_mutants_vs_wt.xlsx', row.names = F)
+write.xlsx(net.up, file = 'tables/Table_S3.xlsx', row.names = F, sheetName = 'LR_GEMMS_vs_WT')
 
 
 # visualize the upgulated and down-regulated signaling ligand-receptor pairs using bubble plot or chord diagram.
@@ -583,8 +583,8 @@ i = 1
 # combining all the identified signaling pathways from different datasets 
 pathway.union <- union(object.list[[i]]@netP$pathways, object.list[[i+1]]@netP$pathways)
 
-ht1 = netAnalysis_signalingRole_heatmap(object.list[[i]], pattern = "outgoing", signaling = pathway.union, title = 'Wild types', width = 10, height = 15, color.heatmap = "OrRd", font.size.title = 14, color.use = c('bisque2', 'darkblue', 'darkgreen'))
-ht2 = netAnalysis_signalingRole_heatmap(object.list[[i+1]], pattern = "outgoing", signaling = pathway.union, title = 'Mutants', width = 10, height = 15, color.heatmap = "OrRd", font.size.title = 14, color.use = c('bisque2', 'darkblue', 'darkgreen'))
+ht1 = netAnalysis_signalingRole_heatmap(object.list[[i]], pattern = "outgoing", signaling = pathway.union, title = 'Wild types', width = 10, height = 15, color.heatmap = "OrRd", font.size.title = 18, color.use = c('bisque2', 'darkblue', 'darkgreen'))
+ht2 = netAnalysis_signalingRole_heatmap(object.list[[i+1]], pattern = "outgoing", signaling = pathway.union, title = 'GEMMs', width = 10, height = 15, color.heatmap = "OrRd", font.size.title = 18, color.use = c('bisque2', 'darkblue', 'darkgreen'))
 
 
 tiff('./figures/cellchat_mutant_wt/new/Diff_heatmap2.tiff', width = 4000, height = 3000, res = 370)

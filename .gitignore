@@ -25,6 +25,7 @@ objs/
 code/not_used/
 renv/
 coculture/
+GEO_submission/
 
 *.csv
 t-test_overestim_var.csv

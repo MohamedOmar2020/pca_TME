@@ -23,17 +23,17 @@ from scipy import stats
 #############################################
 # set figure parameters
 sc.settings.figdir = 'figures/figures_cell'
-sc.set_figure_params(dpi_save = 300, transparent = False, fontsize =9, format='tiff')
+sc.set_figure_params(dpi_save = 300, transparent = False, fontsize =7, format='tiff')
 plt.rcParams["font.family"] = "arial"
-plt.rcParams['font.size'] = 9
+plt.rcParams['font.size'] = 7
 plt.rcParams['font.style'] = 'italic'
 plt.rcParams['font.weight'] = 'bold'
-plt.rcParams['legend.fontsize'] = 9
+plt.rcParams['legend.fontsize'] = 7
 plt.rcParams['figure.titleweight'] = 'bold'
 plt.rcParams['axes.labelweight'] = 'bold'
-plt.rcParams['axes.labelsize'] = 9
-plt.rcParams['xtick.labelsize'] = 9
-plt.rcParams['ytick.labelsize'] = 9
+plt.rcParams['axes.labelsize'] = 7
+plt.rcParams['xtick.labelsize'] = 7
+plt.rcParams['ytick.labelsize'] = 7
 
 ###########################
 # load the human primary data
@@ -116,7 +116,11 @@ human_markers = ['ACTA2', 'MYL9', 'GPX3', 'C7', 'JUN', 'FOS',
 for i in human_markers:
     sc.pl.violin(adata_human_mesenchyme, i, groupby='cluster', use_raw=True, save=f'_human_common_{i}')
 
-##################
+###########################
+# DE results
+sc.tl.rank_genes_groups(adata_human_mesenchyme, 'cluster', method='t-test')
+results = adata_human_mesenchyme.uns['rank_genes_groups']
+
 # violin plots with p-value
 c0_markers = ['ACTA2', 'MYL9']
 c1_markers = ['GPX3', 'C7']
@@ -126,9 +130,22 @@ c5c6c7_markers = ['POSTN', 'SFRP4']
 
 #######
 ## c0
+#####
+# check if the variance is normal
+from scipy.stats import levene
+gene_expression_ACTA2 = pd.DataFrame(adata_human_mesenchyme.raw[:, 'ACTA2'].X.toarray(),
+                               index=adata_human_mesenchyme.obs_names,
+                               columns=['ACTA2'])
+
+df_ACTA2 = gene_expression_ACTA2.join(adata_human_mesenchyme.obs)
+
+c0_expression_ACTA2 = df_ACTA2[df_ACTA2['cluster'].isin(['c0'])]['ACTA2']
+other_expression_ACTA2 = df_ACTA2[~df_ACTA2['cluster'].isin(['c0'])]['ACTA2']
+
+stat_ACTA2, p_value_ACTA2 = levene(c0_expression_ACTA2, other_expression_ACTA2)
+
 # Create a figure and axes objects
 fig, axs = plt.subplots(1, len(c0_markers), figsize=(7, 4))
-
 # Loop over the genes
 for i, (ax, gene) in enumerate(zip(axs, c0_markers)):
     # Get the expression data for the gene and add it to the data frame
@@ -141,7 +158,7 @@ for i, (ax, gene) in enumerate(zip(axs, c0_markers)):
     # Perform a statistical test (e.g., t-test)
     c0_expression = df[df['cluster'].isin(['c0'])][gene]
     other_expression = df[~df['cluster'].isin(['c0'])][gene]
-    t_stat, p_value = stats.ttest_ind(c0_expression, other_expression)
+    t_stat, p_value = stats.ttest_ind(c0_expression, other_expression, equal_var=False)
 
     # Create the violin plot for this gene
     sns.violinplot(x='cluster', y=gene, order=['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'], data=df, ax=ax, cut=0.1, scale='width')
@@ -151,9 +168,9 @@ for i, (ax, gene) in enumerate(zip(axs, c0_markers)):
     y_max = df[gene].max()
     # Add the p-value to the plot
     if p_value < 0.0001:
-        ax.text(0.5, y_max+0.1, "p < 0.0001", ha='center', fontsize = 8)
+        ax.text(0.5, y_max+0.1, "p < 0.0001", ha='center', fontsize = 7)
     else:
-        ax.text(0.5, y_max+0.1, f"p = {p_value:.4f}", ha='center', fontsize = 8)
+        ax.text(0.5, y_max+0.1, f"p = {p_value:.4f}", ha='center', fontsize = 7)
 
     # Adjust the y-axis limit to accommodate the p-value text
     ax.set_ylim([df[gene].min(), y_max + 0.5])
@@ -162,12 +179,12 @@ for i, (ax, gene) in enumerate(zip(axs, c0_markers)):
     #ax.set_title(gene, fontsize=16)
 
     # Set the label for the x and y axes
-    ax.set_xlabel('cluster', fontsize=9)
-    ax.set_ylabel(gene, fontsize=9)
+    ax.set_xlabel('cluster', fontsize=7)
+    ax.set_ylabel(gene, fontsize=7)
 
     # Increase the size of the tick labels
-    ax.tick_params(axis='x', labelsize=8)
-    ax.tick_params(axis='y', labelsize=8)
+    ax.tick_params(axis='x', labelsize=7)
+    ax.tick_params(axis='y', labelsize=7)
 
 # Save the figure
 plt.tight_layout()
@@ -190,7 +207,7 @@ for i, (ax, gene) in enumerate(zip(axs, c1_markers)):
     # Perform a statistical test (e.g., t-test)
     c1_expression = df[df['cluster'].isin(['c1'])][gene]
     other_expression = df[~df['cluster'].isin(['c1'])][gene]
-    t_stat, p_value = stats.ttest_ind(c1_expression, other_expression)
+    t_stat, p_value = stats.ttest_ind(c1_expression, other_expression, equal_var=False)
 
     # Create the violin plot for this gene
     sns.violinplot(x='cluster', y=gene, order=['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'], data=df, ax=ax, cut=0.1, scale='width')
@@ -200,9 +217,9 @@ for i, (ax, gene) in enumerate(zip(axs, c1_markers)):
     y_max = df[gene].max()
     # Add the p-value to the plot
     if p_value < 0.0001:
-        ax.text(1, y_max+0.1, "p < 0.0001", ha='center', fontsize = 8)
+        ax.text(1, y_max+0.1, "p < 0.0001", ha='center', fontsize = 7)
     else:
-        ax.text(1, y_max+0.1, f"p = {p_value:.4f}", ha='center', fontsize = 8)
+        ax.text(1, y_max+0.1, f"p = {p_value:.4f}", ha='center', fontsize = 7)
 
     # Adjust the y-axis limit to accommodate the p-value text
     ax.set_ylim([df[gene].min(), y_max + 0.5])
@@ -211,12 +228,12 @@ for i, (ax, gene) in enumerate(zip(axs, c1_markers)):
     #ax.set_title(gene, fontsize=16)
 
     # Set the label for the x and y axes
-    ax.set_xlabel('cluster', fontsize=9)
-    ax.set_ylabel(gene, fontsize=9)
+    ax.set_xlabel('cluster', fontsize=7)
+    ax.set_ylabel(gene, fontsize=7)
 
     # Increase the size of the tick labels
-    ax.tick_params(axis='x', labelsize=8)
-    ax.tick_params(axis='y', labelsize=8)
+    ax.tick_params(axis='x', labelsize=7)
+    ax.tick_params(axis='y', labelsize=7)
 
 # Save the figure
 plt.tight_layout()
@@ -239,7 +256,7 @@ for i, (ax, gene) in enumerate(zip(axs, c2_markers)):
     # Perform a statistical test (e.g., t-test)
     c2_expression = df[df['cluster'].isin(['c2'])][gene]
     other_expression = df[~df['cluster'].isin(['c2'])][gene]
-    t_stat, p_value = stats.ttest_ind(c2_expression, other_expression)
+    t_stat, p_value = stats.ttest_ind(c2_expression, other_expression, equal_var=False)
 
     # Create the violin plot for this gene
     sns.violinplot(x='cluster', y=gene, order=['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'], data=df, ax=ax, cut=0.1, scale='width')
@@ -249,9 +266,9 @@ for i, (ax, gene) in enumerate(zip(axs, c2_markers)):
     y_max = df[gene].max()
     # Add the p-value to the plot
     if p_value < 0.0001:
-        ax.text(2, y_max+0.1, "p < 0.0001", ha='center', fontsize = 8)
+        ax.text(2, y_max+0.1, "p < 0.0001", ha='center', fontsize = 7)
     else:
-        ax.text(2, y_max+0.1, f"p = {p_value:.4f}", ha='center', fontsize = 8)
+        ax.text(2, y_max+0.1, f"p = {p_value:.4f}", ha='center', fontsize = 7)
 
     # Adjust the y-axis limit to accommodate the p-value text
     ax.set_ylim([df[gene].min(), y_max + 0.5])
@@ -260,12 +277,12 @@ for i, (ax, gene) in enumerate(zip(axs, c2_markers)):
     #ax.set_title(gene, fontsize=16)
 
     # Set the label for the x and y axes
-    ax.set_xlabel('cluster', fontsize=9)
-    ax.set_ylabel(gene, fontsize=9)
+    ax.set_xlabel('cluster', fontsize=7)
+    ax.set_ylabel(gene, fontsize=7)
 
     # Increase the size of the tick labels
-    ax.tick_params(axis='x', labelsize=8)
-    ax.tick_params(axis='y', labelsize=8)
+    ax.tick_params(axis='x', labelsize=7)
+    ax.tick_params(axis='y', labelsize=7)
 
 # Save the figure
 plt.tight_layout()
@@ -288,7 +305,7 @@ for i, (ax, gene) in enumerate(zip(axs, c3c4_markers)):
     # Perform a statistical test (e.g., t-test)
     c3c4_expression = df[df['cluster'].isin(['c3', 'c4'])][gene]
     other_expression = df[~df['cluster'].isin(['c3', 'c4'])][gene]
-    t_stat, p_value = stats.ttest_ind(c3c4_expression, other_expression)
+    t_stat, p_value = stats.ttest_ind(c3c4_expression, other_expression, equal_var=False)
 
     # Create the violin plot for this gene
     sns.violinplot(x='cluster', y=gene, order=['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'], data=df, ax=ax, cut=0.1, scale='width')
@@ -298,9 +315,9 @@ for i, (ax, gene) in enumerate(zip(axs, c3c4_markers)):
     y_max = df[gene].max()
     # Add the p-value to the plot
     if p_value < 0.0001:
-        ax.text(4, y_max+0.1, "p < 0.0001", ha='center', fontsize = 8)
+        ax.text(4, y_max+0.1, "p < 0.0001", ha='center', fontsize = 7)
     else:
-        ax.text(4, y_max+0.1, f"p = {p_value:.4f}", ha='center', fontsize = 8)
+        ax.text(4, y_max+0.1, f"p = {p_value:.4f}", ha='center', fontsize = 7)
 
     # Adjust the y-axis limit to accommodate the p-value text
     ax.set_ylim([df[gene].min(), y_max + 0.5])
@@ -309,12 +326,12 @@ for i, (ax, gene) in enumerate(zip(axs, c3c4_markers)):
     #ax.set_title(gene, fontsize=16)
 
     # Set the label for the x and y axes
-    ax.set_xlabel('cluster', fontsize=9)
-    ax.set_ylabel(gene, fontsize=9)
+    ax.set_xlabel('cluster', fontsize=7)
+    ax.set_ylabel(gene, fontsize=7)
 
     # Increase the size of the tick labels
-    ax.tick_params(axis='x', labelsize=8)
-    ax.tick_params(axis='y', labelsize=8)
+    ax.tick_params(axis='x', labelsize=7)
+    ax.tick_params(axis='y', labelsize=7)
 
 # Save the figure
 plt.tight_layout()
@@ -337,7 +354,7 @@ for i, (ax, gene) in enumerate(zip(axs, c5c6c7_markers)):
     # Perform a statistical test (e.g., t-test)
     c5c6c7_expression = df[df['cluster'].isin(['c5', 'c6', 'c7'])][gene]
     other_expression = df[~df['cluster'].isin(['c5', 'c6', 'c7'])][gene]
-    t_stat, p_value = stats.ttest_ind(c5c6c7_expression, other_expression)
+    t_stat, p_value = stats.ttest_ind(c5c6c7_expression, other_expression, equal_var=False)
 
     # Create the violin plot for this gene
     sns.violinplot(x='cluster', y=gene, order=['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'], data=df, ax=ax, cut=0.1, scale='width')
@@ -347,9 +364,9 @@ for i, (ax, gene) in enumerate(zip(axs, c5c6c7_markers)):
     y_max = df[gene].max()
     # Add the p-value to the plot
     if p_value < 0.0001:
-        ax.text(6, y_max+0.1, "p < 0.0001", ha='center', fontsize = 8)
+        ax.text(6, y_max+0.1, "p < 0.0001", ha='center', fontsize = 7)
     else:
-        ax.text(6, y_max+0.1, f"p = {p_value:.4f}", ha='center', fontsize = 8)
+        ax.text(6, y_max+0.1, f"p = {p_value:.4f}", ha='center', fontsize = 7)
 
     # Adjust the y-axis limit to accommodate the p-value text
     ax.set_ylim([df[gene].min(), y_max + 0.5])
@@ -358,12 +375,12 @@ for i, (ax, gene) in enumerate(zip(axs, c5c6c7_markers)):
     #ax.set_title(gene, fontsize=16)
 
     # Set the label for the x and y axes
-    ax.set_xlabel('cluster', fontsize=9)
-    ax.set_ylabel(gene, fontsize=9)
+    ax.set_xlabel('cluster', fontsize=7)
+    ax.set_ylabel(gene, fontsize=7)
 
     # Increase the size of the tick labels
-    ax.tick_params(axis='x', labelsize=8)
-    ax.tick_params(axis='y', labelsize=8)
+    ax.tick_params(axis='x', labelsize=7)
+    ax.tick_params(axis='y', labelsize=7)
 
 # Save the figure
 plt.tight_layout()
@@ -412,7 +429,7 @@ for i, (ax, gene) in enumerate(zip(axs, Bone_markers_small)):
     # Perform a statistical test (e.g., t-test)
     c5c6c7_expression = df[df['cluster'].isin(['c5','c6', 'c7'])][gene]
     other_expression = df[~df['cluster'].isin(['c5','c6', 'c7'])][gene]
-    t_stat, p_value = stats.ttest_ind(c5c6c7_expression, other_expression)
+    t_stat, p_value = stats.ttest_ind(c5c6c7_expression, other_expression, equal_var=False)
 
     # Create the violin plot for this gene
     sns.violinplot(x='cluster', y=gene, order=['c0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'], data=df, ax=ax, cut=0.1, scale='width')
@@ -422,9 +439,9 @@ for i, (ax, gene) in enumerate(zip(axs, Bone_markers_small)):
     y_max = df[gene].max()
     # Add the p-value to the plot
     if p_value < 0.0001:
-        ax.text(3.5, y_max+0.1, "p < 0.0001", ha='center', fontsize = 13)
+        ax.text(3.5, y_max+0.1, "p < 0.0001", ha='center', fontsize = 7)
     else:
-        ax.text(3.5, y_max+0.1, f"p = {p_value:.4f}", ha='center', fontsize = 13)
+        ax.text(3.5, y_max+0.1, f"p = {p_value:.4f}", ha='center', fontsize = 7)
 
     # Adjust the y-axis limit to accommodate the p-value text
     ax.set_ylim([df[gene].min(), y_max + 0.5])
@@ -433,12 +450,12 @@ for i, (ax, gene) in enumerate(zip(axs, Bone_markers_small)):
     #ax.set_title(gene, fontsize=16)
 
     # Set the label for the x and y axes
-    ax.set_xlabel('cluster', fontsize=13)
-    ax.set_ylabel(gene, fontsize=13)
+    ax.set_xlabel('cluster', fontsize=7)
+    ax.set_ylabel(gene, fontsize=7)
 
     # Increase the size of the tick labels
-    ax.tick_params(axis='x', labelsize=13)
-    ax.tick_params(axis='y', labelsize=13)
+    ax.tick_params(axis='x', labelsize=7)
+    ax.tick_params(axis='y', labelsize=7)
 
 # Save the figure
 plt.tight_layout()

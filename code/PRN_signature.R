@@ -90,6 +90,7 @@ ktspPredictorRes$tieVote <- droplevels(ktspPredictorRes$tieVote[keepTest])
 ktspPredictorRes$name <- paste0(nrow(ktspPredictorRes$TSPs), 'TSPs')
 
 save(ktspPredictorRes, file = './objs/PRN_stromal_signature.rda')
+
 ############################################################################
 ### Compute the sum and find the best threshold: All training samples
 ktspStatsTrainRes <- SWAP.KTSP.Statistics(inputMat = usedTrainMat, classifier = ktspPredictorRes, CombineFunc = sum)
@@ -148,15 +149,15 @@ sscurves <- evalmod(ROC_data, modnames = c('1','2'), raw_curves = T, expd_first 
 sscurves
 
 
-tiff("./figures/PRN_signature.tiff", width=2000, height=2000, res=400)
+pdf("./figures/PRN_signature.pdf", width=8, height=8)
 autoplot(sscurves, curvetype = c("ROC"), raw_curves = TRUE, show_legend = TRUE, show_cb = FALSE, ret_grob = TRUE) + 
   labs(title = "") + 
-  annotate("text", x = .65, y = .25, label = "Training AUC = 0.69", size = 4) + 
-  annotate("text", x = .65, y = .18, label = "Testing AUC = 0.70", size = 4) +
-  theme(axis.title.y = element_text(family = 'Arial', face = 'bold.italic', size = 12, angle = 90), 
-        axis.title.x = element_text(family = 'Arial', face = 'bold.italic', size = 12, angle = 0),
-        axis.text.x = element_text(family = 'Arial', size = 10), 
-        axis.text.y = element_text(family = 'Arial', size = 10), 
-        legend.text = element_text(family = 'Arial', face = 'bold', size = 12), 
+  annotate("text", x = .65, y = .25, label = "Training AUC = 0.69", size = 3) + 
+  annotate("text", x = .65, y = .18, label = "Testing AUC = 0.70", size = 3) +
+  theme(axis.title.y = element_text(family = 'Arial', face = 'bold.italic', size = 7, angle = 90), 
+        axis.title.x = element_text(family = 'Arial', face = 'bold.italic', size = 7, angle = 0),
+        axis.text.x = element_text(family = 'Arial', size = 6), 
+        axis.text.y = element_text(family = 'Arial', size = 6), 
+        legend.text = element_text(family = 'Arial', face = 'bold', size = 7), 
         )
 dev.off()

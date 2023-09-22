@@ -56,6 +56,33 @@ adata_mouse_mesenchyme_myo = sc.read_h5ad('data/for_mouse/adata_mouse_myo.h5ad',
 adata_mouse_mesenchyme_myo.obs['cluster'] = adata_mouse_mesenchyme_myo.obs['cluster'].astype('str')
 
 
+##########################################################
+# fix GEMMs names
+
+adata_mouse_mesenchyme.obs['key_new'] = adata_mouse_mesenchyme.obs['key']
+adata_mouse_mesenchyme.obs['key_new'].value_counts()
+adata_mouse_mesenchyme.obs['key_new'].replace('terg', 'T-ERG', inplace=True)
+adata_mouse_mesenchyme.obs['key_new'].replace('himyc', 'Hi-MYC', inplace=True)
+adata_mouse_mesenchyme.obs['key_new'].replace('fvbn', 'FVBN', inplace=True)
+adata_mouse_mesenchyme.obs['key_new'].replace('pten', 'NP', inplace=True)
+adata_mouse_mesenchyme.obs['key_new'].replace('mycn', 'PRN', inplace=True)
+adata_mouse_mesenchyme.obs['key_new'].replace('129b6', 'B6.129', inplace=True)
+adata_mouse_mesenchyme.obs['key_new'].replace('b6', 'B6', inplace=True)
+adata_mouse_mesenchyme.obs['key_new'].replace('129b6_pten', 'WT for NP', inplace=True)
+adata_mouse_mesenchyme.obs['key_new'].replace('129b6_mycn', 'WT for PRN', inplace=True)
+
+adata_mouse_mesenchyme_myo.obs['key_new'] = adata_mouse_mesenchyme.obs['key']
+adata_mouse_mesenchyme_myo.obs['key_new'].value_counts()
+adata_mouse_mesenchyme_myo.obs['key_new'].replace('terg', 'T-ERG', inplace=True)
+adata_mouse_mesenchyme_myo.obs['key_new'].replace('himyc', 'Hi-MYC', inplace=True)
+adata_mouse_mesenchyme_myo.obs['key_new'].replace('fvbn', 'FVBN', inplace=True)
+adata_mouse_mesenchyme_myo.obs['key_new'].replace('pten', 'NP', inplace=True)
+adata_mouse_mesenchyme_myo.obs['key_new'].replace('mycn', 'PRN', inplace=True)
+adata_mouse_mesenchyme_myo.obs['key_new'].replace('129b6', 'B6.129', inplace=True)
+adata_mouse_mesenchyme_myo.obs['key_new'].replace('b6', 'B6', inplace=True)
+adata_mouse_mesenchyme_myo.obs['key_new'].replace('129b6_pten', 'WT for NP', inplace=True)
+adata_mouse_mesenchyme_myo.obs['key_new'].replace('129b6_mycn', 'WT for PRN', inplace=True)
+
 
 ###########################
 # 2A
@@ -85,6 +112,7 @@ sc.pl.umap(
 sc.pl.umap(
     adata_mouse_mesenchyme_myo,
     color="key_new", size = 50,
+    palette = 'viridis',
     title = '',
     save = '_smoothMuscle_models'
 )

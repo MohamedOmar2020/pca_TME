@@ -236,11 +236,11 @@ adata_all.obs["CAFs"] = (
 #     adata_all.obs["leiden"].isin(['6']).astype("category")
 # )
 
-adata_all.obs["macrophages"] = (
+adata_all.obs["myeloid cells"] = (
     adata_all.obs["leiden"].isin(['8']).astype("category")
 )
 
-adata_all.obs["seminal vesicle"] = (
+adata_all.obs["SV epithelial cells"] = (
     adata_all.obs["leiden"].isin(['10', '12']).astype("category")
 )
 
@@ -253,8 +253,8 @@ adata_all.obs.loc[adata_all.obs['tumor epithelium'] == True, "cell types"] = "tu
 adata_all.obs.loc[adata_all.obs['normal epithelium'] == True, "cell types"] = "normal epithelium"
 adata_all.obs.loc[adata_all.obs['CAFs'] == True, "cell types"] = "CAFs"
 adata_all.obs.loc[adata_all.obs['myofibroblasts'] == True, "cell types"] = "myofibroblasts"
-adata_all.obs.loc[adata_all.obs['macrophages'] == True, "cell types"] = "macrophages"
-adata_all.obs.loc[adata_all.obs['seminal vesicle'] == True, "cell types"] = "seminal vesicle"
+adata_all.obs.loc[adata_all.obs['myeloid cells'] == True, "cell types"] = "myeloid cells"
+adata_all.obs.loc[adata_all.obs['SV epithelial cells'] == True, "cell types"] = "SV epithelial cells"
 
 
 adata_all.obs['cell types'] = adata_all.obs['cell types'].astype('category')
@@ -262,7 +262,7 @@ adata_all.obs['cell types'].value_counts()
 
 # add a key for the compartment
 adata_all.obs["stroma"] = (
-    adata_all.obs["cell types"].isin(['CAFs', 'myofibroblasts', 'fibroblasts', 'normal smooth muscles']).astype("category")
+    adata_all.obs["cell types"].isin(['CAFs', 'myofibroblasts', 'fibroblasts']).astype("category")
 )
 
 adata_all.obs["epithelium"] = (
@@ -313,6 +313,7 @@ sc.pl.spatial(adata_all[adata_all.obs['model'].isin(['WT'])], img_key="hires", c
 # plots for c5:c7 markers in the stroma
 ##################################################
 sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])], ['Postn', 'Ar'], groupby = 'model', use_raw=True, save='_Postn_Ar_stroma')
+
 sc.pl.violin(adata_all[adata_all.obs['compartment'].isin(['stroma'])], ['Bgn'], groupby = 'model', use_raw=True, save='_Bgn_stroma')
 
 # PRN vs wildtype
@@ -444,7 +445,7 @@ df_melted = df.melt(var_name='Gene', value_name='Expression')
 
 # Create the violin plot
 plt.figure(figsize=(10, 6))
-sns.violinplot(x='Gene', y='Expression', data=df_melted, scale='width')
+sns.violinplot(x='Gene', y='Expression', data=df_melted, scale='width', inner=None)
 # Add significance line
 #y_max = df_melted['Expression'].max()  # find maximum y value
 #plt.plot([0, 1], [y_max + 0.45, y_max + 0.45], lw=1.5, color='black')  # draw horizontal line
@@ -489,7 +490,7 @@ df_WT_melted = df_WT.melt(var_name='Gene', value_name='Expression')
 
 # Create the violin plot
 plt.figure(figsize=(10, 6))
-sns.violinplot(x='Gene', y='Expression', data=df_WT_melted, scale='width')
+sns.violinplot(x='Gene', y='Expression', data=df_WT_melted, scale='width', inner=None)
 # Add significance line
 #y_max = df_WT_melted['Expression'].max()  # find maximum y value
 #plt.plot([0, 1], [y_max + 0.45, y_max + 0.45], lw=1.5, color='black')  # draw horizontal line
@@ -506,6 +507,190 @@ plt.yticks(fontsize=15)
 
 # save the plot
 plt.savefig('figures/Visium/violin_Ar_Postn_WT_stroma.png')
+
+
+
+###################
+# Compare AR in PRN and WT stroma
+from scipy import stats
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Subset data for PRN stroma
+PRN_stroma = adata_all[adata_all.obs['model'].isin(['PRN']) & adata_all.obs['compartment'].isin(['stroma'])]
+ar_expression_PRN_dense = np.array(PRN_stroma.raw[:, 'Ar'].X.todense()).ravel()
+
+# Subset data for WT stroma
+WT_stroma = adata_all[adata_all.obs['model'].isin(['WT']) & adata_all.obs['compartment'].isin(['stroma'])]
+ar_expression_WT_dense = np.array(WT_stroma.raw[:, 'Ar'].X.todense()).ravel()
+
+# Perform t-test
+t_stat, p_value = stats.ttest_ind(ar_expression_PRN_dense, ar_expression_WT_dense)
+
+# Create a DataFrame for visualization
+labels_PRN = ['PRN'] * len(ar_expression_PRN_dense)
+labels_WT = ['WT'] * len(ar_expression_WT_dense)
+
+df = pd.DataFrame({
+    'Model': labels_PRN + labels_WT,
+    'Ar Expression': np.concatenate([ar_expression_PRN_dense, ar_expression_WT_dense])
+})
+
+# Create the violin plot
+plt.figure(figsize=(10, 6))
+sns.violinplot(x='Model', y='Ar Expression', data=df, scale='width')
+
+# Add significance line and p-value text (optional)
+y_max = df['Ar Expression'].max()
+plt.plot([0, 1], [y_max + 0.45, y_max + 0.45], lw=1.5, color='black')
+plt.text(0.5, y_max + 0.5, f"p-value = {p_value:.2e}", ha='center')
+
+# Add title and labels
+plt.xlabel('Model', size=16)
+plt.ylabel('Ar Expression', size=16)
+plt.xticks(fontsize=15)
+plt.yticks(fontsize=15)
+
+# Save the plot
+plt.savefig('figures/Visium/violin_Ar_PRN_WT_stroma.png')
+
+
+### Look deeper
+print("PRN Ar Expression:")
+print(f"Mean: {ar_expression_PRN_dense.mean()}")
+print(f"Standard Deviation: {ar_expression_PRN_dense.std()}")
+print(f"Sample Size: {len(ar_expression_PRN_dense)}\n")
+
+print("WT Ar Expression:")
+print(f"Mean: {ar_expression_WT_dense.mean()}")
+print(f"Standard Deviation: {ar_expression_WT_dense.std()}")
+print(f"Sample Size: {len(ar_expression_WT_dense)}")
+
+print("Median of PRN Ar Expression:", np.median(ar_expression_PRN_dense))
+print("Median of WT Ar Expression:", np.median(ar_expression_WT_dense))
+
+
+from scipy.stats import mannwhitneyu
+
+stat, p_mannwhitney = mannwhitneyu(ar_expression_PRN_dense, ar_expression_WT_dense)
+print(f"P-value for Mann-Whitney U test: {p_mannwhitney}")
+
+def cohen_d(group1, group2):
+    diff = group1.mean() - group2.mean()
+    pooled_var = ((len(group1) - 1) * group1.var() + (len(group2) - 1) * group2.var()) / (len(group1) + len(group2) - 2)
+    d = diff / np.sqrt(pooled_var)
+    return d
+
+d = cohen_d(ar_expression_PRN_dense, ar_expression_WT_dense)
+print(f"Cohen's d: {d}")
+
+
+plt.figure(figsize=(12, 6))
+
+plt.subplot(1, 2, 1)
+plt.hist(ar_expression_PRN_dense, bins=30, alpha=0.7, label='PRN', color='blue')
+plt.title('PRN Ar Expression')
+plt.xlabel('Expression level')
+plt.ylabel('Frequency')
+
+plt.subplot(1, 2, 2)
+plt.hist(ar_expression_WT_dense, bins=30, alpha=0.7, label='WT', color='green')
+plt.title('WT Ar Expression')
+plt.xlabel('Expression level')
+plt.ylabel('Frequency')
+
+plt.tight_layout()
+plt.savefig('figures/Visium/Ar_PRN_WT_stroma_histogram.png')
+
+#######################################################################
+# Calculate the Proportion of Zeros:
+
+prn_zeros = (ar_expression_PRN_dense == 0).sum() / len(ar_expression_PRN_dense)
+wt_zeros = (ar_expression_WT_dense == 0).sum() / len(ar_expression_WT_dense)
+
+print(f"Proportion of zeros in PRN: {prn_zeros:.2f}")
+print(f"Proportion of zeros in WT: {wt_zeros:.2f}")
+
+from scipy.stats import chi2_contingency
+
+# Create a contingency table
+contingency_table = [
+    [(ar_expression_PRN_dense == 0).sum(), (ar_expression_PRN_dense != 0).sum()],  # PRN: zeros and non-zeros
+    [(ar_expression_WT_dense == 0).sum(), (ar_expression_WT_dense != 0).sum()]   # WT: zeros and non-zeros
+]
+
+chi2, p_val, _, _ = chi2_contingency(contingency_table)
+print(f"Chi-squared p-value: {p_val:.2e}")
+
+import matplotlib.pyplot as plt
+
+labels = ['PRN', 'WT']
+zeros = [prn_zeros, wt_zeros]
+non_zeros = [1 - prn_zeros, 1 - wt_zeros]
+
+x = range(len(labels))
+plt.bar(x, zeros, width=0.4, label='Zeros', color='blue')
+plt.bar(x, non_zeros, width=0.4, bottom=zeros, label='Non-Zeros', color='red')
+
+plt.xlabel('Group')
+plt.ylabel('Proportion')
+plt.title('Proportion of Zeros vs Non-Zeros in PRN and WT')
+plt.xticks(x, labels)
+plt.legend(loc="upper left")
+
+plt.show()
+
+
+adata_stroma = adata_all[adata_all.obs['compartment'] == 'stroma'].copy()
+# Extract Ar expression values for PRN and WT
+ar_expression_PRN = adata_stroma[adata_stroma.obs['model'] == 'PRN', 'Ar'].X.toarray().flatten()
+ar_expression_WT = adata_stroma[adata_stroma.obs['model'] == 'WT', 'Ar'].X.toarray().flatten()
+
+# Perform t-test
+t_stat, p_value_ttest = ttest_ind(ar_expression_PRN, ar_expression_WT)
+
+# Perform Mann-Whitney U test
+stat, p_value_mannwhitney = mannwhitneyu(ar_expression_PRN, ar_expression_WT)
+
+print(f"P-value for t-test: {p_value_ttest:.2e}")
+print(f"P-value for Mann-Whitney U test: {p_value_mannwhitney:.2e}")
+
+
+#######################################################################
+### remove the zeros
+prn_non_zero = ar_expression_PRN_dense[ar_expression_PRN_dense > 0]
+wt_non_zero = ar_expression_WT_dense[ar_expression_WT_dense > 0]
+
+print("Non-zero PRN Ar Expression:")
+print(f"Mean: {prn_non_zero.mean()}")
+print(f"Median: {np.median(prn_non_zero)}")
+print(f"Sample Size: {len(prn_non_zero)}\n")
+
+print("Non-zero WT Ar Expression:")
+print(f"Mean: {wt_non_zero.mean()}")
+print(f"Median: {np.median(wt_non_zero)}")
+print(f"Sample Size: {len(wt_non_zero)}")
+
+plt.figure(figsize=(12, 6))
+
+plt.subplot(1, 2, 1)
+plt.hist(prn_non_zero, bins=30, alpha=0.7, color='blue')
+plt.title('Non-zero PRN Ar Expression')
+plt.xlabel('Expression level')
+plt.ylabel('Frequency')
+
+plt.subplot(1, 2, 2)
+plt.hist(wt_non_zero, bins=30, alpha=0.7, color='green')
+plt.title('Non-zero WT Ar Expression')
+plt.xlabel('Expression level')
+plt.ylabel('Frequency')
+
+plt.tight_layout()
+plt.savefig('figures/Visium/Ar_PRN_WT_stroma_histogram.png')
+
+
 
 
 

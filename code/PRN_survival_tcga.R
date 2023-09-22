@@ -258,10 +258,10 @@ tiff("./figures/survival/logReg_tcga_pfs_all.tiff", width = 2000, height = 2000,
 ggsurvplot(Fit_sig_tcga_pfs_logReg,
            risk.table = FALSE,
            pval = TRUE,
-           pval.size = 8,
+           pval.size = 5,
            legend.labs = c('predicted PFS: 0', 'predicted PFS: 1'),
            legend.title	= '',
-           ggtheme = theme_survminer(base_size = 12, font.x = c(12, 'bold.italic', 'black'), font.y = c(12, 'bold.italic', 'black'), font.tickslab = c(12, 'plain', 'black'), font.legend = c(12, 'bold', 'black')),
+           ggtheme = theme_survminer(base_size = 7, font.x = c(7, 'bold.italic', 'black'), font.y = c(7, 'bold.italic', 'black'), font.tickslab = c(7, 'plain', 'black'), font.legend = c(7, 'bold', 'black')),
            palette = 'jco',
            risk.table.y.text.col = FALSE,
            risk.table.y.text = FALSE, 
@@ -334,11 +334,11 @@ summary(Fit_sig_tcga_PFS_coxph_logReg)
 ## by quartiles
 
 # make a factor with Q1 (lowest risk) being the reference
-CoxData_tcga$quartiles <- factor(CoxData_tcga$quartiles, levels = c('1', '2', '3', '4'))
-levels(CoxData_tcga$quartiles) <- paste0('Q', levels(CoxData_tcga$quartiles))
+CoxData_tcga$PRN_quartiles <- factor(CoxData_tcga$PRN_quartiles, levels = c('1', '2', '3', '4'))
+levels(CoxData_tcga$PRN_quartiles) <- paste0('Q', levels(CoxData_tcga$PRN_quartiles))
 
 # fit
-Fit_sig_tcga_pfs_coxph_logReg_quartiles <- coxph(Surv(Progress.Free.Survival..Months., Progression.Free.Status) ~ quartiles, data = CoxData_tcga)
+Fit_sig_tcga_pfs_coxph_logReg_quartiles <- coxph(Surv(Progress.Free.Survival..Months., Progression.Free.Status) ~ PRN_quartiles, data = CoxData_tcga)
 summary_tcga_pfs_coxph_logReg_quartiles <- summary(Fit_sig_tcga_pfs_coxph_logReg_quartiles)
 
 ##########################
@@ -364,7 +364,7 @@ Fit_sig_tcga_PFS_coxph_logReg_withGS <- coxph(Surv(Progress.Free.Survival..Month
 summary(Fit_sig_tcga_PFS_coxph_logReg_withGS)
 
 tiff('./figures/survival/multivariateCox.tiff', width = 2500, height = 3000, res = 400)
-ggforest(Fit_sig_tcga_PFS_coxph_logReg_withGS, fontsize = 1, main = 'HR')
+ggforest(Fit_sig_tcga_PFS_coxph_logReg_withGS, fontsize = 0.5, main = 'HR')
 dev.off()
 
 ###################

@@ -280,6 +280,18 @@ adata_all.obs['compartment'].value_counts()
 sc.tl.rank_genes_groups(adata_all, "cell types", method="t-test", pts=True, use_raw = True)
 sc.pl.rank_genes_groups(adata_all, groups=None, n_genes=25, groupby="cell types", sharey=False, save='_topGenes_celltypes')
 
+
+adata_all.write_h5ad('data/mouse_visium_PRN_WT.h5ad')
+
+###########################
+markers_PRN = sc.get.rank_genes_groups_df(adata_all[adata_all.obs['model'].isin(['PRN'])], group = None)
+markers_wt = sc.get.rank_genes_groups_df(adata_all[adata_all.obs['model'].isin(['wt'])], group = None)
+
+with pd.ExcelWriter('tables/human/DE_visium.xlsx') as writer:
+     markers_PRN.to_excel(writer, sheet_name='PRN')
+     markers_wt.to_excel(writer, sheet_name='WT')
+
+
 ##################################################
 # some plots for the annotated cell types
 ##################################################

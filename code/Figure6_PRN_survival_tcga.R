@@ -87,6 +87,8 @@ save(logReg_model, file = "./objs/logReg_model.rda")
 
 Train_prob_logReg <- logReg_model %>% predict(Data_train , type = "response")
 
+train_prob_df <- as.data.frame(Train_prob_logReg)
+
 ### Threshold
 thr <- coords(roc(Data_train$label, Train_prob_logReg, levels = c(0, 1), direction = "<"), "best")["threshold"]
 thr
@@ -142,6 +144,13 @@ MCC_test
 
 tcga_prob_logReg <- logReg_model %>% predict(Data_tcga , type = "response")
 
+tcga_prob_df <- as.data.frame(tcga_prob_logReg)
+colnames(tcga_prob_df) <- 'probability'
+
+########################
+# save for source data
+write.xlsx(tcga_prob_df, file = 'tables/Source_data.xlsx', append = TRUE, row.names = T, sheetName = '6b - PRN-based probabilities in TCGA')
+
 ### ROC
 ROC_tcga <- roc(Data_tcga$label, tcga_prob_logReg, plot = F, print.thres=thr$threshold, print.auc=TRUE, print.auc.col="black", ci = T, levels = c(0, 1), direction = "<", col="blue", lwd=2, grid=TRUE)
 ROC_tcga
@@ -195,6 +204,13 @@ CoxData_tcga_purity_q1 <- CoxData_tcga[CoxData_tcga$purity_q == '[0.16,0.44]', ]
 CoxData_tcga_purity_q2 <- CoxData_tcga[CoxData_tcga$purity_q == '(0.44,0.61]', ]
 CoxData_tcga_purity_q3 <- CoxData_tcga[CoxData_tcga$purity_q == '(0.61,0.78]', ]
 CoxData_tcga_purity_q4 <- CoxData_tcga[CoxData_tcga$purity_q == '(0.78,1]', ]
+
+
+########################
+# save for source data
+km_source_data <- CoxData_tcga[, c("Progress.Free.Survival..Months.", "Progression.Free.Status", "tcga_predClasses_logReg")]
+colnames(km_source_data) <- c('PFS_month', 'PFS_event', 'PRN_predicted_classes')
+write.xlsx(km_source_data, file = 'tables/Source_data.xlsx', append = TRUE, row.names = T, sheetName = '6b-c - survival data for TCGA')
 
 ########################################################################  
 ## Fit survival curves
@@ -366,23 +382,4 @@ summary(Fit_sig_tcga_PFS_coxph_logReg_withGS)
 tiff('./figures/survival/multivariateCox.tiff', width = 2500, height = 3000, res = 400)
 ggforest(Fit_sig_tcga_PFS_coxph_logReg_withGS, fontsize = 0.5, main = 'HR')
 dev.off()
-
-###################
-# fit multivariate COX with gleason and tumor purity as cofactor 
-Fit_sig_tcga_PFS_coxph_logReg_withGS_purity <- coxph(Surv(Progress.Free.Survival..Months., Progression.Free.Status) ~ `PRN signature` + gleason + purity, data = CoxData_tcga)
-summary(Fit_sig_tcga_PFS_coxph_logReg_withGS_purity)
-
-tiff('./figures/survival/multivariateCox_gleason_purity.tiff', width = 2500, height = 3000, res = 400)
-ggforest(Fit_sig_tcga_PFS_coxph_logReg_withGS_purity, fontsize = 1, main = 'HR')
-dev.off()
-
-###################
-# fit multivariate COX with tumor purity as cofactor 
-Fit_sig_tcga_PFS_coxph_logReg_withPurity <- coxph(Surv(Progress.Free.Survival..Months., Progression.Free.Status) ~ `PRN signature` + purity, data = CoxData_tcga)
-summary(Fit_sig_tcga_PFS_coxph_logReg_withPurity)
-
-tiff('./figures/survival/multivariateCox_purity.tiff', width = 2500, height = 3000, res = 400)
-ggforest(Fit_sig_tcga_PFS_coxph_logReg_withPurity, fontsize = 1, main = 'HR')
-dev.off()
-
 

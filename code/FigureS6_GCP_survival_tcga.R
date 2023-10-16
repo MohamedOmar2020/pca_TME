@@ -123,6 +123,13 @@ MCC_test
 
 tcga_prob_logReg <- GCP_model %>% predict(Data_tcga , type = "response")
 
+tcga_prob_df <- as.data.frame(tcga_prob_logReg)
+colnames(tcga_prob_df) <- 'probability'
+
+########################
+# save for source data
+write.xlsx(tcga_prob_df, file = 'tables/Source_data.xlsx', append = TRUE, row.names = T, sheetName = 's6 - GCP-based probabilities in TCGA')
+
 ### ROC
 ROC_tcga <- roc(Data_tcga$label, tcga_prob_logReg, plot = F, print.thres=thr$threshold, print.auc=TRUE, print.auc.col="black", ci = T, levels = c(0, 1), direction = "<", col="blue", lwd=2, grid=TRUE)
 ROC_tcga
@@ -159,6 +166,13 @@ CoxData_tcga <- data.frame(Phenotype_tcga)
 CoxData_tcga <- CoxData_tcga %>%
   mutate(quartiles = ntile(tcga_prob_logReg, 4))
 
+########################
+# save for source data
+km_source_data <- CoxData_tcga[, c("Progress.Free.Survival..Months.", "Progression.Free.Status", "tcga_predClasses_logReg")]
+colnames(km_source_data) <- c('PFS_month', 'PFS_event', 'GCP_predicted_classes')
+write.xlsx(km_source_data, file = 'tables/Source_data.xlsx', append = TRUE, row.names = T, sheetName = 'S6 - GCP survival data for TCGA')
+
+#
 ########################################################################  
 ## Fit survival curves
 

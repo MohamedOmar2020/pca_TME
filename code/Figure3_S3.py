@@ -18,6 +18,7 @@ import seaborn as sns
 import anndata as ad
 import sc_toolbox as sct
 import plotly.express as px
+from openpyxl import load_workbook
 
 
 
@@ -38,10 +39,15 @@ plt.rcParams['ytick.labelsize'] = 9
 
 
 ###########################
-# load the mouse data
+# load the mouse stroma data
 ###########################
 adata_mouse_mesenchyme = sc.read_h5ad('data/for_mouse/adata_mouse.h5ad', chunk_size=100000)
 adata_mouse_mesenchyme.obs['cluster'] = adata_mouse_mesenchyme.obs['cluster'].astype('str')
+
+############################
+# load the mouse immune data
+############################
+mouse_immune = sc.read_h5ad('outs/h5ads/mouse_immune.h5ad', chunk_size=100000)
 
 
 ###########################
@@ -79,9 +85,25 @@ dp.add_totals().style(dot_edge_color='black', dot_edge_lw=0.5).savefig('figures/
 
 
 ###########################
-# 3B-C: histology
+# 3b histology
 ###########################
 
 ###########################
-# 3D-E: Refere to the R script
+# 3c and e: Refere to the R script
 ###########################
+
+##########################################################
+# Figure 3d stacked violin plot for immune cell types per mouse model
+
+mouse_immune.obs['cluster'] = mouse_immune.obs['immune']
+mouse_immune.obs['cluster'] = mouse_immune.obs['cluster'].astype('category')
+mouse_immune.obs['cluster'].value_counts()
+
+colMap = ['powderblue', 'plum', 'maroon', 'grey', 'darkseagreen', 'salmon']
+relativeFrequency_immune = sct.tools.relative_frequency_per_cluster(mouse_immune, group_by='key_new', xlabel='cluster')
+sct.plot.cluster_composition_stacked_barplot(relativeFrequency_immune, xlabel='key_new', figsize=(50, 40), width=0.7, margins=(0.02, 0.02), label_size=0, tick_size=50, colors=colMap, save = 'figures/immune_frequency_Per_GEMM.png')
+
+# save to source data
+with pd.ExcelWriter('tables/Source_data.xlsx', engine='openpyxl', mode='a') as writer:
+    relativeFrequency_immune.to_excel(writer, sheet_name='3d')
+

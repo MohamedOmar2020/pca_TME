@@ -446,53 +446,6 @@ cellchat <- mergeCellChat(object.list, add.names = names(object.list))
 
 
 ##########################################################################################################
-# Compare the total number of interactions and interaction strength
-gg1 <- compareInteractions(cellchat, show.legend = F, group = c(1,2))
-gg2 <- compareInteractions(cellchat, show.legend = F, group = c(1,2), measure = "weight")
-gg1 + gg2
-
-########################
-# Compare the number of interactions and interaction strength among different cell populations
-par(mfrow = c(1,2), xpd=TRUE)
-netVisual_diffInteraction(cellchat, weight.scale = T)
-netVisual_diffInteraction(cellchat, weight.scale = T, measure = "weight")
-
-
-gg1 <- netVisual_heatmap(cellchat)
-#> Do heatmap based on a merged object
-gg2 <- netVisual_heatmap(cellchat, measure = "weight")
-#> Do heatmap based on a merged object
-gg1 + gg2
-
-
-#############################################
-weight.max <- getMaxWeight(object.list, attribute = c("idents","count"))
-
-# Number of interactions between wt and mutant
-png('./figures/cellchat_mutant_wt/Diff_N_interactions.png', width = 2000, height = 1500, res = 300)
-par(mfrow = c(1,2), xpd=TRUE)
-for (i in 1:length(object.list)) {
-  netVisual_circle(object.list[[i]]@net$count, weight.scale = T, label.edge= F, edge.weight.max = weight.max[2], edge.width.max = 12, title.name = paste0("Number of interactions - ", names(object.list)[i]))
-}
-dev.off()
-
-# Compute and visualize the pathway distance in the learned joint manifold
-#rankSimilarity(cellchat, type = "functional")
-
-# Compare the overall information flow of each signaling pathway
-gg1 <- rankNet(cellchat, mode = "comparison", stacked = T, do.stat = TRUE, color.use = c('cyan3', 'indianred1'))
-gg2 <- rankNet(cellchat, mode = "comparison", stacked = F, do.stat = TRUE, color.use = c('cyan3', 'indianred1'))
-
-png('./figures/cellchat_mutant_wt/Diff_informationFlow.png', width = 1500, height = 2000, res = 300)
-gg1 
-dev.off()
-
-#####################################################
-# Identify the upgulated and down-regulated signaling ligand-receptor pairs
-gg1 <- netVisual_bubble(cellchat, comparison = c(1, 2), max.dataset = 2, title.name = "Increased signaling in mutants", angle.x = 45, remove.isolate = T, n.colors = 5, min.quantile = 0.25, line.on= T)
-gg2 <- netVisual_bubble(cellchat, comparison = c(1, 2), max.dataset = 1, title.name = "Decreased signaling in mutants", angle.x = 45, remove.isolate = T, n.colors = 5)
-
-gg1 + gg2
 
 #####################################################
 # Identify dysfunctional signaling by using differential expression analysis
@@ -520,39 +473,11 @@ gene.up <- extractGeneSubsetFromPair(net.up, cellchat)
 gene.down <- extractGeneSubsetFromPair(net.down, cellchat)
 
 #############
-# save
+# save for supp table
 write.xlsx(net.up, file = 'tables/Table_S3.xlsx', row.names = F, sheetName = 'LR_GEMMS_vs_WT')
 
-
-# visualize the upgulated and down-regulated signaling ligand-receptor pairs using bubble plot or chord diagram.
-pairLR.use.up = net.up[, "interaction_name", drop = F]
-gg1 <- netVisual_bubble(cellchat, pairLR.use = pairLR.use.up, comparison = c(1, 2),  angle.x = 90, remove.isolate = T,title.name = paste0("Up-regulated signaling in ", names(object.list)[2]))
-#> Comparing communications on a merged object
-pairLR.use.down = net.down[, "interaction_name", drop = F]
-gg2 <- netVisual_bubble(cellchat, pairLR.use = pairLR.use.down, comparison = c(1, 2),  angle.x = 90, remove.isolate = T,title.name = paste0("Down-regulated signaling in ", names(object.list)[2]))
-#> Comparing communications on a merged object
-gg1 + gg2
-
-
-# Chord diagram
-png('./figures/cellchat_mutant_wt/up_mutants.png', width = 4500, height = 4000, res = 300)
-netVisual_chord_gene(object.list[[2]], slot.name = 'net', net = net.up, 
-                     thresh = 0.01, lab.cex = 0.6, small.gap = 15, big.gap = 20,
-                     legend.pos.y = 275, 
-                     legend.pos.x = 70, 
-                     title.name = "")
-dev.off()
-
-png('./figures/cellchat_mutant_wt/up_WT.png', width = 4500, height = 4000, res = 300)
-netVisual_chord_gene(object.list[[1]], slot.name = 'net', net = net.down, 
-                     thresh = 0.01, lab.cex = 0.8, small.gap = 15, big.gap = 20, 
-                     legend.pos.y = 275, 
-                     legend.pos.x = 70, 
-                     title.name = "")
-dev.off()
-
 ####################
-# pathway level
+# up-regulated pathways in mutants
 png('./figures/cellchat_mutant_wt/new/up_mutants_pathways.png', width = 3500, height = 3000, res = 370)
 netVisual_chord_gene(object.list[[2]], slot.name = 'netP', net = net.up, 
                      color.use = c('bisque2', 'darkblue', 'darkgreen'),
@@ -563,6 +488,8 @@ netVisual_chord_gene(object.list[[2]], slot.name = 'netP', net = net.up,
                      title.name = "")
 dev.off()
 
+####################
+# up-regulated pathways in WTs
 png('./figures/cellchat_mutant_wt/new/up_WT_pathways.png', width = 3500, height = 3000, res = 370)
 netVisual_chord_gene(object.list[[1]], slot.name = 'netP', net = net.down, 
                      thresh = 0.05, lab.cex = 1, small.gap = 4, 
@@ -590,6 +517,13 @@ ht2 = netAnalysis_signalingRole_heatmap(object.list[[i+1]], pattern = "outgoing"
 tiff('./figures/cellchat_mutant_wt/new/Diff_heatmap2.tiff', width = 4000, height = 3000, res = 370)
 draw(ht2 + ht1, ht_gap = unit(2, "cm"))
 dev.off()
+
+##########
+# save for source data
+write.xlsx(ht2@matrix, file = 'tables/Source_data.xlsx', row.names = T, sheetName = '1c_GEMMs')
+write.xlsx(ht1@matrix, file = 'tables/Source_data.xlsx', append = TRUE, row.names = T, sheetName = '1c_WTs')
+write.xlsx(net.up, file = 'tables/Source_data.xlsx', append = TRUE, row.names = F, sheetName = '1d_GEMMs')
+write.xlsx(net.down, file = 'tables/Source_data.xlsx', append = TRUE, row.names = F, sheetName = '1d_WTs')
 
 ############
 # save

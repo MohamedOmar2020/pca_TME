@@ -45,9 +45,12 @@ pipe.py
 *.RData
 *.Rhistory
 *.txt
-#*.gitignore
+*.gitignore
 *.Rproj.user
 *.DS_Store
 code/.ipynb_checkpoints/
-
+*.csv
 .Rproj.user
+*.png
+r/
+stitch_python.py

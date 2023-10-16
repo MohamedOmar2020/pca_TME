@@ -1182,6 +1182,10 @@ df_DKO = pd.DataFrame({
     'Periostin': postn_expression_DKO,
 })
 
+# save to source data
+with pd.ExcelWriter('tables/Source_data.xlsx', engine='openpyxl', mode='a') as writer:
+    df_DKO.to_excel(writer, sheet_name='s4a')
+
 # Melt DataFrame
 df_DKO_melted = df_DKO.melt(var_name='Protein', value_name='Expression')
 
@@ -1274,6 +1278,11 @@ df_TKO = pd.DataFrame({
     'AR': ar_expression_TKO,
     'Periostin': postn_expression_TKO,
 })
+
+
+# save to source data
+with pd.ExcelWriter('tables/Source_data.xlsx', engine='openpyxl', mode='a') as writer:
+    df_TKO.to_excel(writer, sheet_name='s4b')
 
 # Melt DataFrame
 df_TKO_melted = df_TKO.melt(var_name='Protein', value_name='Expression')

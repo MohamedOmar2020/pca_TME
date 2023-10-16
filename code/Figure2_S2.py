@@ -208,6 +208,8 @@ sc.pl.umap(
 # S2B
 ###########################
 ## heatmap of fraction of cells of each stromal cluster by mouse models
+adata_mouse_mesenchyme.obs['cluster'] = adata_mouse_mesenchyme.obs['cluster'].astype('category')
+
 def distribution(
     adata,
     partition="cluster",

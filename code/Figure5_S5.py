@@ -17,6 +17,7 @@ import seaborn as sns
 import anndata as ad
 import sc_toolbox as sct
 import plotly.express as px
+from scipy import stats
 
 
 
@@ -36,10 +37,20 @@ plt.rcParams['xtick.labelsize'] = 9
 plt.rcParams['ytick.labelsize'] = 9
 
 ###########################
-# load the mouse data
+# load the mouse stroma scRNAseq data
 ###########################
 adata_mouse_mesenchyme = sc.read_h5ad('data/for_mouse/adata_mouse.h5ad', chunk_size=100000)
 adata_mouse_mesenchyme.obs['cluster'] = adata_mouse_mesenchyme.obs['cluster'].astype('str')
+
+###########################
+# load the mouse Visium data
+############################
+adata_mouse_visium = sc.read_h5ad('data/mouse_visium_PRN_WT.h5ad', chunk_size=10000)
+
+############################
+# load the co-culture data
+adata_coculture = sc.read_h5ad("coculture/outs/07_12/adata_coculture_ingested_sep.h5ad")
+
 
 ###########################
 # load the human primary data
@@ -75,6 +86,132 @@ dp.legend(width=2.5).savefig('figures/figures_cell/dotplot_Postn_mouseModels.tif
 # dotplot for Ar per different mouse models
 dp = sc.pl.DotPlot(adata_mouse_mesenchyme, var_names = 'Ar', groupby = 'key_new', cmap = 'Reds')
 dp.legend(width=2.5).savefig('figures/figures_cell/dotplot_Ar_mouseModels.tiff')
+
+###########################
+# 5e: visium
+###########################
+
+## spatial plots for annotated cell types
+
+def generate_distinct_colors(n):
+    return plt.cm.get_cmap('tab20b', n)
+
+# Get the unique cell types across all data
+all_cell_types = np.unique(adata_mouse_visium.obs['cell types'])
+
+# Generate a color palette with the same number of colors as cell types
+cmap = generate_distinct_colors(len(all_cell_types))
+color_palette = [cmap(i) for i in range(len(all_cell_types))]
+
+# Create a dictionary mapping cell types to colors
+cell_type_colors = dict(zip(all_cell_types, color_palette))
+
+# Now, when we plot, the colors should be consistent
+sc.pl.spatial(adata_mouse_visium[adata_mouse_visium.obs['model'].isin(['PRN'])], img_key="hires", color=["cell types"], library_id = 'PRN1', palette = cell_type_colors, size=1, save = '_PRN1_celltypes')
+sc.pl.spatial(adata_mouse_visium[adata_mouse_visium.obs['model'].isin(['WT'])], img_key="hires", color=["cell types"], library_id = 'PRN1_wt', palette = cell_type_colors, size=1, save = '_WT_celltypes')
+
+##########
+# Violin plots for Ar and Postn expression in stroma
+
+## compare Ar and Postn in PRN
+PRN_stroma = adata_mouse_visium[adata_mouse_visium.obs['model'].isin(['PRN']) & adata_mouse_visium.obs['compartment'].isin(['stroma'])]
+
+##########
+# p-value
+
+ar_expression_PRN = PRN_stroma.raw[:, 'Ar'].X
+postn_expression_PRN = PRN_stroma.raw[:, 'Postn'].X
+ar_expression_PRN_dense = np.array(ar_expression_PRN.todense())
+postn_expression_PRN_dense = np.array(postn_expression_PRN.todense())
+
+# Then, perform a statistical test. Here's an example using a t-test from scipy:
+t_stat, p_value = stats.ttest_ind(ar_expression_PRN_dense, postn_expression_PRN_dense)
+
+#########
+# Create a DataFrame from the expression data
+df_PRN = pd.DataFrame({
+    'Ar': np.array(PRN_stroma.raw[:, 'Ar'].X.todense()).ravel(),
+    'Postn': np.array(PRN_stroma.raw[:, 'Postn'].X.todense()).ravel(),
+})
+
+# "Melt" the dataset to have genes and their values in two separate columns
+df_PRN_melted = df_PRN.melt(var_name='Gene', value_name='Expression')
+
+# Create the violin plot
+plt.figure(figsize=(10, 6))
+sns.violinplot(x='Gene', y='Expression', data=df_PRN_melted, scale='width', inner=None)
+
+# Add title and labels with larger font size
+plt.xlabel('Gene', size=16)
+plt.ylabel('Expression', size=16)
+
+# Increase the size of the tick labels
+plt.xticks(fontsize=15)
+plt.yticks(fontsize=15)
+
+# save the plot
+plt.savefig('figures/Visium/violin_Ar_Postn_PRN_stroma.png')
+
+# save to source data
+with pd.ExcelWriter('tables/Source_data.xlsx', engine='openpyxl', mode='a') as writer:
+    df_PRN.to_excel(writer, sheet_name='5e_PRN')
+
+
+########################################
+## compare Ar and Postn in WT
+WT_stroma = adata_mouse_visium[adata_mouse_visium.obs['model'].isin(['WT']) & adata_mouse_visium.obs['compartment'].isin(['stroma'])]
+
+##########
+# p-value
+
+ar_expression_WT = WT_stroma.raw[:, 'Ar'].X
+postn_expression_WT = WT_stroma.raw[:, 'Postn'].X
+ar_expression_WT_dense = np.array(ar_expression_WT.todense())
+postn_expression_WT_dense = np.array(postn_expression_WT.todense())
+
+# t-test
+t_stat_WT, p_value_WT = stats.ttest_ind(ar_expression_WT_dense, postn_expression_WT_dense)
+
+######
+# Create a DataFrame from the expression data
+df_WT = pd.DataFrame({
+    'Ar': np.array(WT_stroma.raw[:, 'Ar'].X.todense()).ravel(),
+    'Postn': np.array(WT_stroma.raw[:, 'Postn'].X.todense()).ravel(),
+})
+
+# "Melt" the dataset to have genes and their values in two separate columns
+df_WT_melted = df_WT.melt(var_name='Gene', value_name='Expression')
+
+# Create the violin plot
+plt.figure(figsize=(10, 6))
+sns.violinplot(x='Gene', y='Expression', data=df_WT_melted, scale='width', inner=None)
+# Add significance line
+#y_max = df_WT_melted['Expression'].max()  # find maximum y value
+#plt.plot([0, 1], [y_max + 0.45, y_max + 0.45], lw=1.5, color='black')  # draw horizontal line
+#p_value_WT_scalar = p_value_WT[0] if isinstance(p_value_WT, np.ndarray) else p_value_WT
+#plt.text(0.5, y_max + 0.5, f"p-value = {p_value_WT_scalar:.2e}", ha='center')  # add p-value text
+
+# Add title and labels with larger font size
+plt.xlabel('Gene', size=16)
+plt.ylabel('Expression', size=16)
+
+# Increase the size of the tick labels
+plt.xticks(fontsize=15)
+plt.yticks(fontsize=15)
+
+# save the plot
+plt.savefig('figures/Visium/violin_Ar_Postn_WT_stroma.png')
+
+# save to source data
+with pd.ExcelWriter('tables/Source_data.xlsx', engine='openpyxl', mode='a') as writer:
+    df_WT.to_excel(writer, sheet_name='5e_WT')
+
+
+###########################
+# 5g: co-culture
+sc.pl.umap(adata_coculture, color = ['cells', 'cluster'], save = '_coculture_model_cluster_sep')
+
+
 
 ############################################################################################################
 # Figure S5

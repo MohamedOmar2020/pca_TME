@@ -92,6 +92,12 @@ save(GCP_model, file = './objs/GCP_model.rda')
 prob_train_PRN <- PRN_model %>% predict(Data_train , type = "response")
 prob_train_GCP <- GCP_model %>% predict(Data_train , type = "response")
 
+######
+# save for source data
+train_stats <- as.data.frame(prob_train_GCP)
+colnames(train_stats) <- 'GCP probability'
+write.xlsx(train_stats, file = 'tables/Source_data.xlsx', append = TRUE, row.names = T, sheetName = 's6 - GCP training probabilities')
+
 ### Threshold
 thr_PRN <- coords(roc(Data_train$group, prob_train_PRN, levels = c('No_Mets', 'Mets'), direction = "<"), "best")["threshold"]
 thr_GCP <- coords(roc(Data_train$group, prob_train_GCP, levels = c('No_Mets', 'Mets'), direction = "<"), "best")["threshold"]
@@ -118,6 +124,12 @@ predClasses_train_GCP <- factor(predClasses_train_GCP, levels = c('No_Mets', 'Me
 ##################################
 prob_test_PRN <- PRN_model %>% predict(Data_test , type = "response")
 prob_test_GCP <- GCP_model %>% predict(Data_test , type = "response")
+
+######
+# save for source data
+test_stats <- as.data.frame(prob_test_GCP)
+colnames(test_stats) <- 'GCP probability'
+write.xlsx(test_stats, file = 'tables/Source_data.xlsx', append = TRUE, row.names = T, sheetName = 's6 - GCP testing probabilities')
 
 ### ROC Curve
 ROC_test_PRN <- roc(Data_test$group, prob_test_PRN, plot = F, print.auc=TRUE, print.auc.col="black", ci = T, levels = c('No_Mets', 'Mets'), direction = "<", col="blue", lwd=2, grid=TRUE)

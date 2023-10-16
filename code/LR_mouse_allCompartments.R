@@ -882,6 +882,11 @@ netVisual_chord_gene(cellchat_mouse_all,
 )
 dev.off()
 
+###source data
+df.net <- subsetCommunication(cellchat_mouse_all, slot.name = "net")
+write.xlsx(df.net, file = 'tables/Source_data.xlsx', row.names = T, sheetName = 's3', append = TRUE)
+
+
 # POSTN
 png('./figures/cellchat_allCompartments/Postn_stromaOnly.png', width = 3500, height = 3000, res = 350)
 netVisual_chord_gene(cellchat_mouse_all, 

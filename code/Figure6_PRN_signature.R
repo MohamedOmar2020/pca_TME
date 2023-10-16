@@ -24,6 +24,12 @@ library(enrichR)
 library(mltools)
 library(xtable)
 library(precrec)
+library(tidyverse)
+library(data.table)
+
+# Increase Java Heap Space in R:
+options(java.parameters = "-Xmx8000m")
+library(xlsx)
 
 ###########################################################################
 ### Load expression and phenotype data
@@ -33,11 +39,11 @@ load("./data/bulk/MetastasisDataGood.rda")
 # load the pairs
 
 # load mechanistic pairs
-load('./data/PRN_pairs.rda')
 load('./data/PRN_pairs_top.rda')
 
 
 myTSPs <- as.matrix(PRN_pairs_top)
+
 
 ### Quantile normalize
 usedTrainMat <- normalizeBetweenArrays(mixTrainMat, method = "quantile")
@@ -45,11 +51,6 @@ usedTestMat <- normalizeBetweenArrays(mixTestMat, method = "quantile")
 
 ### Common genes
 keepGns <- intersect(as.vector(myTSPs), rownames(usedTrainMat))
-#keepGns_TF_MiR <- keepGns
-#save(keepGns_TF_MiR, file = "./Objs/KTSP/KeepGns_TF_MiR.rda")
-
-#usedTrainMat <- usedTrainMat[keepGns, ]
-#usedTestMat <- usedTestMat[keepGns, ]
 
 ### Associated groups
 usedTrainGroup <- mixTrainGroup
@@ -58,8 +59,9 @@ usedTestGroup <- mixTestGroup
 ### For the TSP
 myTSPs <- myTSPs[myTSPs[,1] %in% keepGns & myTSPs[,2] %in% keepGns , ]
 
-#print(xtable(myTSPs, type = "latex"), file = "./Objs/KTSP/Restricted_Pairs.tex")
-#write.csv(myTSPs, file = "./Objs/KTSP/Restricted_Pairs.csv")
+########################
+# save for source data
+write.xlsx(myTSPs, file = 'tables/Source_data.xlsx', append = TRUE, row.names = F, sheetName = '6a - PRN gene pairs')
 
 ###########################################################################
 ### TRAINING using restricted pairs
@@ -96,6 +98,12 @@ save(ktspPredictorRes, file = './objs/PRN_stromal_signature.rda')
 ktspStatsTrainRes <- SWAP.KTSP.Statistics(inputMat = usedTrainMat, classifier = ktspPredictorRes, CombineFunc = sum)
 summary(ktspStatsTrainRes$statistics)
 
+######
+# save for source data
+train_stats <- as.data.frame(ktspStatsTrainRes$statistics)
+colnames(train_stats) <- 'votes'
+write.xlsx(train_stats, file = 'tables/Source_data.xlsx', append = TRUE, row.names = T, sheetName = '6a - training votes')
+
 ### Threshold
 thr <- coords(roc(usedTrainGroup, ktspStatsTrainRes$statistics, levels = c("No_Mets", "Mets"), direction = "<"), "best")["threshold"]
 thr 
@@ -123,6 +131,12 @@ MCC_Mechanistic_Train
 ## Compute the sum and find the best threshold
 ktspStatsTestRes <- SWAP.KTSP.Statistics(inputMat = usedTestMat, classifier = ktspPredictorRes, CombineFunc = sum)
 summary(ktspStatsTestRes$statistics)
+
+######
+# save for source data
+test_stats <- as.data.frame(ktspStatsTestRes$statistics)
+colnames(test_stats) <- 'votes'
+write.xlsx(test_stats, file = 'tables/Source_data.xlsx', append = TRUE, row.names = T, sheetName = '6a - testing votes')
 
 ## Plot curve
 roc_test <- roc(usedTestGroup, ktspStatsTestRes$statistics, plot = F, print.auc=TRUE, print.auc.col="black", levels = c("No_Mets", "Mets"), direction = "<", col="blue", lwd=2, grid=TRUE, main= "Mechanistic KTSP using TF_MiR Gns")
